@@ -1,0 +1,131 @@
+{
+  "validation_date": "2026-01-03T18:03:19.272400",
+  "total_tests": 20,
+  "passed_tests": 15,
+  "failed_tests": 5,
+  "success_rate": 75.0,
+  "results": {
+    "system_info": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:02:46.668647"
+    },
+    "pytorch_cuda": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:02:46.681959"
+    },
+    "required_packages": {
+      "passed": true,
+      "message": "All installed",
+      "timestamp": "2026-01-03T18:02:47.363024"
+    },
+    "cpu_training": {
+      "passed": true,
+      "message": "CPU forward pass works",
+      "timestamp": "2026-01-03T18:02:47.443932"
+    },
+    "single_gpu_training": {
+      "passed": true,
+      "message": "GPU forward pass works on NVIDIA GeForce RTX 5060 Ti",
+      "timestamp": "2026-01-03T18:02:47.641523"
+    },
+    "gpu_memory_management": {
+      "passed": true,
+      "message": "Max batch size: 256",
+      "timestamp": "2026-01-03T18:02:48.257205"
+    },
+    "conformer_generation": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:18.039800"
+    },
+    "feature_extraction": {
+      "passed": false,
+      "message": "AttributeError: 'ConformerEnsemble' object has no attribute 'conformers'",
+      "timestamp": "2026-01-03T18:03:18.050329"
+    },
+    "augmented_basis": {
+      "passed": false,
+      "message": "AttributeError: 'ConformerEnsemble' object has no attribute 'conformers'",
+      "timestamp": "2026-01-03T18:03:18.051138"
+    },
+    "dko_model": {
+      "passed": true,
+      "message": "All DKO configurations work",
+      "timestamp": "2026-01-03T18:03:18.066756"
+    },
+    "dko_firstorder_model": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:18.070597"
+    },
+    "attention_model": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:18.075162"
+    },
+    "deepsets_model": {
+      "passed": false,
+      "message": "AssertionError: ",
+      "timestamp": "2026-01-03T18:03:18.079015"
+    },
+    "basic_training": {
+      "passed": true,
+      "message": "Trained 3 epochs",
+      "timestamp": "2026-01-03T18:03:19.038532"
+    },
+    "checkpoint_saveload": {
+      "passed": false,
+      "message": "TypeError: Trainer.save_checkpoint() takes 2 positional arguments but 4 were given",
+      "timestamp": "2026-01-03T18:03:19.107220"
+    },
+    "gradient_flow": {
+      "passed": true,
+      "message": "Gradient norm: 0.1066",
+      "timestamp": "2026-01-03T18:03:19.113984"
+    },
+    "small_batch_sizes": {
+      "passed": false,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:19.124828"
+    },
+    "large_feature_dims": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:19.152779"
+    },
+    "numerical_stability": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:03:19.164109"
+    },
+    "synthetic_pipeline": {
+      "passed": true,
+      "message": "Pipeline works: RMSE=nan",
+      "timestamp": "2026-01-03T18:03:19.272275"
+    }
+  },
+  "errors": [
+    "feature_extraction",
+    "augmented_basis",
+    "deepsets_model",
+    "checkpoint_saveload",
+    "small_batch_sizes"
+  ],
+  "system_info": {
+    "hostname": "Jasper",
+    "platform": "Windows-11-10.0.26100-SP0",
+    "python_version": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]",
+    "cpu_count": 28,
+    "total_memory_gb": 31.772380828857422,
+    "available_memory_gb": 15.27993392944336
+  },
+  "torch_info": {
+    "pytorch_version": "2.9.0+cu130",
+    "cuda_available": true,
+    "cuda_version": "13.0",
+    "cudnn_version": 91200,
+    "gpu_count": 1
+  }
+}

@@ -1,0 +1,125 @@
+{
+  "validation_date": "2026-01-03T18:09:13.577413",
+  "total_tests": 20,
+  "passed_tests": 20,
+  "failed_tests": 0,
+  "success_rate": 100.0,
+  "results": {
+    "system_info": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:08:40.633789"
+    },
+    "pytorch_cuda": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:08:40.646868"
+    },
+    "required_packages": {
+      "passed": true,
+      "message": "All installed",
+      "timestamp": "2026-01-03T18:08:41.321417"
+    },
+    "cpu_training": {
+      "passed": true,
+      "message": "CPU forward pass works",
+      "timestamp": "2026-01-03T18:08:41.401097"
+    },
+    "single_gpu_training": {
+      "passed": true,
+      "message": "GPU forward pass works on NVIDIA GeForce RTX 5060 Ti",
+      "timestamp": "2026-01-03T18:08:41.586766"
+    },
+    "gpu_memory_management": {
+      "passed": true,
+      "message": "Max batch size: 256",
+      "timestamp": "2026-01-03T18:08:42.190449"
+    },
+    "conformer_generation": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:12.309142"
+    },
+    "feature_extraction": {
+      "passed": true,
+      "message": "Extracted 279-dim features",
+      "timestamp": "2026-01-03T18:09:12.321212"
+    },
+    "augmented_basis": {
+      "passed": true,
+      "message": "Basis: [279, 279x279]",
+      "timestamp": "2026-01-03T18:09:12.323585"
+    },
+    "dko_model": {
+      "passed": true,
+      "message": "All DKO configurations work",
+      "timestamp": "2026-01-03T18:09:12.338845"
+    },
+    "dko_firstorder_model": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:12.342763"
+    },
+    "attention_model": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:12.347290"
+    },
+    "deepsets_model": {
+      "passed": true,
+      "message": "Permutation invariance verified",
+      "timestamp": "2026-01-03T18:09:12.349523"
+    },
+    "basic_training": {
+      "passed": true,
+      "message": "Trained 3 epochs",
+      "timestamp": "2026-01-03T18:09:13.281736"
+    },
+    "checkpoint_saveload": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:13.413896"
+    },
+    "gradient_flow": {
+      "passed": true,
+      "message": "Gradient norm: 0.0675",
+      "timestamp": "2026-01-03T18:09:13.419512"
+    },
+    "small_batch_sizes": {
+      "passed": true,
+      "message": "Note: batch_size=1 not supported due to BatchNorm",
+      "timestamp": "2026-01-03T18:09:13.430351"
+    },
+    "large_feature_dims": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:13.456075"
+    },
+    "numerical_stability": {
+      "passed": true,
+      "message": "",
+      "timestamp": "2026-01-03T18:09:13.467762"
+    },
+    "synthetic_pipeline": {
+      "passed": true,
+      "message": "Pipeline works: RMSE=nan",
+      "timestamp": "2026-01-03T18:09:13.577285"
+    }
+  },
+  "errors": [],
+  "system_info": {
+    "hostname": "Jasper",
+    "platform": "Windows-11-10.0.26100-SP0",
+    "python_version": "3.13.5 | packaged by Anaconda, Inc. | (main, Jun 12 2025, 16:37:03) [MSC v.1929 64 bit (AMD64)]",
+    "cpu_count": 28,
+    "total_memory_gb": 31.772380828857422,
+    "available_memory_gb": 15.12668228149414
+  },
+  "torch_info": {
+    "pytorch_version": "2.9.0+cu130",
+    "cuda_available": true,
+    "cuda_version": "13.0",
+    "cudnn_version": 91200,
+    "gpu_count": 1
+  }
+}
