@@ -18,12 +18,12 @@ with open("requirements.txt", "r", encoding="utf-8") as f:
 setup(
     name="dko",
     version="0.1.0",
-    author="DKO Research Team",
-    author_email="research@example.com",
+    author="JasperZG",
+    author_email="",
     description="Distribution Kernel Operators for Molecular Property Prediction",
     long_description=long_description,
     long_description_content_type="text/markdown",
-    url="https://github.com/your-org/dko-research",
+    url="https://github.com/JasperZG/dko",
     packages=find_packages(exclude=["tests", "tests.*", "notebooks"]),
     classifiers=[
         "Development Status :: 3 - Alpha",

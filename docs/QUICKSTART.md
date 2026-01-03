@@ -4,8 +4,8 @@
 
 ```bash
 # Clone and setup
-git clone https://github.com/your-org/dkoproject.git
-cd dkoproject
+git clone https://github.com/JasperZG/dko.git
+cd dko
 
 # Create environment
 conda create -n dko python=3.11

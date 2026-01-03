@@ -2,258 +2,191 @@
 
 A comprehensive research framework for learning molecular properties from conformer ensemble distributions using Distribution Kernel Operators.
 
-## Project Status
-
-| Part | Description | Tests | Status |
-|------|-------------|-------|--------|
-| 1 | Project Foundation | - | Complete |
-| 2 | Data Pipeline | - | Complete |
-| 3 | Datasets (12 benchmarks) | - | Complete |
-| 4 | Models (DKO, Attention, DeepSets) | 98 | Complete |
-| 5 | Training Infrastructure | 104 | Complete |
-| 6 | Experiments | - | Ready to Start |
-
-**Total Tests: 104/104 passing** | **Validation: All systems go**
-
 ## Overview
 
-This project implements DKO, a novel approach to molecular property prediction that explicitly models the distribution of molecular conformers using an **augmented basis representation**:
-
-```
-[mu, Sigma] where:
-  mu = (batch, D) - mean of conformer features
-  Sigma = (batch, D, D) - covariance matrix capturing conformational variability
-```
+This project implements DKO, a novel approach to molecular property prediction that explicitly models the distribution of molecular conformers rather than relying on single conformer representations. The key insight is that many molecular properties depend on the ensemble of accessible 3D structures, not just the lowest-energy conformation.
 
 ### Key Features
 
 - **Distribution Kernel Operators (DKO)**: Novel kernel-based method for aggregating conformer information
-- **Augmented Basis Representation**: Captures both first-order (mean) and second-order (covariance) statistics
-- **12 Benchmark Datasets**: Comprehensive evaluation across ESOL, Lipophilicity, BACE, BBBP, HIV, Tox21, etc.
-- **Multiple Baselines**: Comparison with Attention Pooling and DeepSets
-- **Rigorous Evaluation**: Scaffold splitting, multiple seeds, bootstrap CI, and statistical significance testing
-- **Stratified Analysis**: Performance analysis by Structural Conformer Complexity (SCC) quartiles
+- **12 Benchmark Datasets**: Comprehensive evaluation across binding affinity, ADMET, and quantum mechanical properties
+- **Multiple Baselines**: Comparison with DeepSets, Attention, SchNet, DimeNet++, and other state-of-the-art methods
+- **Rigorous Evaluation**: Scaffold splitting, multiple seeds, and statistical significance testing
+- **Extensive Analysis**: Sample efficiency, attention visualization, and statistical consistency checks
 
 ## Installation
 
 ### Requirements
 
-- Python 3.10+
-- PyTorch 2.0+
-- RDKit 2023.03+
-- CUDA 11.8+ (optional, for GPU)
+- Python 3.9+
+- CUDA 11.8+ (for GPU acceleration)
+- ~50GB disk space for datasets
 
 ### Setup
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-org/dkoproject.git
-cd dkoproject
+git clone https://github.com/JasperZG/dko.git
+cd dko
 
-# Create environment
-conda create -n dko python=3.11
-conda activate dko
-
-# Install RDKit
-conda install -c conda-forge rdkit
-
-# Install PyTorch
-pip install torch torchvision --index-url https://download.pytorch.org/whl/cu118
+# Create virtual environment
+python -m venv venv
+source venv/bin/activate  # On Windows: venv\Scripts\activate
 
 # Install dependencies
-pip install numpy scipy scikit-learn pandas pyyaml tqdm optuna matplotlib
+pip install -r requirements.txt
 
-# Verify installation
-python validate_parts1_5_complete.py
+# Install package in development mode
+pip install -e .
+```
+
+### Optional: RDKit Installation
+
+If RDKit installation fails via pip, use conda:
+
+```bash
+conda install -c conda-forge rdkit
 ```
 
 ## Quick Start
 
-### 1. Train DKO Model
-
-```python
-from dko.models.dko import DKO
-from dko.training.trainer import Trainer
-from dko.training.evaluator import Evaluator
-
-# Create model
-model = DKO(feature_dim=50, output_dim=1, verbose=True)
-
-# Train with research plan specifications
-trainer = Trainer(
-    model=model,
-    task='regression',
-    learning_rate=1e-4,        # AdamW
-    weight_decay=1e-5,
-    max_epochs=300,
-    early_stopping_patience=30,
-)
-history = trainer.fit(train_loader, val_loader)
-
-# Evaluate with full metrics
-evaluator = Evaluator(task_type='regression')
-metrics = evaluator.evaluate(model, test_loader)
-print(f"RMSE: {metrics['rmse']:.4f}, R2: {metrics['r2']:.4f}")
-```
-
-### 2. Run Integration Tests
+### 1. Prepare Datasets
 
 ```bash
-# Comprehensive integration test with visualizations
-python scripts/test_training_integration.py
+# Download and preprocess all datasets
+python scripts/prepare_datasets.py --all
 
-# Outputs:
-# - training_curves.png
-# - prediction_quality.png
-# - error_distributions.png
-# - model_comparison.png
-# - test_report.json
+# Or prepare specific datasets
+python scripts/prepare_datasets.py --datasets bace pdbbind freesolv
 ```
 
-### 3. Hyperparameter Optimization
+### 2. Run Experiments
 
-```python
-from dko.training.hyperopt import run_hyperopt
+```bash
+# Run main benchmark on all datasets
+python scripts/run_experiment.py --experiment main_benchmark
 
-results = run_hyperopt(
-    model_class=DKO,
-    model_name='dko',
-    task='regression',
-    feature_dim=50,
-    output_dim=1,
-    train_loader=train_loader,
-    val_loader=val_loader,
-    n_trials=50,  # TPE sampler with MedianPruner
-)
+# Run on specific dataset with specific model
+python scripts/run_experiment.py --dataset bace --model dko
+
+# Run with hyperparameter optimization
+python scripts/run_experiment.py --dataset bace --model dko --hyperopt
+```
+
+### 3. Analyze Results
+
+```bash
+# Generate analysis and visualizations
+python scripts/analyze_results.py --experiment main_benchmark
 ```
 
 ## Project Structure
 
 ```
-dkoproject/
+dko-research/
 ├── dko/
-│   ├── data/               # Data pipeline
-│   │   ├── conformer_generator.py   # ETKDG conformer generation
-│   │   ├── feature_extractor.py     # RDKit/Mordred descriptors
-│   │   ├── augmented_basis.py       # [mu, Sigma] computation
-│   │   ├── scc_calculator.py        # Structural Conformer Complexity
-│   │   ├── datasets.py              # Dataset classes
-│   │   └── splitters.py             # Scaffold/random splitting
-│   ├── models/             # Model implementations
-│   │   ├── dko.py          # DKO (full + ablations)
-│   │   ├── attention.py    # Attention pooling baseline
-│   │   └── deepsets.py     # DeepSets baseline
-│   ├── training/           # Training infrastructure
-│   │   ├── trainer.py      # Basic trainer (AdamW, cosine, early stop)
-│   │   ├── hpc_trainer.py  # HPC-grade trainer with logging
-│   │   ├── evaluator.py    # All metrics + bootstrap CI
-│   │   └── hyperopt.py     # Optuna TPE optimization
-│   └── utils/              # Utilities
-├── configs/
-│   ├── base_config.yaml    # Default settings
-│   ├── datasets/           # Per-dataset configs (12 datasets)
-│   └── experiments/        # Experiment templates
-├── scripts/
-│   ├── submit_hpc.sh       # SLURM job template
-│   ├── submit_batch.py     # Batch experiment submission
-│   └── test_training_integration.py  # Integration tests
-├── tests/                  # 104 tests
-│   ├── test_trainer.py     # 40 tests
-│   ├── test_evaluator.py   # 36 tests
-│   └── test_hyperopt.py    # 28 tests
-└── docs/
-    ├── TECHNICAL_DOCUMENTATION.md
-    └── QUICKSTART.md
+│   ├── models/          # Model implementations
+│   │   ├── dko.py       # Distribution Kernel Operator
+│   │   ├── attention.py # Attention-based aggregation
+│   │   ├── deepsets.py  # DeepSets baseline
+│   │   └── gnn_baselines.py  # SchNet, DimeNet++, etc.
+│   ├── data/            # Data loading and processing
+│   │   ├── datasets.py  # Dataset classes
+│   │   ├── conformers.py # Conformer generation
+│   │   ├── features.py  # Feature extraction
+│   │   └── splits.py    # Data splitting utilities
+│   ├── training/        # Training infrastructure
+│   │   ├── trainer.py   # Training loop
+│   │   ├── evaluator.py # Evaluation metrics
+│   │   └── hyperopt.py  # Hyperparameter optimization
+│   ├── experiments/     # Experiment scripts
+│   │   ├── main_benchmark.py
+│   │   ├── decomposition.py
+│   │   ├── sample_efficiency.py
+│   │   └── attention_analysis.py
+│   ├── analysis/        # Analysis utilities
+│   │   ├── scc.py       # Statistical consistency checks
+│   │   ├── statistics.py
+│   │   └── visualization.py
+│   └── utils/           # Utility functions
+│       ├── config.py    # Configuration system
+│       └── logging_utils.py
+├── configs/             # Configuration files
+│   ├── base_config.yaml
+│   ├── datasets/        # Per-dataset configs
+│   └── models/          # Per-model configs
+├── scripts/             # Entry point scripts
+├── tests/               # Unit tests
+└── notebooks/           # Analysis notebooks
 ```
 
-## Models
+## Datasets
 
-| Model | Input | Description | Parameters (D=100) |
-|-------|-------|-------------|-------------------|
-| **DKO** | [mu, Sigma] | Full distribution kernel operator | ~8,500 |
-| **DKO_FirstOrder** | mu only | Ablation: mean only | ~729,000 |
-| **AttentionPooling** | (B, K, D) | Learnable attention over conformers | ~222,000 |
-| **DeepSets** | (B, K, D) | Permutation-invariant set function | ~130,000 |
+| Dataset | Task | Type | Molecules | Expected DKO Advantage |
+|---------|------|------|-----------|------------------------|
+| BACE | Binding Affinity | Regression | 1,513 | 5-8% |
+| PDBBind | Binding Affinity | Regression | 11,908 | 8-12% |
+| FreeSolv | Solvation | Regression | 642 | 4-7% |
+| hERG | Toxicity | Classification | 7,889 | 2-4% |
+| CYP3A4 | Metabolism | Classification | 12,328 | 2-3% |
+| Tox21 | Toxicity | Classification | 7,831 | 1-3% |
+| BBBP | Permeability | Classification | 2,039 | 1-2% |
+| ESOL | Solubility | Regression | 1,128 | 1-3% |
+| Lipophilicity | Lipophilicity | Regression | 4,200 | 1-3% |
+| QM9 HOMO | Electronic | Regression | 133,885 | 4-6% |
+| QM9 Gap | Electronic | Regression | 133,885 | 4-6% |
+| QM9 Polar | Electronic | Regression | 133,885 | 5-7% |
 
-## Training Specifications (from Research Plan)
+## Configuration
 
-| Setting | Value |
-|---------|-------|
-| Optimizer | AdamW |
-| Learning Rate | 1e-4 to 1e-6 (cosine) |
-| Weight Decay | 1e-5 |
-| Early Stopping | Patience 30 |
-| Gradient Clipping | max_norm=1.0 |
-| Mixed Precision | FP16 |
-| Batch Size | 32 |
-| Max Epochs | 300 |
+Configuration uses a hierarchical YAML system:
 
-## Evaluation Metrics
+```yaml
+# configs/base_config.yaml - Base settings
+# configs/datasets/bace.yaml - Dataset-specific
+# configs/models/dko.yaml - Model-specific
+```
 
-**Regression:** RMSE, MAE, R2, Pearson, Spearman (with 95% bootstrap CI)
+Override settings via environment variables:
 
-**Classification:** AUC-ROC, AUC-PR, Accuracy, Precision, Recall, F1
+```bash
+export DKO_TRAINING_BATCH_SIZE=64
+export DKO_TRAINING_BASE_LEARNING_RATE=0.0001
+```
 
-**Statistical Tests:** Paired t-test, Wilcoxon signed-rank
+## Experiment Tracking
 
-## Datasets (12 Benchmarks)
+Experiments are tracked with Weights & Biases:
 
-| Dataset | Task | Size | Metric |
-|---------|------|------|--------|
-| ESOL | Regression | 1,128 | RMSE |
-| Lipophilicity | Regression | 4,200 | RMSE |
-| FreeSolv | Regression | 642 | RMSE |
-| BACE | Classification | 1,513 | AUC |
-| BBBP | Classification | 2,039 | AUC |
-| HIV | Classification | 41,127 | AUC |
-| Tox21 | Multi-task | 7,831 | AUC |
-| ClinTox | Multi-task | 1,478 | AUC |
-| SIDER | Multi-task | 1,427 | AUC |
-| ToxCast | Multi-task | 8,576 | AUC |
-| MUV | Multi-task | 93,087 | AUC |
-| QM7 | Regression | 7,165 | MAE |
+```bash
+# Set W&B credentials
+export WANDB_ENTITY=your-entity
+export WANDB_API_KEY=your-key
+
+# Run with tracking
+python scripts/run_experiment.py --dataset bace --model dko
+```
 
 ## Testing
 
 ```bash
-# Run all tests (104 tests)
-pytest tests/ -v
+# Run all tests
+pytest tests/
 
-# Run specific test suite
-pytest tests/test_trainer.py -v      # 40 tests
-pytest tests/test_evaluator.py -v    # 36 tests
-pytest tests/test_hyperopt.py -v     # 28 tests
-
-# Full validation
-python validate_parts1_5_complete.py
-```
-
-## Documentation
-
-- **[Quick Start Guide](docs/QUICKSTART.md)** - Get started in 5 minutes
-- **[Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md)** - Full API reference
-
-## HPC Deployment
-
-```bash
-# Submit SLURM job
-sbatch scripts/submit_hpc.sh
-
-# Batch submission for multiple experiments
-python scripts/submit_batch.py \
-    --datasets esol lipophilicity freesolv \
-    --models dko attention deepsets \
-    --seeds 42 123 456
+# Run with coverage
+pytest tests/ --cov=dko --cov-report=html
 ```
 
 ## Citation
 
+If you use this code in your research, please cite:
+
 ```bibtex
 @software{dko2026,
-  title={DKO: Distribution Kernel Operators for Molecular Property Prediction},
-  author={Your Name},
+  title={Distribution Kernel Operators for Molecular Property Prediction from Conformer Ensembles},
+  author={JasperZG},
   year={2026},
-  url={https://github.com/your-org/dkoproject}
+  url={https://github.com/JasperZG/dko}
 }
 ```
 
@@ -264,5 +197,5 @@ MIT License - see LICENSE file for details.
 ## Acknowledgments
 
 - RDKit team for molecular informatics tools
+- PyTorch Geometric team for GNN implementations
 - MoleculeNet for benchmark datasets
-- Optuna team for hyperparameter optimization

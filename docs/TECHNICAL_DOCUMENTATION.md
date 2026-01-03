@@ -203,8 +203,8 @@ matplotlib >= 3.7 (for visualization)
 
 ```bash
 # Clone repository
-git clone https://github.com/your-org/dkoproject.git
-cd dkoproject
+git clone https://github.com/JasperZG/dko.git
+cd dko
 
 # Create conda environment
 conda create -n dko python=3.11
@@ -1509,9 +1509,9 @@ If you use this code, please cite:
 ```bibtex
 @software{dko2026,
   title={DKO: Distribution Kernel Operators for Molecular Property Prediction},
-  author={Your Name},
+  author={JasperZG},
   year={2026},
-  url={https://github.com/your-org/dkoproject}
+  url={https://github.com/JasperZG/dko}
 }
 ```
 

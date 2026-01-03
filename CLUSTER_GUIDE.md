@@ -8,14 +8,14 @@ Complete reference for deploying and running DKO experiments on HPC clusters.
 
 ```bash
 # Clone repository
-git clone <repo_url>
-cd dko-project
+git clone https://github.com/JasperZG/dko.git
+cd dko
 
 # Run setup (creates venv, installs deps, validates)
 bash scripts/setup_cluster.sh
 
-# Test deployment
-python scripts/test_cluster_deployment.py --quick
+# Validate deployment
+python scripts/validate_cluster_ready.py
 ```
 
 ### 2. Validate Before Running
@@ -36,13 +36,10 @@ python scripts/validate_cluster_ready.py
 
 ```bash
 # Basic submission
-sbatch scripts/slurm_submit_single.sh DKO esol
+sbatch scripts/submit_hpc.sh configs/experiments/dko_esol.yaml
 
-# With custom config
-sbatch scripts/slurm_submit_single.sh DKO esol configs/experiments/dko_esol.yaml
-
-# With custom output directory
-sbatch scripts/slurm_submit_single.sh DKO esol configs/base_config.yaml experiments/my_run
+# With experiment name
+sbatch scripts/submit_hpc.sh configs/experiments/dko_esol.yaml my_experiment
 ```
 
 ### Batch Experiments
