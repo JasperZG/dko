@@ -244,7 +244,7 @@ sinfo
 sacctmgr show user $USER
 
 # Try different partition
-sbatch --partition=gpu-low scripts/slurm_submit_single.sh ...
+sbatch --partition=gpu-low scripts/submit_hpc.sh configs/experiments/dko_esol.yaml
 ```
 
 ### CUDA Not Found
@@ -335,8 +335,7 @@ export PYTORCH_CUDA_ALLOC_CONF=max_split_size_mb:512  # Memory
 | `setup_cluster.sh` | Initial cluster setup |
 | `validate_hpc_setup.py` | Quick HPC validation |
 | `validate_cluster_ready.py` | Comprehensive 20-test validation |
-| `test_cluster_deployment.py` | Automated deployment testing |
-| `slurm_submit_single.sh` | Submit single experiment |
+| `submit_hpc.sh` | Submit single experiment |
 | `slurm_submit_batch.sh` | Submit array jobs |
 | `slurm_hyperopt.sh` | Submit hyperopt job |
 | `submit_all_experiments.py` | Bulk experiment submission |

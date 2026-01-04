@@ -646,6 +646,62 @@ def create_trainer(
     )
 
 
+def train_model(
+    model: nn.Module,
+    train_loader: DataLoader,
+    val_loader: DataLoader,
+    config: Dict[str, Any],
+    device: str = "cuda",
+    experiment_name: str = "experiment",
+) -> Tuple[nn.Module, Dict[str, Any]]:
+    """
+    Train a model using the Trainer class.
+
+    Convenience wrapper function for training models.
+
+    Args:
+        model: Model to train
+        train_loader: Training data loader
+        val_loader: Validation data loader
+        config: Training configuration dictionary
+        device: Device to train on
+        experiment_name: Name for the experiment
+
+    Returns:
+        Tuple of (trained model, training results dict)
+    """
+    # Create trainer from config
+    trainer = Trainer(
+        model=model,
+        task=config.get('task_type', config.get('task', 'regression')),
+        learning_rate=config.get('learning_rate', config.get('base_learning_rate', 1e-4)),
+        weight_decay=config.get('weight_decay', 1e-5),
+        max_epochs=config.get('max_epochs', 300),
+        early_stopping_patience=config.get('early_stopping_patience', 30),
+        gradient_clip_max_norm=config.get('gradient_clip_max_norm', 1.0),
+        device=device,
+        use_mixed_precision=config.get('mixed_precision', True),
+        checkpoint_dir=config.get('checkpoint_dir'),
+        use_wandb=config.get('use_wandb', False),
+        wandb_project=config.get('wandb_project'),
+        wandb_run_name=experiment_name,
+        verbose=config.get('verbose', True),
+    )
+
+    # Train
+    history = trainer.fit(train_loader, val_loader)
+
+    # Prepare results
+    results = {
+        'history': history,
+        'best_epoch': trainer.best_epoch,
+        'best_val_loss': trainer.best_val_loss,
+        'total_epochs': len(history.get('train_loss', [])),
+    }
+
+    return model, results
+
+
 if __name__ == "__main__":
     # Test trainer
     print("Testing Trainer...")

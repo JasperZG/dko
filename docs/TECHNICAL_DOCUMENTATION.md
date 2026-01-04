@@ -91,7 +91,7 @@ dkoproject/
 │       └── attention_template.yaml
 ├── scripts/                      # Utility scripts
 │   ├── submit_hpc.sh                 # SLURM job template
-│   ├── submit_batch.py               # Batch experiment submission
+│   ├── submit_all_experiments.py     # Batch experiment submission
 │   ├── aggregate_results.py          # Results aggregation
 │   └── test_training_integration.py  # Integration tests
 ├── tests/                        # Test suite
@@ -1428,12 +1428,11 @@ python scripts/run_experiment.py \
 
 ```bash
 # Submit multiple experiments
-python scripts/submit_batch.py \
+python scripts/submit_all_experiments.py \
     --datasets esol lipophilicity freesolv \
-    --models dko attention deepsets \
+    --models dko_first_order dko_second_order \
     --seeds 42 123 456 \
-    --partition gpu \
-    --time 24:00:00
+    --submit
 ```
 
 ### 13.3 Results Aggregation

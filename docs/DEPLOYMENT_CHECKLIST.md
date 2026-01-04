@@ -114,18 +114,18 @@ ___________________________________________
 ### [ ] 8. Cluster-Specific Testing
 
 ```bash
-python scripts/test_cluster_deployment.py --quick
+python scripts/validate_cluster_ready.py
 ```
 
 **Results:**
-- [ ] SLURM availability: PASS
-- [ ] GPU nodes: PASS
-- [ ] Python environment: PASS
-- [ ] Data loading: PASS
-- [ ] Checkpoint operations: PASS
-- [ ] Monitoring scripts: PASS
+- [ ] Environment checks: PASS
+- [ ] PyTorch/CUDA: PASS
+- [ ] Data pipeline: PASS
+- [ ] Model tests: PASS
+- [ ] Training tests: PASS
+- [ ] Edge cases: PASS
 
-**Total:** `___ / ___ tests passed`
+**Total:** `___ / 20 tests passed`
 
 If < 90% pass rate, investigate failures before proceeding.
 
@@ -138,7 +138,7 @@ If < 90% pass rate, investigate failures before proceeding.
 Submit a minimal test job:
 
 ```bash
-sbatch scripts/slurm_submit_single.sh DKO esol configs/base_config.yaml test_output
+sbatch scripts/submit_hpc.sh configs/experiments/dko_esol.yaml test_experiment
 ```
 
 - [ ] Job submitted successfully
@@ -240,7 +240,7 @@ Review `configs/base_config.yaml`:
 
 ### [ ] 13. SLURM Configuration
 
-Review `scripts/slurm_submit_single.sh`:
+Review `scripts/submit_hpc.sh`:
 
 **Resource requests:**
 - Time limit: `___________` (default: 24:00:00)

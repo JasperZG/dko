@@ -235,7 +235,7 @@ class HPCValidator:
         """Check SLURM submission scripts."""
         scripts = [
             ('scripts/submit_hpc.sh', "Main submission script"),
-            ('scripts/submit_batch.py', "Batch submission"),
+            ('scripts/submit_all_experiments.py', "Batch submission"),
             ('scripts/monitor_jobs.py', "Job monitoring"),
         ]
 

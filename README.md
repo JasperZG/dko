@@ -177,6 +177,13 @@ pytest tests/
 pytest tests/ --cov=dko --cov-report=html
 ```
 
+## Documentation
+
+- [Full Experiment Guide](docs/FULL_EXPERIMENT_GUIDE.md) - Complete workflow from setup to results
+- [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md) - Full API reference
+- [Cluster Deployment Guide](docs/CLUSTER_GUIDE.md) - HPC/SLURM reference
+- [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md) - Pre-deployment verification
+
 ## Citation
 
 If you use this code in your research, please cite:

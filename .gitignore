@@ -235,6 +235,7 @@ cluster_tests/
 # Test results (regeneratable)
 test_results/
 validation_results/
+cluster_validation/
 
 # Experiments (keep configs, ignore outputs)
 experiments/*/checkpoints/
