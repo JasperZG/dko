@@ -8,11 +8,13 @@ This project implements DKO, a novel approach to molecular property prediction t
 
 ### Key Features
 
-- **Distribution Kernel Operators (DKO)**: Novel kernel-based method for aggregating conformer information
+- **Distribution Kernel Operators (DKO)**: Novel kernel-based method for aggregating conformer information using first-order (mean) and second-order (covariance) statistics
 - **12 Benchmark Datasets**: Comprehensive evaluation across binding affinity, ADMET, and quantum mechanical properties
-- **Multiple Baselines**: Comparison with DeepSets, Attention, SchNet, DimeNet++, and other state-of-the-art methods
+- **Multiple Baselines**: Comparison with DeepSets, Attention, MFA, MIL, SchNet, DimeNet++, SphereNet, and other state-of-the-art methods
+- **Full PyTorch Geometric Support**: Native PyG implementations of SchNet and DimeNet++ with conformer aggregation
 - **Rigorous Evaluation**: Scaffold splitting, multiple seeds, and statistical significance testing
-- **Extensive Analysis**: Sample efficiency, attention visualization, and statistical consistency checks
+- **Extensive Analysis**: Sample efficiency, attention visualization, SCC validation, and 80/20 decomposition studies
+- **SCC-based Decision Rules**: Automatic method selection based on Structural Conformational Complexity
 
 ## Installation
 
@@ -85,40 +87,68 @@ python scripts/analyze_results.py --experiment main_benchmark
 ```
 dko-research/
 ├── dko/
-│   ├── models/          # Model implementations
-│   │   ├── dko.py       # Distribution Kernel Operator
-│   │   ├── attention.py # Attention-based aggregation
-│   │   ├── deepsets.py  # DeepSets baseline
-│   │   └── gnn_baselines.py  # SchNet, DimeNet++, etc.
-│   ├── data/            # Data loading and processing
-│   │   ├── datasets.py  # Dataset classes
-│   │   ├── conformers.py # Conformer generation
-│   │   ├── features.py  # Feature extraction
-│   │   └── splits.py    # Data splitting utilities
-│   ├── training/        # Training infrastructure
-│   │   ├── trainer.py   # Training loop
-│   │   ├── evaluator.py # Evaluation metrics
-│   │   └── hyperopt.py  # Hyperparameter optimization
-│   ├── experiments/     # Experiment scripts
+│   ├── models/              # Model implementations
+│   │   ├── dko.py           # Distribution Kernel Operator
+│   │   ├── attention.py     # Attention-based aggregation
+│   │   ├── deepsets.py      # DeepSets baseline
+│   │   ├── ensemble_baselines.py  # MFA, MIL, Mean/Boltzmann ensembles
+│   │   └── gnn_baselines.py # SchNet, DimeNet++, SphereNet (PyG & simplified)
+│   ├── data/                # Data loading and processing
+│   │   ├── datasets.py      # Dataset classes
+│   │   ├── conformers.py    # Conformer generation
+│   │   ├── features.py      # Feature extraction
+│   │   └── splits.py        # Data splitting utilities
+│   ├── training/            # Training infrastructure
+│   │   ├── trainer.py       # Training loop
+│   │   ├── evaluator.py     # Evaluation metrics
+│   │   └── hyperopt.py      # Hyperparameter optimization
+│   ├── experiments/         # Experiment scripts
 │   │   ├── main_benchmark.py
-│   │   ├── decomposition.py
-│   │   ├── sample_efficiency.py
-│   │   └── attention_analysis.py
-│   ├── analysis/        # Analysis utilities
-│   │   ├── scc.py       # Statistical consistency checks
+│   │   ├── decomposition.py          # 80/20 decomposition study
+│   │   ├── sample_efficiency.py      # Data fraction & conformer count
+│   │   ├── attention_analysis.py     # Attention visualization & scaling
+│   │   ├── representation_vs_architecture.py  # Rep vs arch study
+│   │   ├── negative_controls.py      # SCC-based negative controls
+│   │   ├── scc_validation.py         # SCC metric validation
+│   │   ├── decision_rule.py          # SCC decision rule calibration
+│   │   └── sketching.py              # Large ensemble sketching
+│   ├── analysis/            # Analysis utilities
+│   │   ├── scc.py           # Structural Conformational Complexity
 │   │   ├── statistics.py
 │   │   └── visualization.py
-│   └── utils/           # Utility functions
-│       ├── config.py    # Configuration system
+│   └── utils/               # Utility functions
+│       ├── config.py        # Configuration system
 │       └── logging_utils.py
-├── configs/             # Configuration files
+├── configs/                 # Configuration files
 │   ├── base_config.yaml
-│   ├── datasets/        # Per-dataset configs
-│   └── models/          # Per-model configs
-├── scripts/             # Entry point scripts
-├── tests/               # Unit tests
-└── notebooks/           # Analysis notebooks
+│   ├── datasets/            # Per-dataset configs
+│   └── models/              # Per-model configs
+├── scripts/                 # Entry point scripts
+├── tests/                   # Unit tests
+└── notebooks/               # Analysis notebooks
 ```
+
+## Models
+
+### DKO Variants
+- **DKO**: Full Distribution Kernel Operator with first and second-order statistics
+- **DKOFirstOrder**: First-order only (mean statistics)
+- **DKOKernel**: Kernel-based variant
+- **DKONoPSD**: Without positive semi-definite constraint
+
+### Baselines
+- **DeepSets**: Permutation-invariant set function
+- **AttentionPooling**: Multi-head attention aggregation
+- **MeanFeatureAggregation (MFA)**: Averages features before network
+- **MultiInstanceLearning (MIL)**: Instance-level encoding with max/attention pooling
+- **MeanEnsemble**: Simple prediction averaging
+- **BoltzmannEnsemble**: Energy-weighted prediction averaging
+- **SingleConformer**: Lowest-energy conformer only
+
+### GNN Baselines (with conformer aggregation)
+- **SchNet/SchNetPyG**: Continuous-filter convolutional network
+- **DimeNet++/DimeNetPPPyG**: Directional message passing with spherical harmonics
+- **SphereNet**: Spherical message passing
 
 ## Datasets
 

@@ -3,6 +3,16 @@ Graph Neural Network baselines for molecular property prediction.
 
 This module provides wrappers around popular 3D GNN architectures
 (SchNet, DimeNet++, SphereNet) with conformer ensemble support.
+
+Implementations use PyTorch Geometric when available, with fallback
+to simplified versions for environments without PyG.
+
+Usage:
+    # With PyTorch Geometric installed:
+    from dko.models.gnn_baselines import SchNetPyG, DimeNetPPPyG
+
+    # Without PyTorch Geometric (simplified versions):
+    from dko.models.gnn_baselines import SchNet, DimeNetPP
 """
 
 import torch
@@ -10,10 +20,32 @@ import torch.nn as nn
 import torch.nn.functional as F
 from typing import Dict, List, Optional, Tuple, Union
 import math
+import warnings
 
-# Note: These implementations are simplified versions.
-# For production use, consider using PyTorch Geometric implementations.
+# Check for PyTorch Geometric availability
+try:
+    import torch_geometric
+    from torch_geometric.nn import (
+        SchNet as PyGSchNet,
+        DimeNetPlusPlus as PyGDimeNet,
+        radius_graph,
+        global_mean_pool,
+        global_add_pool,
+        global_max_pool,
+    )
+    from torch_geometric.data import Data, Batch
+    HAS_PYG = True
+except ImportError:
+    HAS_PYG = False
+    warnings.warn(
+        "PyTorch Geometric not installed. Using simplified GNN implementations. "
+        "For production use, install with: pip install torch-geometric"
+    )
 
+
+# =============================================================================
+# Helper Modules
+# =============================================================================
 
 class RadialBasisFunctions(nn.Module):
     """Radial basis functions for distance embedding."""
@@ -40,20 +72,17 @@ class RadialBasisFunctions(nn.Module):
         )
 
     def forward(self, distances: torch.Tensor) -> torch.Tensor:
-        """
-        Embed distances using radial basis functions.
-
-        Args:
-            distances: Pairwise distances (..., )
-
-        Returns:
-            RBF embeddings (..., num_rbf)
-        """
+        """Embed distances using radial basis functions."""
         if self.rbf_type == "gaussian":
             return torch.exp(
                 -((distances.unsqueeze(-1) - self.centers) ** 2)
                 / (2 * self.widths ** 2)
             )
+        elif self.rbf_type == "bessel":
+            # Bessel basis (used in DimeNet)
+            d_scaled = distances.unsqueeze(-1) / self.cutoff
+            n = torch.arange(1, self.num_rbf + 1, device=distances.device).float()
+            return torch.sqrt(2.0 / self.cutoff) * torch.sin(n * math.pi * d_scaled) / distances.unsqueeze(-1)
         else:
             raise ValueError(f"Unknown RBF type: {self.rbf_type}")
 
@@ -61,17 +90,437 @@ class RadialBasisFunctions(nn.Module):
 class CutoffFunction(nn.Module):
     """Smooth cutoff function for distance-based interactions."""
 
-    def __init__(self, cutoff: float = 10.0):
+    def __init__(self, cutoff: float = 10.0, envelope_type: str = "cosine"):
         super().__init__()
         self.cutoff = cutoff
+        self.envelope_type = envelope_type
 
     def forward(self, distances: torch.Tensor) -> torch.Tensor:
         """Apply smooth cutoff."""
-        # Cosine cutoff
-        cutoffs = 0.5 * (torch.cos(distances * math.pi / self.cutoff) + 1.0)
-        cutoffs = cutoffs * (distances < self.cutoff).float()
+        if self.envelope_type == "cosine":
+            # Cosine cutoff
+            cutoffs = 0.5 * (torch.cos(distances * math.pi / self.cutoff) + 1.0)
+            cutoffs = cutoffs * (distances < self.cutoff).float()
+        elif self.envelope_type == "polynomial":
+            # Polynomial envelope (DimeNet style)
+            p = 6
+            x = distances / self.cutoff
+            cutoffs = 1.0 - (p + 1) * (p + 2) / 2 * x.pow(p) + p * (p + 2) * x.pow(p + 1) - p * (p + 1) / 2 * x.pow(p + 2)
+            cutoffs = cutoffs * (distances < self.cutoff).float()
+        else:
+            cutoffs = (distances < self.cutoff).float()
         return cutoffs
 
+
+class ConformerAggregation(nn.Module):
+    """
+    Module for aggregating conformer-level predictions/embeddings.
+
+    Supports multiple aggregation strategies:
+    - mean: Simple averaging
+    - boltzmann: Energy-weighted averaging
+    - attention: Learned attention weights
+    - max: Max pooling
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int,
+        aggregation: str = "mean",
+        temperature: float = 300.0,
+        attention_heads: int = 4,
+    ):
+        super().__init__()
+        self.aggregation = aggregation
+        self.temperature = temperature
+        self.kB = 0.001987204  # kcal/(mol*K)
+
+        if aggregation == "attention":
+            self.attention = nn.MultiheadAttention(
+                embed_dim=hidden_dim,
+                num_heads=attention_heads,
+                batch_first=True,
+            )
+            self.query = nn.Parameter(torch.randn(1, 1, hidden_dim))
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        energies: Optional[torch.Tensor] = None,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Aggregate conformer representations.
+
+        Args:
+            x: Conformer embeddings (batch, n_conformers, hidden_dim)
+            energies: Conformer energies (batch, n_conformers)
+            mask: Valid conformer mask
+
+        Returns:
+            Aggregated representation (batch, hidden_dim)
+        """
+        batch_size = x.shape[0]
+
+        if self.aggregation == "mean":
+            if mask is not None:
+                x = x * mask.unsqueeze(-1).float()
+                return x.sum(dim=1) / mask.sum(dim=1, keepdim=True).clamp(min=1)
+            return x.mean(dim=1)
+
+        elif self.aggregation == "max":
+            if mask is not None:
+                x = x.masked_fill(~mask.unsqueeze(-1), float("-inf"))
+            return x.max(dim=1)[0]
+
+        elif self.aggregation == "boltzmann":
+            if energies is not None:
+                kT = self.kB * self.temperature
+                if mask is not None:
+                    energies = energies.masked_fill(~mask, float("inf"))
+                shifted = energies - energies.min(dim=1, keepdim=True)[0]
+                weights = F.softmax(-shifted / kT, dim=1)
+                return (x * weights.unsqueeze(-1)).sum(dim=1)
+            return x.mean(dim=1)
+
+        elif self.aggregation == "attention":
+            query = self.query.expand(batch_size, -1, -1)
+            key_padding_mask = ~mask if mask is not None else None
+            out, _ = self.attention(query, x, x, key_padding_mask=key_padding_mask)
+            return out.squeeze(1)
+
+        else:
+            raise ValueError(f"Unknown aggregation: {self.aggregation}")
+
+
+# =============================================================================
+# PyTorch Geometric Implementations (Full)
+# =============================================================================
+
+if HAS_PYG:
+
+    class SchNetPyG(nn.Module):
+        """
+        Full SchNet implementation using PyTorch Geometric.
+
+        SchNet uses continuous-filter convolutional layers to model
+        quantum interactions based on interatomic distances.
+
+        Reference:
+            Schütt et al. "SchNet: A continuous-filter convolutional neural
+            network for modeling quantum interactions" (NeurIPS 2017)
+        """
+
+        def __init__(
+            self,
+            hidden_channels: int = 128,
+            num_filters: int = 128,
+            num_interactions: int = 6,
+            num_gaussians: int = 50,
+            cutoff: float = 10.0,
+            max_num_neighbors: int = 32,
+            readout: str = "add",
+            num_outputs: int = 1,
+            output_dim: int = None,
+            task: str = "regression",
+            conformer_aggregation: str = "mean",
+            atomref: Optional[torch.Tensor] = None,
+        ):
+            """
+            Initialize SchNet.
+
+            Args:
+                hidden_channels: Hidden embedding size
+                num_filters: Number of filters in CFConv
+                num_interactions: Number of interaction blocks
+                num_gaussians: Number of Gaussian RBFs
+                cutoff: Distance cutoff in Angstroms
+                max_num_neighbors: Max neighbors for radius graph
+                readout: Readout method ('add', 'mean')
+                num_outputs: Number of output properties
+                output_dim: Alias for num_outputs
+                task: 'regression' or 'classification'
+                conformer_aggregation: How to aggregate conformers
+                atomref: Atomic reference energies
+            """
+            super().__init__()
+
+            if output_dim is not None:
+                num_outputs = output_dim
+
+            self.task = task
+            self.cutoff = cutoff
+            self.max_num_neighbors = max_num_neighbors
+
+            # PyG SchNet backbone
+            self.schnet = PyGSchNet(
+                hidden_channels=hidden_channels,
+                num_filters=num_filters,
+                num_interactions=num_interactions,
+                num_gaussians=num_gaussians,
+                cutoff=cutoff,
+                max_num_neighbors=max_num_neighbors,
+                readout=readout,
+                atomref=atomref,
+            )
+
+            # Override output layer for custom output dimension
+            self.output_head = nn.Sequential(
+                nn.Linear(hidden_channels, hidden_channels // 2),
+                nn.SiLU(),
+                nn.Linear(hidden_channels // 2, num_outputs),
+            )
+
+            # Conformer aggregation
+            self.conformer_agg = ConformerAggregation(
+                hidden_dim=num_outputs,
+                aggregation=conformer_aggregation,
+            )
+
+        def forward(
+            self,
+            z: torch.Tensor,
+            pos: torch.Tensor,
+            batch: Optional[torch.Tensor] = None,
+            conformer_idx: Optional[torch.Tensor] = None,
+            energies: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+            """
+            Forward pass.
+
+            Args:
+                z: Atomic numbers (num_atoms,)
+                pos: Atomic positions (num_atoms, 3)
+                batch: Batch indices (num_atoms,)
+                conformer_idx: Conformer indices for ensemble
+                energies: Conformer energies for Boltzmann weighting
+
+            Returns:
+                Property predictions
+            """
+            if batch is None:
+                batch = torch.zeros(z.shape[0], dtype=torch.long, device=z.device)
+
+            # Build radius graph
+            edge_index = radius_graph(
+                pos,
+                r=self.cutoff,
+                batch=batch,
+                max_num_neighbors=self.max_num_neighbors,
+            )
+
+            # SchNet forward
+            # Get node embeddings before final output
+            h = self.schnet.embedding(z)
+
+            edge_weight = (pos[edge_index[0]] - pos[edge_index[1]]).norm(dim=-1)
+            edge_attr = self.schnet.distance_expansion(edge_weight)
+
+            for interaction in self.schnet.interactions:
+                h = h + interaction(h, edge_index, edge_weight, edge_attr)
+
+            # Readout
+            h = self.schnet.lin1(h)
+            h = self.schnet.act(h)
+            h = self.schnet.lin2(h)
+
+            # Pool to molecule level
+            out = global_add_pool(h, batch)
+
+            # Custom output head
+            out = self.output_head(out)
+
+            # Conformer aggregation if needed
+            if conformer_idx is not None:
+                # Reshape for conformer aggregation
+                # Assumes conformer_idx indicates which molecule each conformer belongs to
+                n_molecules = conformer_idx.max().item() + 1
+                n_conformers = (conformer_idx == 0).sum().item()
+                out = out.view(n_molecules, n_conformers, -1)
+                out = self.conformer_agg(out, energies)
+
+            return out
+
+
+    class DimeNetPPPyG(nn.Module):
+        """
+        Full DimeNet++ implementation using PyTorch Geometric.
+
+        DimeNet++ uses directional message passing with spherical harmonics
+        to capture angular information in molecular structures.
+
+        Reference:
+            Klicpera et al. "Fast and Uncertainty-Aware Directional Message
+            Passing for Non-Equilibrium Molecules" (2020)
+        """
+
+        def __init__(
+            self,
+            hidden_channels: int = 128,
+            out_channels: int = 1,
+            num_blocks: int = 4,
+            int_emb_size: int = 64,
+            basis_emb_size: int = 8,
+            out_emb_channels: int = 256,
+            num_spherical: int = 7,
+            num_radial: int = 6,
+            cutoff: float = 5.0,
+            max_num_neighbors: int = 32,
+            envelope_exponent: int = 5,
+            num_before_skip: int = 1,
+            num_after_skip: int = 2,
+            num_output_layers: int = 3,
+            output_dim: int = None,
+            task: str = "regression",
+            conformer_aggregation: str = "mean",
+        ):
+            """
+            Initialize DimeNet++.
+
+            Args:
+                hidden_channels: Hidden embedding size
+                out_channels: Output channels
+                num_blocks: Number of building blocks
+                int_emb_size: Interaction embedding size
+                basis_emb_size: Basis embedding size
+                out_emb_channels: Output embedding channels
+                num_spherical: Number of spherical harmonics
+                num_radial: Number of radial basis functions
+                cutoff: Distance cutoff
+                max_num_neighbors: Max neighbors
+                envelope_exponent: Exponent for envelope function
+                num_before_skip: Layers before skip connection
+                num_after_skip: Layers after skip connection
+                num_output_layers: Number of output layers
+                output_dim: Alias for out_channels
+                task: 'regression' or 'classification'
+                conformer_aggregation: How to aggregate conformers
+            """
+            super().__init__()
+
+            if output_dim is not None:
+                out_channels = output_dim
+
+            self.task = task
+            self.cutoff = cutoff
+            self.max_num_neighbors = max_num_neighbors
+
+            # PyG DimeNet++ backbone
+            self.dimenet = PyGDimeNet(
+                hidden_channels=hidden_channels,
+                out_channels=hidden_channels,  # Get embeddings
+                num_blocks=num_blocks,
+                int_emb_size=int_emb_size,
+                basis_emb_size=basis_emb_size,
+                out_emb_channels=out_emb_channels,
+                num_spherical=num_spherical,
+                num_radial=num_radial,
+                cutoff=cutoff,
+                max_num_neighbors=max_num_neighbors,
+                envelope_exponent=envelope_exponent,
+                num_before_skip=num_before_skip,
+                num_after_skip=num_after_skip,
+                num_output_layers=num_output_layers,
+            )
+
+            # Custom output head
+            self.output_head = nn.Sequential(
+                nn.Linear(hidden_channels, hidden_channels // 2),
+                nn.SiLU(),
+                nn.Linear(hidden_channels // 2, out_channels),
+            )
+
+            # Conformer aggregation
+            self.conformer_agg = ConformerAggregation(
+                hidden_dim=out_channels,
+                aggregation=conformer_aggregation,
+            )
+
+        def forward(
+            self,
+            z: torch.Tensor,
+            pos: torch.Tensor,
+            batch: Optional[torch.Tensor] = None,
+            conformer_idx: Optional[torch.Tensor] = None,
+            energies: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+            """Forward pass."""
+            if batch is None:
+                batch = torch.zeros(z.shape[0], dtype=torch.long, device=z.device)
+
+            # DimeNet forward
+            out = self.dimenet(z, pos, batch)
+
+            # Custom output
+            out = self.output_head(out)
+
+            # Conformer aggregation if needed
+            if conformer_idx is not None:
+                n_molecules = conformer_idx.max().item() + 1
+                n_conformers = (conformer_idx == 0).sum().item()
+                out = out.view(n_molecules, n_conformers, -1)
+                out = self.conformer_agg(out, energies)
+
+            return out
+
+
+    class GNNEnsembleWrapper(nn.Module):
+        """
+        Wrapper for processing conformer ensembles with any PyG GNN.
+
+        Processes each conformer through the GNN and aggregates results.
+        """
+
+        def __init__(
+            self,
+            gnn: nn.Module,
+            aggregation: str = "mean",
+            hidden_dim: int = 128,
+        ):
+            """
+            Initialize wrapper.
+
+            Args:
+                gnn: Base GNN model
+                aggregation: Aggregation method
+                hidden_dim: Hidden dimension for attention
+            """
+            super().__init__()
+            self.gnn = gnn
+            self.conformer_agg = ConformerAggregation(
+                hidden_dim=hidden_dim,
+                aggregation=aggregation,
+            )
+
+        def forward(
+            self,
+            data_list: List[Data],
+            energies: Optional[torch.Tensor] = None,
+        ) -> torch.Tensor:
+            """
+            Process conformer ensemble.
+
+            Args:
+                data_list: List of PyG Data objects (one per conformer)
+                energies: Conformer energies
+
+            Returns:
+                Aggregated predictions
+            """
+            # Process each conformer
+            outputs = []
+            for data in data_list:
+                out = self.gnn(data.z, data.pos, data.batch)
+                outputs.append(out)
+
+            # Stack and aggregate
+            outputs = torch.stack(outputs, dim=1)  # (batch, n_conf, out_dim)
+            return self.conformer_agg(outputs, energies)
+
+
+# =============================================================================
+# Simplified Implementations (No PyG Required)
+# =============================================================================
 
 class SchNetInteraction(nn.Module):
     """SchNet continuous-filter convolution block."""
@@ -108,28 +557,17 @@ class SchNetInteraction(nn.Module):
         distances: torch.Tensor,
         edge_index: torch.Tensor,
     ) -> torch.Tensor:
-        """
-        Forward pass of SchNet interaction.
-
-        Args:
-            x: Node features (num_atoms, hidden_dim)
-            rbf: RBF-embedded distances (num_edges, num_rbf)
-            distances: Raw distances (num_edges,)
-            edge_index: Edge indices (2, num_edges)
-
-        Returns:
-            Updated node features
-        """
+        """Forward pass of SchNet interaction."""
         # Generate continuous filters
-        filters = self.filter_network(rbf)  # (num_edges, num_filters)
+        filters = self.filter_network(rbf)
         filters = filters * self.cutoff_fn(distances).unsqueeze(-1)
 
         # Message passing
-        x_j = x[edge_index[0]]  # Source node features
-        x_j = self.atom_dense1(x_j)  # (num_edges, num_filters)
+        x_j = x[edge_index[0]]
+        x_j = self.atom_dense1(x_j)
 
         # Apply filters
-        messages = x_j * filters  # (num_edges, num_filters)
+        messages = x_j * filters
 
         # Aggregate messages
         out = torch.zeros_like(x[:, :self.num_filters])
@@ -145,8 +583,8 @@ class SchNet(nn.Module):
     """
     SchNet: Continuous-filter convolutional neural network.
 
-    Simplified implementation for molecular property prediction
-    from 3D structures.
+    Simplified implementation for molecular property prediction.
+    For production, use SchNetPyG with PyTorch Geometric.
 
     Reference:
         Schütt et al. "SchNet: A continuous-filter convolutional neural
@@ -162,25 +600,18 @@ class SchNet(nn.Module):
         cutoff: float = 10.0,
         max_atomic_num: int = 100,
         num_outputs: int = 1,
+        output_dim: int = None,
+        task: str = "regression",
         conformer_aggregation: str = "mean",
     ):
-        """
-        Initialize SchNet.
-
-        Args:
-            hidden_dim: Hidden dimension
-            num_filters: Number of filters in CFConv
-            num_interactions: Number of interaction blocks
-            num_rbf: Number of radial basis functions
-            cutoff: Distance cutoff
-            max_atomic_num: Maximum atomic number
-            num_outputs: Number of outputs
-            conformer_aggregation: How to aggregate conformers
-        """
+        """Initialize SchNet."""
         super().__init__()
 
+        if output_dim is not None:
+            num_outputs = output_dim
+
         self.cutoff = cutoff
-        self.conformer_aggregation = conformer_aggregation
+        self.task = task
 
         # Atom embedding
         self.atom_embedding = nn.Embedding(max_atomic_num, hidden_dim)
@@ -201,30 +632,25 @@ class SchNet(nn.Module):
             nn.Linear(hidden_dim // 2, num_outputs),
         )
 
+        # Conformer aggregation
+        self.conformer_agg = ConformerAggregation(
+            hidden_dim=num_outputs,
+            aggregation=conformer_aggregation,
+        )
+
     def forward(
         self,
         atomic_numbers: torch.Tensor,
         positions: torch.Tensor,
         batch: torch.Tensor,
-        conformer_batch: Optional[torch.Tensor] = None,
+        conformer_idx: Optional[torch.Tensor] = None,
+        energies: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """
-        Forward pass.
-
-        Args:
-            atomic_numbers: Atomic numbers (num_atoms,)
-            positions: 3D coordinates (num_atoms, 3)
-            batch: Batch indices (num_atoms,)
-            conformer_batch: Conformer indices for ensemble aggregation
-
-        Returns:
-            Predictions
-        """
+        """Forward pass."""
         # Initial embedding
         x = self.atom_embedding(atomic_numbers)
 
-        # Compute pairwise distances and edges (simplified: all pairs within cutoff)
-        # In practice, use neighbor list for efficiency
+        # Compute edges within cutoff
         num_atoms = positions.shape[0]
         row = torch.arange(num_atoms, device=positions.device).repeat_interleave(num_atoms)
         col = torch.arange(num_atoms, device=positions.device).repeat(num_atoms)
@@ -258,12 +684,10 @@ class SchNet(nn.Module):
             device=x.device, dtype=x.dtype
         )
         molecule_features.scatter_add_(
-            0,
-            batch.unsqueeze(-1).expand_as(x),
-            x
+            0, batch.unsqueeze(-1).expand_as(x), x
         )
 
-        # Count atoms per molecule for mean aggregation
+        # Mean over atoms
         atom_counts = torch.zeros(num_molecules, device=x.device)
         atom_counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
         molecule_features = molecule_features / atom_counts.unsqueeze(-1).clamp(min=1)
@@ -278,7 +702,7 @@ class DimeNetPP(nn.Module):
     """
     Simplified DimeNet++ implementation.
 
-    For full implementation, use PyTorch Geometric's DimeNet++.
+    For production use, install PyTorch Geometric and use DimeNetPPPyG.
 
     Reference:
         Klicpera et al. "Fast and Uncertainty-Aware Directional Message
@@ -295,31 +719,41 @@ class DimeNetPP(nn.Module):
         num_radial: int = 6,
         cutoff: float = 5.0,
         envelope_exponent: int = 5,
+        output_dim: int = None,
+        task: str = "regression",
         conformer_aggregation: str = "mean",
     ):
-        """
-        Initialize DimeNet++.
-
-        Note: This is a simplified placeholder. Full DimeNet++ requires
-        spherical harmonics and bilinear layers.
-        """
+        """Initialize DimeNet++ (simplified)."""
         super().__init__()
+
+        if output_dim is not None:
+            out_channels = output_dim
 
         self.hidden_channels = hidden_channels
         self.cutoff = cutoff
-        self.conformer_aggregation = conformer_aggregation
+        self.task = task
 
-        # Simplified: use MLP instead of full DimeNet architecture
-        self.embedding = nn.Linear(100, hidden_channels)  # Atomic number one-hot
+        # Atom embedding
+        self.embedding = nn.Embedding(100, hidden_channels)
 
-        self.layers = nn.ModuleList([
-            nn.Sequential(
-                nn.Linear(hidden_channels, hidden_channels),
-                nn.SiLU(),
-                nn.Linear(hidden_channels, hidden_channels),
-            )
-            for _ in range(num_blocks)
-        ])
+        # RBF for distances
+        self.rbf = RadialBasisFunctions(num_radial * 10, cutoff, rbf_type="gaussian")
+
+        # Interaction blocks with distance-dependent weights
+        self.interactions = nn.ModuleList()
+        for _ in range(num_blocks):
+            self.interactions.append(nn.ModuleDict({
+                "msg": nn.Sequential(
+                    nn.Linear(hidden_channels + num_radial * 10, hidden_channels),
+                    nn.SiLU(),
+                    nn.Linear(hidden_channels, hidden_channels),
+                ),
+                "upd": nn.Sequential(
+                    nn.Linear(hidden_channels * 2, hidden_channels),
+                    nn.SiLU(),
+                    nn.Linear(hidden_channels, hidden_channels),
+                ),
+            }))
 
         self.output = nn.Sequential(
             nn.Linear(hidden_channels, hidden_channels // 2),
@@ -327,26 +761,57 @@ class DimeNetPP(nn.Module):
             nn.Linear(hidden_channels // 2, out_channels),
         )
 
+        # Conformer aggregation
+        self.conformer_agg = ConformerAggregation(
+            hidden_dim=out_channels,
+            aggregation=conformer_aggregation,
+        )
+
     def forward(
         self,
         atomic_numbers: torch.Tensor,
         positions: torch.Tensor,
         batch: torch.Tensor,
+        conformer_idx: Optional[torch.Tensor] = None,
+        energies: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """Forward pass (simplified)."""
-        # One-hot encoding (simplified)
-        x = F.one_hot(atomic_numbers.clamp(0, 99), 100).float()
-        x = self.embedding(x)
+        """Forward pass."""
+        # Embedding
+        x = self.embedding(atomic_numbers.clamp(0, 99))
 
-        for layer in self.layers:
-            x = x + layer(x)
+        # Build edges
+        num_atoms = positions.shape[0]
+        row = torch.arange(num_atoms, device=positions.device).repeat_interleave(num_atoms)
+        col = torch.arange(num_atoms, device=positions.device).repeat(num_atoms)
+        mask = (row != col)
+        row, col = row[mask], col[mask]
 
-        # Aggregate
+        distances = (positions[row] - positions[col]).norm(dim=-1)
+        cutoff_mask = distances < self.cutoff
+        row, col = row[cutoff_mask], col[cutoff_mask]
+        distances = distances[cutoff_mask]
+
+        edge_index = torch.stack([row, col], dim=0)
+        rbf = self.rbf(distances)
+
+        # Message passing
+        for interaction in self.interactions:
+            # Message
+            x_j = x[edge_index[0]]
+            msg_input = torch.cat([x_j, rbf], dim=-1)
+            messages = interaction["msg"](msg_input)
+
+            # Aggregate
+            aggr = torch.zeros_like(x)
+            aggr.scatter_add_(0, edge_index[1].unsqueeze(-1).expand_as(messages), messages)
+
+            # Update
+            x = x + interaction["upd"](torch.cat([x, aggr], dim=-1))
+
+        # Pool
         num_molecules = batch.max().item() + 1
         out = torch.zeros(num_molecules, x.shape[-1], device=x.device, dtype=x.dtype)
         out.scatter_add_(0, batch.unsqueeze(-1).expand_as(x), x)
-
-        # Mean
         counts = torch.zeros(num_molecules, device=x.device)
         counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
         out = out / counts.unsqueeze(-1).clamp(min=1)
@@ -358,7 +823,7 @@ class SphereNet(nn.Module):
     """
     Simplified SphereNet implementation.
 
-    For full implementation, use PyTorch Geometric's SphereNet.
+    For production use, install PyTorch Geometric and use the full implementation.
 
     Reference:
         Liu et al. "Spherical Message Passing for 3D Molecular Graphs" (2022)
@@ -371,26 +836,41 @@ class SphereNet(nn.Module):
         num_layers: int = 4,
         cutoff: float = 5.0,
         lmax: int = 2,
+        output_dim: int = None,
+        task: str = "regression",
         conformer_aggregation: str = "mean",
     ):
         """Initialize SphereNet (simplified)."""
         super().__init__()
 
+        if output_dim is not None:
+            out_channels = output_dim
+
         self.hidden_channels = hidden_channels
         self.cutoff = cutoff
-        self.conformer_aggregation = conformer_aggregation
+        self.task = task
 
-        # Simplified architecture
-        self.embedding = nn.Linear(100, hidden_channels)
+        # Embedding
+        self.embedding = nn.Embedding(100, hidden_channels)
 
-        self.layers = nn.ModuleList([
-            nn.Sequential(
-                nn.Linear(hidden_channels, hidden_channels),
-                nn.SiLU(),
-                nn.Linear(hidden_channels, hidden_channels),
-            )
-            for _ in range(num_layers)
-        ])
+        # Distance RBF
+        self.rbf = RadialBasisFunctions(50, cutoff)
+
+        # Simplified spherical layers (without full spherical harmonics)
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.layers.append(nn.ModuleDict({
+                "msg": nn.Sequential(
+                    nn.Linear(hidden_channels + 50 + 3, hidden_channels),  # +3 for direction
+                    nn.SiLU(),
+                    nn.Linear(hidden_channels, hidden_channels),
+                ),
+                "upd": nn.Sequential(
+                    nn.Linear(hidden_channels * 2, hidden_channels),
+                    nn.SiLU(),
+                    nn.Linear(hidden_channels, hidden_channels),
+                ),
+            }))
 
         self.output = nn.Sequential(
             nn.Linear(hidden_channels, hidden_channels // 2),
@@ -398,28 +878,104 @@ class SphereNet(nn.Module):
             nn.Linear(hidden_channels // 2, out_channels),
         )
 
+        # Conformer aggregation
+        self.conformer_agg = ConformerAggregation(
+            hidden_dim=out_channels,
+            aggregation=conformer_aggregation,
+        )
+
     def forward(
         self,
         atomic_numbers: torch.Tensor,
         positions: torch.Tensor,
         batch: torch.Tensor,
+        conformer_idx: Optional[torch.Tensor] = None,
+        energies: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """Forward pass (simplified)."""
-        x = F.one_hot(atomic_numbers.clamp(0, 99), 100).float()
-        x = self.embedding(x)
+        """Forward pass with directional information."""
+        x = self.embedding(atomic_numbers.clamp(0, 99))
 
+        # Build edges
+        num_atoms = positions.shape[0]
+        row = torch.arange(num_atoms, device=positions.device).repeat_interleave(num_atoms)
+        col = torch.arange(num_atoms, device=positions.device).repeat(num_atoms)
+        mask = row != col
+        row, col = row[mask], col[mask]
+
+        diff = positions[row] - positions[col]
+        distances = diff.norm(dim=-1)
+        cutoff_mask = distances < self.cutoff
+        row, col = row[cutoff_mask], col[cutoff_mask]
+        distances = distances[cutoff_mask]
+        diff = diff[cutoff_mask]
+
+        # Normalized direction vectors (simplified spherical info)
+        directions = diff / distances.unsqueeze(-1).clamp(min=1e-8)
+
+        edge_index = torch.stack([row, col], dim=0)
+        rbf = self.rbf(distances)
+
+        # Message passing with directional info
         for layer in self.layers:
-            x = x + layer(x)
+            x_j = x[edge_index[0]]
+            msg_input = torch.cat([x_j, rbf, directions], dim=-1)
+            messages = layer["msg"](msg_input)
 
+            aggr = torch.zeros_like(x)
+            aggr.scatter_add_(0, edge_index[1].unsqueeze(-1).expand_as(messages), messages)
+
+            x = x + layer["upd"](torch.cat([x, aggr], dim=-1))
+
+        # Pool
         num_molecules = batch.max().item() + 1
         out = torch.zeros(num_molecules, x.shape[-1], device=x.device, dtype=x.dtype)
         out.scatter_add_(0, batch.unsqueeze(-1).expand_as(x), x)
-
         counts = torch.zeros(num_molecules, device=x.device)
         counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
         out = out / counts.unsqueeze(-1).clamp(min=1)
 
         return self.output(out)
+
+
+# =============================================================================
+# Factory Functions
+# =============================================================================
+
+def get_gnn(
+    name: str,
+    use_pyg: bool = True,
+    **kwargs,
+) -> nn.Module:
+    """
+    Factory function to get GNN model.
+
+    Args:
+        name: Model name ('schnet', 'dimenet', 'spherenet')
+        use_pyg: Whether to use PyTorch Geometric (if available)
+        **kwargs: Model-specific arguments
+
+    Returns:
+        GNN model instance
+    """
+    name = name.lower()
+
+    if use_pyg and HAS_PYG:
+        if name == "schnet":
+            return SchNetPyG(**kwargs)
+        elif name in ["dimenet", "dimenetpp", "dimenet++"]:
+            return DimeNetPPPyG(**kwargs)
+        else:
+            warnings.warn(f"PyG implementation not available for {name}, using simplified")
+
+    # Fallback to simplified implementations
+    if name == "schnet":
+        return SchNet(**kwargs)
+    elif name in ["dimenet", "dimenetpp", "dimenet++"]:
+        return DimeNetPP(**kwargs)
+    elif name == "spherenet":
+        return SphereNet(**kwargs)
+    else:
+        raise ValueError(f"Unknown GNN: {name}")
 
 
 class GNNWithConformerAggregation(nn.Module):
@@ -453,7 +1009,6 @@ class GNNWithConformerAggregation(nn.Module):
         self.use_attention = use_attention
 
         if use_attention:
-            # Get output dim from base GNN (assume it's stored)
             out_dim = getattr(base_gnn, 'out_channels', 128)
             self.attention = nn.Sequential(
                 nn.Linear(out_dim, attention_hidden_dim),
@@ -466,17 +1021,7 @@ class GNNWithConformerAggregation(nn.Module):
         conformer_data: List[Dict],
         energies: Optional[torch.Tensor] = None,
     ) -> torch.Tensor:
-        """
-        Forward pass with conformer aggregation.
-
-        Args:
-            conformer_data: List of conformer data dicts
-            energies: Optional conformer energies for Boltzmann weighting
-
-        Returns:
-            Aggregated predictions
-        """
-        # Process each conformer
+        """Forward pass with conformer aggregation."""
         conformer_outputs = []
         for conf in conformer_data:
             out = self.base_gnn(
@@ -486,9 +1031,8 @@ class GNNWithConformerAggregation(nn.Module):
             )
             conformer_outputs.append(out)
 
-        outputs = torch.stack(conformer_outputs, dim=1)  # (batch, n_conf, out_dim)
+        outputs = torch.stack(conformer_outputs, dim=1)
 
-        # Aggregate
         if self.aggregation == "mean":
             return outputs.mean(dim=1)
         elif self.aggregation == "max":

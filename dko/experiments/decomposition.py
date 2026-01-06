@@ -187,7 +187,7 @@ def run_decomposition_study(
     """
     from dko.data.datasets import load_dataset
     from dko.models.dko import DKO, DKOFirstOrder
-    from dko.models.baselines import MeanFeatureAggregation, SingleConformerBaseline
+    from dko.models.ensemble_baselines import MeanFeatureAggregation, SingleConformer
     from dko.training.trainer import Trainer
     from dko.utils.config import load_config
 
@@ -226,10 +226,9 @@ def run_decomposition_study(
 
     # Model factories
     model_configs = {
-        "single_conformer": lambda: SingleConformerBaseline(
+        "single_conformer": lambda: SingleConformer(
             feature_dim=feature_dim,
-            output_dim=1,
-            task=task,
+            num_outputs=1,
         ),
         "mfa": lambda: MeanFeatureAggregation(
             feature_dim=feature_dim,
