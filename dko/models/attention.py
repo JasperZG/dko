@@ -596,3 +596,242 @@ class AttentionAggregation(nn.Module):
         """
         _, attn_weights = self.forward(x, mask, return_attention=True)
         return attn_weights
+
+
+class AttentionAugmented(nn.Module):
+    """
+    Attention-Augmented model with explicit second-order features.
+
+    This model augments the attention input with explicit outer products of
+    features, allowing the model to access second-order statistics similar
+    to DKO but through learned attention over augmented features.
+
+    Used for Experiment 3: Representation vs Architecture study.
+    Tests whether giving attention explicit access to second-order
+    information closes the gap with DKO.
+
+    Architecture:
+        1. Compute augmented features: [phi(x), outer_product(phi(x))]
+        2. Apply multi-head attention over augmented features
+        3. Attention pooling with learnable query
+        4. Prediction head
+
+    Reference:
+        Research Plan Section 4.3 - Representation vs Architecture
+    """
+
+    def __init__(
+        self,
+        feature_dim: int,
+        output_dim: int = 1,
+        task: str = 'regression',
+        embed_dim: int = 128,
+        qkv_dim: int = 128,
+        num_heads: int = 4,
+        num_attention_layers: int = 2,
+        prediction_hidden_dim: int = 128,
+        dropout: float = 0.1,
+        use_layer_norm: bool = True,
+        outer_product_dim: Optional[int] = None,
+        use_diagonal_only: bool = False,
+    ):
+        """
+        Initialize Attention-Augmented model.
+
+        Args:
+            feature_dim: Dimension of input conformer features
+            output_dim: Number of output predictions
+            task: 'regression' or 'classification'
+            embed_dim: Embedding dimension
+            qkv_dim: QKV projection dimension
+            num_heads: Number of attention heads
+            num_attention_layers: Number of self-attention layers
+            prediction_hidden_dim: Hidden dimension for prediction head
+            dropout: Dropout rate
+            use_layer_norm: Whether to use layer normalization
+            outer_product_dim: Dimension to project features before outer product
+                              (reduces quadratic explosion). If None, uses embed_dim // 4
+            use_diagonal_only: If True, only use diagonal of outer product (variance)
+        """
+        super().__init__()
+
+        self.feature_dim = feature_dim
+        self.output_dim = output_dim
+        self.task = task
+        self.embed_dim = embed_dim
+        self.num_heads = num_heads
+        self.use_diagonal_only = use_diagonal_only
+
+        # Project features to lower dimension for outer product computation
+        self.outer_dim = outer_product_dim or max(16, embed_dim // 4)
+
+        # Feature encoder: project to embedding dimension
+        self.feature_encoder = nn.Sequential(
+            nn.Linear(feature_dim, embed_dim),
+            nn.LayerNorm(embed_dim) if use_layer_norm else nn.Identity(),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+
+        # Projection for outer product computation (reduces dimensionality)
+        self.outer_proj = nn.Linear(embed_dim, self.outer_dim)
+
+        # Dimension of outer product features
+        if use_diagonal_only:
+            outer_feat_dim = self.outer_dim  # Just variances
+        else:
+            outer_feat_dim = self.outer_dim * (self.outer_dim + 1) // 2  # Upper triangular
+
+        # Combined feature dimension
+        self.augmented_dim = embed_dim + outer_feat_dim
+
+        # Project augmented features back to embed_dim
+        self.augment_proj = nn.Sequential(
+            nn.Linear(self.augmented_dim, embed_dim),
+            nn.LayerNorm(embed_dim) if use_layer_norm else nn.Identity(),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+        )
+
+        # Self-attention layers
+        self.attention_layers = nn.ModuleList([
+            MultiHeadAttention(
+                embed_dim=embed_dim,
+                num_heads=num_heads,
+                head_dim=qkv_dim // num_heads,
+                dropout=dropout,
+                use_layer_norm=use_layer_norm,
+            )
+            for _ in range(num_attention_layers)
+        ])
+
+        # Learnable query for pooling (PMA-style)
+        self.pool_query = nn.Parameter(torch.randn(1, 1, embed_dim) * 0.02)
+        self.pool_attention = MultiHeadAttention(
+            embed_dim=embed_dim,
+            num_heads=num_heads,
+            head_dim=qkv_dim // num_heads,
+            dropout=dropout,
+            use_layer_norm=False,
+        )
+
+        # Prediction head
+        self.prediction_head = nn.Sequential(
+            nn.Linear(embed_dim, prediction_hidden_dim),
+            nn.ReLU(),
+            nn.Dropout(dropout),
+            nn.Linear(prediction_hidden_dim, output_dim),
+        )
+
+        # Store attention weights for analysis
+        self._last_attention_weights = None
+        self._last_pooling_weights = None
+
+    def compute_outer_features(self, x: torch.Tensor) -> torch.Tensor:
+        """
+        Compute outer product features for each conformer.
+
+        Args:
+            x: Encoded features (batch, n_conformers, embed_dim)
+
+        Returns:
+            Outer product features (batch, n_conformers, outer_feat_dim)
+        """
+        batch_size, n_conf, _ = x.shape
+
+        # Project to lower dimension
+        x_proj = self.outer_proj(x)  # (batch, n_conf, outer_dim)
+
+        if self.use_diagonal_only:
+            # Just squared values (variance-like)
+            return x_proj ** 2
+        else:
+            # Compute upper triangular part of outer product
+            outer_feats = []
+            for i in range(self.outer_dim):
+                for j in range(i, self.outer_dim):
+                    outer_feats.append(x_proj[..., i] * x_proj[..., j])
+
+            return torch.stack(outer_feats, dim=-1)
+
+    def forward(
+        self,
+        x: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+        return_attention: bool = False,
+    ) -> Tuple[torch.Tensor, Optional[Dict[str, torch.Tensor]]]:
+        """
+        Forward pass.
+
+        Args:
+            x: Conformer features (batch, n_conformers, feature_dim)
+            mask: Boolean mask for valid conformers (batch, n_conformers)
+            return_attention: Whether to return attention weights
+
+        Returns:
+            predictions: Output predictions (batch, output_dim)
+            attention_info: Dict with attention weights if return_attention=True
+        """
+        batch_size, n_conf, _ = x.shape
+
+        # Encode features
+        encoded = self.feature_encoder(x)
+
+        # Compute second-order features (outer products)
+        outer_feats = self.compute_outer_features(encoded)
+
+        # Concatenate first-order and second-order features
+        augmented = torch.cat([encoded, outer_feats], dim=-1)
+
+        # Project back to embed_dim
+        augmented = self.augment_proj(augmented)
+
+        # Self-attention layers
+        all_attn_weights = []
+        for attn_layer in self.attention_layers:
+            augmented, attn_weights = attn_layer(
+                augmented, mask=mask, return_attention=True
+            )
+            all_attn_weights.append(attn_weights)
+
+        # Pooling attention with learnable query
+        query = self.pool_query.expand(batch_size, -1, -1)
+        pooled, pool_weights = self.pool_attention(
+            query=query,
+            key=augmented,
+            value=augmented,
+            mask=mask,
+            return_attention=True,
+        )
+        pooled = pooled.squeeze(1)  # (batch, embed_dim)
+
+        # Store for analysis
+        self._last_attention_weights = all_attn_weights
+        self._last_pooling_weights = pool_weights.squeeze(1)
+
+        # Predict
+        predictions = self.prediction_head(pooled)
+
+        if return_attention:
+            attention_info = {
+                'self_attention': all_attn_weights,
+                'pooling_weights': self._last_pooling_weights,
+            }
+            return predictions, attention_info
+
+        return predictions, None
+
+    def get_conformer_weights(
+        self,
+        x: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """Get attention weights for each conformer."""
+        self.eval()
+        with torch.no_grad():
+            _, attention_info = self.forward(x, mask, return_attention=True)
+        return attention_info['pooling_weights']
+
+    def count_parameters(self) -> int:
+        """Count total trainable parameters."""
+        return sum(p.numel() for p in self.parameters() if p.requires_grad)

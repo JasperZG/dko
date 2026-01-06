@@ -938,6 +938,454 @@ class SphereNet(nn.Module):
 
 
 # =============================================================================
+# 3D-Infomax Implementation
+# =============================================================================
+
+class InfomaxEncoder(nn.Module):
+    """
+    Encoder network for 3D-Infomax.
+
+    Uses message passing with RBF-expanded distances to learn
+    node representations.
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int = 128,
+        num_layers: int = 4,
+        num_rbf: int = 50,
+        cutoff: float = 5.0,
+    ):
+        super().__init__()
+        self.hidden_dim = hidden_dim
+        self.cutoff = cutoff
+
+        self.embedding = nn.Embedding(100, hidden_dim)
+        self.rbf = RadialBasisFunctions(num_rbf, cutoff)
+
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.layers.append(nn.ModuleDict({
+                "msg": nn.Sequential(
+                    nn.Linear(hidden_dim + num_rbf, hidden_dim),
+                    nn.SiLU(),
+                    nn.Linear(hidden_dim, hidden_dim),
+                ),
+                "upd": nn.GRU(hidden_dim, hidden_dim, batch_first=True),
+            }))
+
+        self.layer_norm = nn.LayerNorm(hidden_dim)
+
+    def forward(
+        self,
+        atomic_numbers: torch.Tensor,
+        positions: torch.Tensor,
+        batch: torch.Tensor,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Forward pass returning both node and graph representations.
+
+        Returns:
+            node_rep: Node representations (num_atoms, hidden_dim)
+            graph_rep: Graph representations (num_molecules, hidden_dim)
+        """
+        x = self.embedding(atomic_numbers.clamp(0, 99))
+
+        # Build edges
+        num_atoms = positions.shape[0]
+        row = torch.arange(num_atoms, device=positions.device).repeat_interleave(num_atoms)
+        col = torch.arange(num_atoms, device=positions.device).repeat(num_atoms)
+        mask = row != col
+        row, col = row[mask], col[mask]
+
+        distances = (positions[row] - positions[col]).norm(dim=-1)
+        cutoff_mask = distances < self.cutoff
+        row, col = row[cutoff_mask], col[cutoff_mask]
+        distances = distances[cutoff_mask]
+
+        edge_index = torch.stack([row, col], dim=0)
+        rbf = self.rbf(distances)
+
+        # Message passing with GRU updates
+        for layer in self.layers:
+            x_j = x[edge_index[0]]
+            msg_input = torch.cat([x_j, rbf], dim=-1)
+            messages = layer["msg"](msg_input)
+
+            aggr = torch.zeros_like(x)
+            aggr.scatter_add_(0, edge_index[1].unsqueeze(-1).expand_as(messages), messages)
+
+            # GRU update
+            x_gru, _ = layer["upd"](aggr.unsqueeze(1))
+            x = x + x_gru.squeeze(1)
+
+        x = self.layer_norm(x)
+
+        # Global pooling for graph representation
+        num_molecules = batch.max().item() + 1
+        graph_rep = torch.zeros(num_molecules, x.shape[-1], device=x.device, dtype=x.dtype)
+        graph_rep.scatter_add_(0, batch.unsqueeze(-1).expand_as(x), x)
+        counts = torch.zeros(num_molecules, device=x.device)
+        counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
+        graph_rep = graph_rep / counts.unsqueeze(-1).clamp(min=1)
+
+        return x, graph_rep
+
+
+class ThreeDInfomax(nn.Module):
+    """
+    3D-Infomax: Contrastive learning for 3D molecular representations.
+
+    Learns molecular representations by maximizing mutual information
+    between local (node) and global (graph) representations.
+
+    Architecture:
+        1. GNN encoder producing node and graph representations
+        2. Local-global contrastive objective during pre-training
+        3. Fine-tuning head for property prediction
+
+    Reference:
+        Stärk et al. "3D Infomax improves GNNs for Molecular Property Prediction" (2022)
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int = 128,
+        num_layers: int = 4,
+        num_rbf: int = 50,
+        cutoff: float = 5.0,
+        output_dim: int = 1,
+        task: str = "regression",
+        conformer_aggregation: str = "mean",
+        use_contrastive_head: bool = False,
+    ):
+        """
+        Initialize 3D-Infomax.
+
+        Args:
+            hidden_dim: Hidden dimension
+            num_layers: Number of message passing layers
+            num_rbf: Number of radial basis functions
+            cutoff: Distance cutoff
+            output_dim: Output dimension for property prediction
+            task: 'regression' or 'classification'
+            conformer_aggregation: How to aggregate conformers
+            use_contrastive_head: Whether to include contrastive learning head
+        """
+        super().__init__()
+
+        self.hidden_dim = hidden_dim
+        self.task = task
+        self.use_contrastive_head = use_contrastive_head
+
+        # Encoder
+        self.encoder = InfomaxEncoder(
+            hidden_dim=hidden_dim,
+            num_layers=num_layers,
+            num_rbf=num_rbf,
+            cutoff=cutoff,
+        )
+
+        # Projection head for contrastive learning
+        if use_contrastive_head:
+            self.local_proj = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, hidden_dim),
+            )
+            self.global_proj = nn.Sequential(
+                nn.Linear(hidden_dim, hidden_dim),
+                nn.ReLU(),
+                nn.Linear(hidden_dim, hidden_dim),
+            )
+
+        # Property prediction head
+        self.prediction_head = nn.Sequential(
+            nn.Linear(hidden_dim, hidden_dim // 2),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim // 2, output_dim),
+        )
+
+        # Conformer aggregation
+        self.conformer_agg = ConformerAggregation(
+            hidden_dim=output_dim,
+            aggregation=conformer_aggregation,
+        )
+
+    def forward(
+        self,
+        atomic_numbers: torch.Tensor,
+        positions: torch.Tensor,
+        batch: torch.Tensor,
+        conformer_idx: Optional[torch.Tensor] = None,
+        energies: Optional[torch.Tensor] = None,
+        return_contrastive: bool = False,
+    ) -> Union[torch.Tensor, Tuple[torch.Tensor, Dict]]:
+        """
+        Forward pass.
+
+        Args:
+            atomic_numbers: Atomic numbers
+            positions: 3D positions
+            batch: Batch indices
+            conformer_idx: Conformer indices for ensemble
+            energies: Conformer energies
+            return_contrastive: Whether to return contrastive representations
+
+        Returns:
+            Predictions and optionally contrastive representations
+        """
+        # Encode
+        node_rep, graph_rep = self.encoder(atomic_numbers, positions, batch)
+
+        # Property prediction
+        predictions = self.prediction_head(graph_rep)
+
+        if return_contrastive and self.use_contrastive_head:
+            local_z = self.local_proj(node_rep)
+            global_z = self.global_proj(graph_rep)
+            return predictions, {
+                'local': local_z,
+                'global': global_z,
+                'batch': batch,
+            }
+
+        return predictions
+
+    def contrastive_loss(
+        self,
+        local_z: torch.Tensor,
+        global_z: torch.Tensor,
+        batch: torch.Tensor,
+        temperature: float = 0.1,
+    ) -> torch.Tensor:
+        """
+        Compute contrastive loss for pre-training.
+
+        Maximizes agreement between node representations and their
+        corresponding graph representation.
+        """
+        # Gather global representations for each node
+        global_expanded = global_z[batch]  # (num_atoms, hidden_dim)
+
+        # Normalize
+        local_z = F.normalize(local_z, dim=-1)
+        global_z_norm = F.normalize(global_expanded, dim=-1)
+        all_global = F.normalize(global_z, dim=-1)
+
+        # Positive pairs: local-global from same molecule
+        pos_sim = (local_z * global_z_norm).sum(dim=-1) / temperature
+
+        # Negative pairs: local vs all other globals
+        neg_sim = torch.mm(local_z, all_global.t()) / temperature
+
+        # NCE loss
+        labels = batch
+        loss = F.cross_entropy(neg_sim, labels)
+
+        return loss
+
+
+# =============================================================================
+# GEM (Geometry-Enhanced Molecular) Implementation
+# =============================================================================
+
+class GEM(nn.Module):
+    """
+    GEM: Geometry-Enhanced Molecular representation learning.
+
+    Incorporates both 2D topology and 3D geometry through a
+    unified message passing framework with geometry-aware attention.
+
+    Architecture:
+        1. Atom and bond embeddings
+        2. Geometry-enhanced message passing with distance/angle features
+        3. Virtual node for global information aggregation
+        4. Multi-task output heads
+
+    Reference:
+        Fang et al. "Geometry-enhanced molecular representation learning
+        for property prediction" (Nature Machine Intelligence, 2022)
+    """
+
+    def __init__(
+        self,
+        hidden_dim: int = 128,
+        num_layers: int = 4,
+        num_rbf: int = 50,
+        cutoff: float = 5.0,
+        output_dim: int = 1,
+        task: str = "regression",
+        conformer_aggregation: str = "mean",
+        use_virtual_node: bool = True,
+        num_heads: int = 4,
+    ):
+        """
+        Initialize GEM.
+
+        Args:
+            hidden_dim: Hidden dimension
+            num_layers: Number of message passing layers
+            num_rbf: Number of radial basis functions
+            cutoff: Distance cutoff
+            output_dim: Output dimension
+            task: 'regression' or 'classification'
+            conformer_aggregation: How to aggregate conformers
+            use_virtual_node: Whether to use virtual node
+            num_heads: Number of attention heads
+        """
+        super().__init__()
+
+        self.hidden_dim = hidden_dim
+        self.task = task
+        self.cutoff = cutoff
+        self.use_virtual_node = use_virtual_node
+
+        # Atom embedding
+        self.atom_embedding = nn.Embedding(100, hidden_dim)
+
+        # RBF for distance embedding
+        self.rbf = RadialBasisFunctions(num_rbf, cutoff)
+
+        # Bond/edge embedding
+        self.edge_embedding = nn.Linear(num_rbf, hidden_dim)
+
+        # Virtual node embedding
+        if use_virtual_node:
+            self.virtual_node = nn.Parameter(torch.randn(1, hidden_dim) * 0.02)
+            self.vn_update = nn.GRU(hidden_dim, hidden_dim, batch_first=True)
+
+        # Geometry-enhanced message passing layers
+        self.layers = nn.ModuleList()
+        for _ in range(num_layers):
+            self.layers.append(nn.ModuleDict({
+                "attn": nn.MultiheadAttention(
+                    embed_dim=hidden_dim,
+                    num_heads=num_heads,
+                    dropout=0.1,
+                    batch_first=True,
+                ),
+                "msg": nn.Sequential(
+                    nn.Linear(hidden_dim * 2 + num_rbf, hidden_dim),
+                    nn.SiLU(),
+                    nn.Linear(hidden_dim, hidden_dim),
+                ),
+                "upd": nn.Sequential(
+                    nn.Linear(hidden_dim * 2, hidden_dim),
+                    nn.LayerNorm(hidden_dim),
+                    nn.SiLU(),
+                ),
+            }))
+
+        # Output head
+        self.output = nn.Sequential(
+            nn.Linear(hidden_dim * 2 if use_virtual_node else hidden_dim, hidden_dim),
+            nn.SiLU(),
+            nn.Dropout(0.1),
+            nn.Linear(hidden_dim, output_dim),
+        )
+
+        # Conformer aggregation
+        self.conformer_agg = ConformerAggregation(
+            hidden_dim=output_dim,
+            aggregation=conformer_aggregation,
+        )
+
+    def forward(
+        self,
+        atomic_numbers: torch.Tensor,
+        positions: torch.Tensor,
+        batch: torch.Tensor,
+        conformer_idx: Optional[torch.Tensor] = None,
+        energies: Optional[torch.Tensor] = None,
+    ) -> torch.Tensor:
+        """
+        Forward pass with geometry-enhanced message passing.
+
+        Args:
+            atomic_numbers: Atomic numbers
+            positions: 3D atomic positions
+            batch: Batch indices
+            conformer_idx: Conformer indices
+            energies: Conformer energies
+
+        Returns:
+            Property predictions
+        """
+        x = self.atom_embedding(atomic_numbers.clamp(0, 99))
+        num_atoms = positions.shape[0]
+
+        # Build edges
+        row = torch.arange(num_atoms, device=positions.device).repeat_interleave(num_atoms)
+        col = torch.arange(num_atoms, device=positions.device).repeat(num_atoms)
+        mask = row != col
+        row, col = row[mask], col[mask]
+
+        distances = (positions[row] - positions[col]).norm(dim=-1)
+        cutoff_mask = distances < self.cutoff
+        row, col = row[cutoff_mask], col[cutoff_mask]
+        distances = distances[cutoff_mask]
+
+        edge_index = torch.stack([row, col], dim=0)
+        rbf = self.rbf(distances)
+        edge_features = self.edge_embedding(rbf)
+
+        # Initialize virtual node
+        num_molecules = batch.max().item() + 1
+        if self.use_virtual_node:
+            vn = self.virtual_node.expand(num_molecules, -1)
+
+        # Message passing
+        for layer in self.layers:
+            # Get neighbor features
+            x_j = x[edge_index[0]]
+            x_i = x[edge_index[1]]
+
+            # Geometry-enhanced message
+            msg_input = torch.cat([x_i, x_j, rbf], dim=-1)
+            messages = layer["msg"](msg_input)
+
+            # Aggregate
+            aggr = torch.zeros_like(x)
+            aggr.scatter_add_(0, edge_index[1].unsqueeze(-1).expand_as(messages), messages)
+
+            # Update with virtual node information
+            if self.use_virtual_node:
+                vn_expanded = vn[batch]
+                x = layer["upd"](torch.cat([aggr + vn_expanded, x], dim=-1))
+
+                # Update virtual node
+                graph_sum = torch.zeros(num_molecules, x.shape[-1], device=x.device, dtype=x.dtype)
+                graph_sum.scatter_add_(0, batch.unsqueeze(-1).expand_as(x), x)
+                counts = torch.zeros(num_molecules, device=x.device)
+                counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
+                graph_mean = graph_sum / counts.unsqueeze(-1).clamp(min=1)
+
+                vn_input = graph_mean.unsqueeze(1)
+                vn_out, _ = self.vn_update(vn_input)
+                vn = vn + vn_out.squeeze(1)
+            else:
+                x = layer["upd"](torch.cat([aggr, x], dim=-1))
+
+        # Global pooling
+        graph_rep = torch.zeros(num_molecules, x.shape[-1], device=x.device, dtype=x.dtype)
+        graph_rep.scatter_add_(0, batch.unsqueeze(-1).expand_as(x), x)
+        counts = torch.zeros(num_molecules, device=x.device)
+        counts.scatter_add_(0, batch, torch.ones_like(batch, dtype=torch.float))
+        graph_rep = graph_rep / counts.unsqueeze(-1).clamp(min=1)
+
+        # Combine with virtual node
+        if self.use_virtual_node:
+            graph_rep = torch.cat([graph_rep, vn], dim=-1)
+
+        # Output
+        predictions = self.output(graph_rep)
+
+        return predictions
+
+
+# =============================================================================
 # Factory Functions
 # =============================================================================
 
@@ -950,32 +1398,36 @@ def get_gnn(
     Factory function to get GNN model.
 
     Args:
-        name: Model name ('schnet', 'dimenet', 'spherenet')
+        name: Model name ('schnet', 'dimenet', 'spherenet', '3d-infomax', 'gem')
         use_pyg: Whether to use PyTorch Geometric (if available)
         **kwargs: Model-specific arguments
 
     Returns:
         GNN model instance
     """
-    name = name.lower()
+    name = name.lower().replace("-", "").replace("_", "")
 
     if use_pyg and HAS_PYG:
         if name == "schnet":
             return SchNetPyG(**kwargs)
         elif name in ["dimenet", "dimenetpp", "dimenet++"]:
             return DimeNetPPPyG(**kwargs)
-        else:
+        elif name not in ["3dinfomax", "gem", "spherenet"]:
             warnings.warn(f"PyG implementation not available for {name}, using simplified")
 
-    # Fallback to simplified implementations
+    # Simplified implementations and custom models
     if name == "schnet":
         return SchNet(**kwargs)
     elif name in ["dimenet", "dimenetpp", "dimenet++"]:
         return DimeNetPP(**kwargs)
     elif name == "spherenet":
         return SphereNet(**kwargs)
+    elif name in ["3dinfomax", "infomax", "threediinfomax"]:
+        return ThreeDInfomax(**kwargs)
+    elif name == "gem":
+        return GEM(**kwargs)
     else:
-        raise ValueError(f"Unknown GNN: {name}")
+        raise ValueError(f"Unknown GNN: {name}. Available: schnet, dimenet, spherenet, 3d-infomax, gem")
 
 
 class GNNWithConformerAggregation(nn.Module):

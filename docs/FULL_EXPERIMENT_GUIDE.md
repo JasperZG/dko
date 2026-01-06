@@ -40,6 +40,12 @@ The full experiment pipeline consists of:
 - **SchNet/SchNetPyG** - Continuous-filter convolutional network
 - **DimeNet++/DimeNetPPPyG** - Directional message passing
 - **SphereNet** - Spherical message passing
+- **3D-Infomax** - Contrastive learning for 3D representations
+- **GEM** - Geometry-Enhanced Molecular representation
+
+### Augmented Baselines (for Rep vs Arch study)
+- **AttentionAugmented** - Attention with explicit second-order features (outer products)
+- **DeepSetsAugmented** - DeepSets with explicit second-order features
 
 ---
 

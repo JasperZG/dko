@@ -136,9 +136,11 @@ dko-research/
 - **DKOKernel**: Kernel-based variant
 - **DKONoPSD**: Without positive semi-definite constraint
 
-### Baselines
+### Aggregation Baselines
 - **DeepSets**: Permutation-invariant set function
+- **DeepSetsAugmented**: DeepSets with explicit second-order features (for Rep vs Arch study)
 - **AttentionPooling**: Multi-head attention aggregation
+- **AttentionAugmented**: Attention with explicit second-order features (outer products)
 - **MeanFeatureAggregation (MFA)**: Averages features before network
 - **MultiInstanceLearning (MIL)**: Instance-level encoding with max/attention pooling
 - **MeanEnsemble**: Simple prediction averaging
@@ -149,6 +151,8 @@ dko-research/
 - **SchNet/SchNetPyG**: Continuous-filter convolutional network
 - **DimeNet++/DimeNetPPPyG**: Directional message passing with spherical harmonics
 - **SphereNet**: Spherical message passing
+- **3D-Infomax**: Contrastive learning for 3D molecular representations
+- **GEM**: Geometry-Enhanced Molecular representation learning
 
 ## Datasets
 

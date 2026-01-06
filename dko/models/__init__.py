@@ -3,9 +3,9 @@ DKO Models Module
 
 Contains implementations of:
 - DKO (Distribution Kernel Operators)
-- Attention-based aggregation
-- DeepSets
-- GNN baselines (SchNet, DimeNet++, SphereNet)
+- Attention-based aggregation (including Attention-Augmented)
+- DeepSets (including DeepSets-Augmented)
+- GNN baselines (SchNet, DimeNet++, SphereNet, 3D-Infomax, GEM)
 - Ensemble baselines (Mean, Boltzmann, MFA, MIL)
 """
 
@@ -14,12 +14,15 @@ from dko.models.attention import (
     AttentionAggregation,
     MultiHeadAttention,
     AttentionPoolingBaseline,
+    AttentionAugmented,
 )
-from dko.models.deepsets import DeepSets, DeepSetsBaseline
+from dko.models.deepsets import DeepSets, DeepSetsBaseline, DeepSetsAugmented
 from dko.models.gnn_baselines import (
     SchNet,
     DimeNetPP,
     SphereNet,
+    ThreeDInfomax,
+    GEM,
     get_gnn,
     GNNWithConformerAggregation,
     ConformerAggregation,
@@ -50,13 +53,17 @@ __all__ = [
     "AttentionAggregation",
     "MultiHeadAttention",
     "AttentionPoolingBaseline",
+    "AttentionAugmented",
     # DeepSets
     "DeepSets",
     "DeepSetsBaseline",
+    "DeepSetsAugmented",
     # GNN baselines
     "SchNet",
     "DimeNetPP",
     "SphereNet",
+    "ThreeDInfomax",
+    "GEM",
     # Ensemble baselines
     "SingleConformer",
     "SingleConformerBaseline",
