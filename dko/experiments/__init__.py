@@ -20,6 +20,9 @@ from dko.experiments.decomposition import (
     run_full_decomposition_study,
     compute_decomposition,
 )
+
+# Alias for backward compatibility
+run_decomposition_experiment = run_decomposition_study
 from dko.experiments.sample_efficiency import (
     run_sample_efficiency_experiment,
     run_conformer_count_experiment,
@@ -34,6 +37,9 @@ from dko.experiments.representation_vs_architecture import (
     run_representation_vs_architecture_experiment,
     run_full_rep_vs_arch_study,
 )
+
+# Alias for shorter name
+run_rep_vs_arch_experiment = run_representation_vs_architecture_experiment
 from dko.experiments.negative_controls import (
     run_negative_control_experiment,
     run_scc_advantage_correlation,
@@ -47,6 +53,7 @@ __all__ = [
     "run_main_benchmark",
     # Decomposition study
     "run_decomposition_study",
+    "run_decomposition_experiment",  # Alias
     "run_full_decomposition_study",
     "compute_decomposition",
     # Sample efficiency
@@ -59,6 +66,7 @@ __all__ = [
     "run_control_scaling_experiment",
     # Representation vs architecture
     "run_representation_vs_architecture_experiment",
+    "run_rep_vs_arch_experiment",  # Alias
     "run_full_rep_vs_arch_study",
     # Negative controls
     "run_negative_control_experiment",

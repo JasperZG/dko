@@ -16,6 +16,9 @@ from dko.models.attention import (
     AttentionPoolingBaseline,
     AttentionAugmented,
 )
+
+# Convenient aliases
+AttentionPooling = AttentionAggregation  # Common name alias
 from dko.models.deepsets import DeepSets, DeepSetsBaseline, DeepSetsAugmented
 from dko.models.gnn_baselines import (
     SchNet,
@@ -51,6 +54,7 @@ __all__ = [
     "DKONoPSD",
     # Attention
     "AttentionAggregation",
+    "AttentionPooling",  # Alias for AttentionAggregation
     "MultiHeadAttention",
     "AttentionPoolingBaseline",
     "AttentionAugmented",
