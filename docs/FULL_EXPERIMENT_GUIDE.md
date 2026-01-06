@@ -10,9 +10,36 @@ The full experiment pipeline consists of:
 1. **Setup** - Install dependencies, validate environment
 2. **Hyperparameter Optimization** - Find best settings for each model/dataset
 3. **Main Experiments** - Run all models on all datasets with multiple seeds
+3b. **Analysis Experiments** - Sample efficiency, decomposition, negative controls (optional)
 4. **Results Aggregation** - Combine results and generate analysis
 
 **Estimated time:** 2-4 days depending on cluster resources
+
+---
+
+## Available Models
+
+### DKO Variants
+- **DKO** - Full Distribution Kernel Operator with first and second-order statistics
+- **DKOFirstOrder** - First-order only (mean statistics)
+- **DKOKernel** - Kernel-based variant
+- **DKONoPSD** - Without positive semi-definite constraint
+
+### Ensemble Baselines
+- **MeanFeatureAggregation (MFA)** - Averages features before network
+- **MultiInstanceLearning (MIL)** - Instance-level encoding with pooling
+- **MeanEnsemble** - Simple prediction averaging
+- **BoltzmannEnsemble** - Energy-weighted prediction averaging
+- **SingleConformer** - Lowest-energy conformer only
+
+### Aggregation Methods
+- **AttentionPooling** - Multi-head attention aggregation
+- **DeepSets** - Permutation-invariant set function
+
+### GNN Baselines (with conformer aggregation)
+- **SchNet/SchNetPyG** - Continuous-filter convolutional network
+- **DimeNet++/DimeNetPPPyG** - Directional message passing
+- **SphereNet** - Spherical message passing
 
 ---
 
@@ -110,9 +137,9 @@ python scripts/submit_all_experiments.py --submit
 
 This runs:
 - 12 datasets
-- 5 models (DKO, DKO-FirstOrder, Attention, DeepSets, MeanPooling)
+- 10 models (DKO, DKO-FirstOrder, Attention, DeepSets, MFA, MIL, MeanEnsemble, BoltzmannEnsemble, SchNet, DimeNet++)
 - 3 random seeds each
-- = **180 total experiments**
+- = **360 total experiments**
 
 ### 3.3 Option B: Run as Array Job (More Efficient)
 
@@ -162,6 +189,77 @@ python scripts/monitor_jobs.py --failed
 
 # Automatically resubmit failed jobs
 python scripts/recover_failed_jobs.py --resubmit
+```
+
+---
+
+## Phase 3b: Analysis Experiments (Optional, 4-8 hours)
+
+After main benchmark, run additional analysis experiments to understand DKO's behavior.
+
+### Sample Efficiency Study
+
+```bash
+# Data fraction experiment (how much training data is needed?)
+python -c "from dko.experiments import run_sample_efficiency_experiment; run_sample_efficiency_experiment('esol')"
+
+# Conformer count experiment (how many conformers are needed?)
+python -c "from dko.experiments import run_conformer_count_experiment; run_conformer_count_experiment('esol')"
+
+# Full sample efficiency study
+python -c "from dko.experiments import run_full_sample_efficiency_study; run_full_sample_efficiency_study()"
+```
+
+### 80/20 Decomposition Study
+
+Decomposes DKO's advantage into mean estimation vs covariance contributions:
+
+```bash
+python -c "from dko.experiments import run_full_decomposition_study; run_full_decomposition_study()"
+```
+
+### Representation vs Architecture Study
+
+Tests whether representation (geometric features) or architecture (DKO) matters more:
+
+```bash
+python -c "from dko.experiments import run_full_rep_vs_arch_study; run_full_rep_vs_arch_study()"
+```
+
+### Negative Control Experiments
+
+Validates that DKO advantage correlates with SCC (conformational complexity):
+
+```bash
+# SCC-based negative controls
+python -c "from dko.experiments import run_negative_control_experiment; run_negative_control_experiment()"
+
+# SCC-advantage correlation
+python -c "from dko.experiments import run_scc_advantage_correlation; run_scc_advantage_correlation()"
+```
+
+### Attention Scaling Analysis
+
+Analyzes attention weight entropy and scaling behavior:
+
+```bash
+python -c "from dko.experiments import run_attention_scaling_experiment; run_attention_scaling_experiment('esol')"
+```
+
+### Decision Rule Calibration
+
+Calibrates SCC threshold for automatic method selection:
+
+```bash
+python -c "from dko.experiments import run_decision_rule_experiment; run_decision_rule_experiment()"
+```
+
+### Sketching Experiments (for large ensembles)
+
+Tests random sketching for scaling to large conformer ensembles:
+
+```bash
+python -c "from dko.experiments import run_sketching_experiment; run_sketching_experiment('esol')"
 ```
 
 ---
@@ -262,9 +360,18 @@ cat logs/slurm_<job_id>.err  # Check error message
     [ ] Best parameters saved
 
 [ ] Phase 3: Main Experiments
-    [ ] All experiments submitted
+    [ ] All experiments submitted (DKO, baselines, GNNs)
     [ ] Jobs completing without errors
     [ ] Failed jobs resubmitted
+
+[ ] Phase 3b: Analysis Experiments (Optional)
+    [ ] Sample efficiency study
+    [ ] 80/20 decomposition study
+    [ ] Representation vs architecture study
+    [ ] Negative control experiments
+    [ ] Attention scaling analysis
+    [ ] Decision rule calibration
+    [ ] Sketching experiments
 
 [ ] Phase 4: Results
     [ ] Results aggregated
@@ -278,6 +385,8 @@ cat logs/slurm_<job_id>.err  # Check error message
 
 After completing all experiments, you should see:
 
+### Main Benchmark
+
 | Dataset | DKO Improvement vs Best Baseline |
 |---------|----------------------------------|
 | BACE | 5-8% |
@@ -289,3 +398,15 @@ After completing all experiments, you should see:
 | QM9 | 4-7% |
 
 DKO performs best on datasets where conformational flexibility matters (binding affinity, solvation).
+
+### Analysis Experiments
+
+| Experiment | Expected Finding |
+|------------|------------------|
+| Sample Efficiency | DKO advantage grows with more data |
+| Conformer Count | Diminishing returns after ~30 conformers |
+| 80/20 Decomposition | ~80% from mean, ~20% from covariance |
+| Rep vs Arch | Representation matters more than architecture |
+| Negative Controls | DKO advantage correlates with SCC |
+| Decision Rule | SCC threshold ~0.3-0.5 for method selection |
+| Sketching | 50% sketch retains 95%+ performance |
