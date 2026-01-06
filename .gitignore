@@ -159,8 +159,8 @@ Thumbs.db
 
 # Project-specific ignores
 
-# Data files (large)
-data/
+# Data files (large) - only at root level
+/data/
 *.sdf
 *.mol2
 *.pdb
