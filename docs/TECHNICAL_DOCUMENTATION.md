@@ -1,8 +1,8 @@
 # DKO (Distribution Kernel Operators) - Technical Documentation
 
-**Version:** 1.0.0
-**Last Updated:** January 3, 2026
-**Status:** Parts 1-5 Complete, Ready for Experiments
+**Version:** 1.1.0
+**Last Updated:** January 5, 2026
+**Status:** Complete with all models, baselines, and experiments
 
 ---
 
@@ -69,7 +69,9 @@ dkoproject/
 │   │   ├── __init__.py
 │   │   ├── dko.py                    # DKO model (full + ablations)
 │   │   ├── attention.py              # Attention pooling baseline
-│   │   └── deepsets.py               # DeepSets baseline
+│   │   ├── deepsets.py               # DeepSets baseline
+│   │   ├── ensemble_baselines.py     # MFA, MIL, Mean/Boltzmann ensembles
+│   │   └── gnn_baselines.py          # SchNet, DimeNet++, SphereNet (PyG)
 │   ├── training/                 # Training infrastructure
 │   │   ├── __init__.py
 │   │   ├── trainer.py                # Basic trainer
@@ -623,6 +625,94 @@ Input: conformer features (B, K, D), weights (B, K)
     │
     ▼
 Output: predictions
+```
+
+### 6.5 MeanFeatureAggregation (MFA)
+
+Averages conformer features BEFORE passing to the network:
+
+```python
+from dko.models.ensemble_baselines import MeanFeatureAggregation
+
+model = MeanFeatureAggregation(
+    feature_dim=200,
+    output_dim=1,
+    task='regression',
+
+    # Architecture
+    hidden_dims=[256, 128],
+    prediction_hidden_dims=[64, 32],
+
+    # Aggregation
+    aggregation='mean',  # or 'boltzmann'
+    temperature=300.0,
+
+    # Regularization
+    dropout=0.1,
+)
+
+# Forward pass
+# x: (batch, num_conformers, feature_dim)
+predictions = model(x, mask=mask, energies=energies)
+```
+
+**Key difference from MeanEnsemble:**
+- MFA: mean(features) → network → prediction
+- MeanEnsemble: features → network → mean(predictions)
+
+### 6.6 MultiInstanceLearning (MIL)
+
+Classic MIL with multiple pooling options:
+
+```python
+from dko.models.ensemble_baselines import MultiInstanceLearning
+
+model = MultiInstanceLearning(
+    feature_dim=200,
+    output_dim=1,
+    task='regression',
+
+    # Pooling method
+    pooling='attention',  # 'max', 'attention', 'mean', 'lse'
+    attention_hidden_dim=64,
+
+    # Architecture
+    hidden_dims=[256, 128],
+    prediction_hidden_dims=[64, 32],
+)
+
+# Forward pass with attention weights
+predictions, attention_weights = model(x, mask=mask, return_attention=True)
+```
+
+### 6.7 GNN Baselines (PyTorch Geometric)
+
+3D GNN models with conformer aggregation:
+
+```python
+from dko.models.gnn_baselines import get_gnn, SchNetPyG, DimeNetPPPyG
+
+# Factory function (auto-selects PyG if available)
+model = get_gnn('schnet', hidden_channels=128, num_outputs=1)
+model = get_gnn('dimenet', hidden_channels=128, out_channels=1)
+model = get_gnn('spherenet', hidden_channels=128, out_channels=1)
+
+# Direct instantiation (with PyG)
+from dko.models.gnn_baselines import HAS_PYG
+if HAS_PYG:
+    schnet = SchNetPyG(
+        hidden_channels=128,
+        num_interactions=6,
+        num_gaussians=50,
+        cutoff=10.0,
+        conformer_aggregation='mean',  # 'mean', 'boltzmann', 'attention', 'max'
+    )
+
+    dimenet = DimeNetPPPyG(
+        hidden_channels=128,
+        num_blocks=4,
+        conformer_aggregation='boltzmann',
+    )
 ```
 
 ---
@@ -1523,6 +1613,17 @@ If you use this code, please cite:
 ---
 
 ## Changelog
+
+### v1.1.0 (2026-01-05)
+- Add MeanFeatureAggregation (MFA) baseline
+- Add MultiInstanceLearning (MIL) baseline
+- Add full PyTorch Geometric GNN baselines (SchNet, DimeNet++, SphereNet)
+- Add sample efficiency experiments (data fraction + conformer count)
+- Add representation vs architecture study
+- Add negative control experiments for SCC validation
+- Add decision rule calibration with grid search and regret analysis
+- Add sketching experiments for large ensembles
+- Update documentation
 
 ### v1.0.0 (2026-01-03)
 - Initial release
