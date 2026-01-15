@@ -159,6 +159,10 @@ Thumbs.db
 
 # Project-specific ignores
 
+# Local documentation (not for git)
+CODEBASE_SUMMARY.md
+RESEARCH_PLAN_VS_IMPLEMENTATION.md
+
 # Data files (large) - only at root level
 /data/
 *.sdf
