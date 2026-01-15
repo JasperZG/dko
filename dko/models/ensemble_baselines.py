@@ -462,7 +462,7 @@ class MultiInstanceLearning(nn.Module):
 
         Args:
             encoded: Encoded instances (batch, n_instances, hidden_dim)
-            mask: Mask for valid instances
+            mask: Mask for valid instances (boolean or 0/1)
 
         Returns:
             Attention weights (batch, n_instances)
@@ -478,9 +478,10 @@ class MultiInstanceLearning(nn.Module):
         A = self.attention_W(A_V * A_U)  # (batch*n_inst, 1)
         A = A.view(batch_size, n_inst)  # (batch, n_inst)
 
-        # Apply mask
+        # Apply mask (convert to boolean if needed)
         if mask is not None:
-            A = A.masked_fill(~mask, float("-inf"))
+            mask_bool = mask.bool() if mask.dtype != torch.bool else mask
+            A = A.masked_fill(~mask_bool, float("-inf"))
 
         # Softmax to get weights
         weights = F.softmax(A, dim=1)
@@ -497,15 +498,16 @@ class MultiInstanceLearning(nn.Module):
 
         Args:
             encoded: Encoded instances (batch, n_instances, hidden_dim)
-            mask: Mask for valid instances
+            mask: Mask for valid instances (boolean or 0/1)
 
         Returns:
             Pooled representation (batch, hidden_dim) and optional weights
         """
         if self.pooling == "max":
             if mask is not None:
-                # Mask invalid instances with -inf
-                encoded = encoded.masked_fill(~mask.unsqueeze(-1), float("-inf"))
+                # Mask invalid instances with -inf (convert mask to boolean)
+                mask_bool = mask.bool() if mask.dtype != torch.bool else mask
+                encoded = encoded.masked_fill(~mask_bool.unsqueeze(-1), float("-inf"))
             pooled, _ = encoded.max(dim=1)
             return pooled, None
 
@@ -522,7 +524,9 @@ class MultiInstanceLearning(nn.Module):
             # Log-sum-exp: smooth approximation to max
             scaled = encoded / self.lse_temperature
             if mask is not None:
-                scaled = scaled.masked_fill(~mask.unsqueeze(-1), float("-inf"))
+                # Convert mask to boolean for bitwise NOT
+                mask_bool = mask.bool() if mask.dtype != torch.bool else mask
+                scaled = scaled.masked_fill(~mask_bool.unsqueeze(-1), float("-inf"))
             pooled = self.lse_temperature * torch.logsumexp(scaled, dim=1)
             return pooled, None
 
