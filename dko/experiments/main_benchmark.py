@@ -52,7 +52,9 @@ MODEL_REGISTRY = {
     "deepsets": DeepSets,
     "deepsets_augmented": DeepSetsAugmented,
     # Ensemble baselines
-    "single_conformer": SingleConformer,
+    "single_conformer": SingleConformer,  # Default: lowest_energy
+    "single_conformer_random": lambda **kwargs: SingleConformer(selection_method="random", **kwargs),
+    "single_conformer_centroid": lambda **kwargs: SingleConformer(selection_method="centroid", **kwargs),
     "mean_ensemble": MeanEnsemble,
     "boltzmann_ensemble": BoltzmannEnsemble,
     "mfa": MeanFeatureAggregation,

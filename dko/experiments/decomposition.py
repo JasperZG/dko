@@ -12,6 +12,26 @@ not from capturing molecular flexibility (covariance).
 This decomposition is only possible because DKO explicitly separates first-order
 (mean) and second-order (covariance) features - attention-based methods cannot
 be decomposed this way.
+
+## Deconfounding Sampling vs Aggregation Effects
+
+The standard decomposition (MFA - SingleConformer) conflates two effects:
+1. Using 50 conformers vs 1 conformer (sampling effect)
+2. Averaging vs single selection (aggregation effect)
+
+To separate these, use SingleConformer selection variants:
+
+    SingleConformer(lowest_energy) - standard baseline
+    SingleConformer(random)        - controls for sampling bias
+    SingleConformer(centroid)      - controls for outlier effects
+
+Analysis framework:
+    MFA - Single(lowest)   = sampling + aggregation + energy bias
+    MFA - Single(random)   = aggregation (no energy bias)
+    MFA - Single(centroid) = outlier reduction + aggregation
+
+Use single_conformer_random and single_conformer_centroid from MODEL_REGISTRY
+to run the deconfounded analysis.
 """
 
 from typing import Dict, List, Optional, Tuple

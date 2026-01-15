@@ -58,8 +58,19 @@ class SingleConformer(nn.Module):
     """
     Single conformer baseline.
 
-    Uses only the lowest-energy conformer for prediction.
-    This is the standard approach in many molecular ML pipelines.
+    Uses only a single conformer for prediction. Supports multiple selection
+    strategies to deconfound sampling effects from aggregation effects in the
+    80/20 decomposition study:
+
+    - 'lowest_energy': Standard approach (lowest energy conformer)
+    - 'random': Random conformer from ensemble (controls for sampling)
+    - 'centroid': Geometric centroid in feature space (controls for outliers)
+    - 'first': First conformer (simple baseline)
+
+    For decomposition analysis:
+        SingleConformer(lowest) → MFA measures: sampling + aggregation
+        SingleConformer(random) → MFA measures: aggregation only
+        SingleConformer(centroid) → MFA measures: outlier reduction
     """
 
     def __init__(
@@ -81,7 +92,11 @@ class SingleConformer(nn.Module):
             hidden_dims: Hidden dimensions for feature encoder
             prediction_hidden_dims: Hidden dimensions for prediction head
             num_outputs: Number of output predictions
-            selection_method: 'lowest_energy', 'random', or 'first'
+            selection_method: One of:
+                - 'lowest_energy': Use lowest-energy conformer (default)
+                - 'random': Random conformer from ensemble
+                - 'centroid': Conformer closest to mean in feature space
+                - 'first': First conformer
             activation: Activation function
             use_batch_norm: Whether to use batch normalization
             dropout: Dropout rate
@@ -132,8 +147,13 @@ class SingleConformer(nn.Module):
             # Select conformer with lowest energy
             indices = energies.argmin(dim=1)  # (batch,)
         elif self.selection_method == "random":
-            # Random selection
+            # Random selection (different per batch element)
             indices = torch.randint(0, n_conf, (batch_size,), device=x.device)
+        elif self.selection_method == "centroid":
+            # Select conformer closest to mean (geometric centroid)
+            mean_features = x.mean(dim=1, keepdim=True)  # (batch, 1, feature_dim)
+            distances = torch.norm(x - mean_features, dim=2)  # (batch, n_conformers)
+            indices = distances.argmin(dim=1)  # (batch,)
         else:  # first
             # Use first conformer
             indices = torch.zeros(batch_size, dtype=torch.long, device=x.device)
