@@ -19,6 +19,9 @@ from dko.experiments.sample_efficiency import run_sample_efficiency_experiment
 from dko.experiments.attention_analysis import run_attention_analysis
 from dko.experiments.sketching import run_sketching_experiment
 from dko.experiments.scc_validation import run_scc_validation
+from dko.experiments.representation_vs_architecture import run_representation_vs_architecture_experiment
+from dko.experiments.negative_controls import run_negative_control_experiment
+from dko.experiments.decision_rule import run_decision_rule_experiment
 
 
 logger = get_logger("experiment")
@@ -30,6 +33,10 @@ EXPERIMENTS = {
     "sample_efficiency": run_sample_efficiency_experiment,
     "attention": run_attention_analysis,
     "sketching": run_sketching_experiment,
+    "scc_validation": run_scc_validation,
+    "rep_vs_arch": run_representation_vs_architecture_experiment,
+    "negative_controls": run_negative_control_experiment,
+    "decision_rule": run_decision_rule_experiment,
 }
 
 

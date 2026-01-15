@@ -17,11 +17,21 @@ from dko.utils.logging_utils import ExperimentTracker, get_logger
 from dko.data.datasets import create_dataloaders, AVAILABLE_DATASETS
 from dko.models import (
     DKO,
+    DKOFirstOrder,
     AttentionAggregation,
+    AttentionAugmented,
     DeepSets,
+    DeepSetsAugmented,
     SingleConformer,
     MeanEnsemble,
     BoltzmannEnsemble,
+    MeanFeatureAggregation,
+    MultiInstanceLearning,
+    SchNet,
+    DimeNetPP,
+    SphereNet,
+    ThreeDInfomax,
+    GEM,
 )
 from dko.training.trainer import train_model
 from dko.training.evaluator import Evaluator
@@ -32,12 +42,29 @@ logger = get_logger("benchmark")
 
 # Model registry
 MODEL_REGISTRY = {
+    # DKO variants
     "dko": DKO,
+    "dko_first_order": DKOFirstOrder,
+    # Attention-based
     "attention": AttentionAggregation,
+    "attention_augmented": AttentionAugmented,
+    # DeepSets-based
     "deepsets": DeepSets,
+    "deepsets_augmented": DeepSetsAugmented,
+    # Ensemble baselines
     "single_conformer": SingleConformer,
     "mean_ensemble": MeanEnsemble,
     "boltzmann_ensemble": BoltzmannEnsemble,
+    "mfa": MeanFeatureAggregation,
+    "mil": MultiInstanceLearning,
+    # GNN baselines
+    "schnet": SchNet,
+    "dimenet++": DimeNetPP,
+    "dimenetpp": DimeNetPP,  # Alias without special chars
+    "spherenet": SphereNet,
+    "3d_infomax": ThreeDInfomax,
+    "3dinfomax": ThreeDInfomax,  # Alias without underscore
+    "gem": GEM,
 }
 
 
