@@ -13,6 +13,7 @@ Supported datasets:
 
 import argparse
 import os
+import sys
 from pathlib import Path
 import pickle
 import urllib.request
@@ -21,6 +22,11 @@ import shutil
 from typing import List, Optional, Tuple
 import ssl
 import certifi
+
+# Add project root to Python path if not installed
+PROJECT_ROOT = Path(__file__).parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from tqdm import tqdm
 import pandas as pd

@@ -378,7 +378,7 @@ if [ -n "$checkpoint" ]; then
 fi
 
 # Build training command
-TRAIN_CMD="python -m dko.scripts.train --config $CONFIG_FILE --experiment-name $EXPERIMENT_NAME $RESUME_CHECKPOINT"
+TRAIN_CMD="python scripts/train_single_experiment.py --config $CONFIG_FILE --experiment-name $EXPERIMENT_NAME $RESUME_CHECKPOINT"
 
 log_info "Training command: $TRAIN_CMD"
 echo ""
@@ -403,7 +403,7 @@ while [ $attempt -lt $MAX_RETRIES ] && [ "$success" = "false" ]; do
         if [ -n "$new_checkpoint" ] && [ "$new_checkpoint" != "$checkpoint" ]; then
             checkpoint="$new_checkpoint"
             RESUME_CHECKPOINT="--resume $checkpoint"
-            TRAIN_CMD="python -m dko.scripts.train --config $CONFIG_FILE --experiment-name $EXPERIMENT_NAME $RESUME_CHECKPOINT"
+            TRAIN_CMD="python scripts/train_single_experiment.py --config $CONFIG_FILE --experiment-name $EXPERIMENT_NAME $RESUME_CHECKPOINT"
             log_info "Found newer checkpoint: $checkpoint"
         fi
     fi

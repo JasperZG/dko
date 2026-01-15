@@ -8,8 +8,14 @@ visualizations and summary tables.
 
 import argparse
 import json
+import sys
 from pathlib import Path
 from typing import Dict, List, Optional
+
+# Add project root to Python path if not installed
+PROJECT_ROOT = Path(__file__).parent.parent
+if str(PROJECT_ROOT) not in sys.path:
+    sys.path.insert(0, str(PROJECT_ROOT))
 
 from dko.utils.logging_utils import setup_logging, get_logger
 from dko.analysis.scc import StatisticalConsistencyChecker, validate_scc

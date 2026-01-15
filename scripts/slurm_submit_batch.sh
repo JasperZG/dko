@@ -120,7 +120,7 @@ trap cleanup SIGTERM SIGINT
 # Run training
 echo ""
 echo "Starting training..."
-python -m dko.scripts.train \
+python scripts/train_single_experiment.py \
     --config "$CONFIG_FILE" \
     --experiment-name "${CONFIG_NAME}_seed${SEED}" \
     --seed $SEED \
