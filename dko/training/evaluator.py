@@ -471,6 +471,46 @@ class Evaluator:
 
         return metrics
 
+    def _is_dko_model(self, model: nn.Module) -> bool:
+        """Check if model is a DKO variant that needs mu/sigma input."""
+        # Handle DataParallel wrapped models
+        actual_model = model.module if isinstance(model, nn.DataParallel) else model
+        model_class_name = actual_model.__class__.__name__
+        return model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+
+    def _compute_mu_sigma(
+        self,
+        features: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+    ) -> tuple:
+        """Compute mu and sigma from conformer features for DKO models."""
+        batch_size, n_conf, feat_dim = features.shape
+
+        # Normalize features for numerical stability
+        feat_mean = features.mean()
+        feat_std = features.std().clamp(min=1e-6)
+        features = (features - feat_mean) / feat_std
+
+        # Create mask if not provided
+        if mask is None:
+            mask = torch.ones(batch_size, n_conf, dtype=torch.bool, device=features.device)
+
+        # Compute weights
+        valid_counts = mask.sum(dim=1, keepdim=True).float().clamp(min=1)
+        weights = mask.float() / valid_counts
+        weights_expanded = weights.unsqueeze(-1)
+
+        # Compute mu
+        mu = (features * weights_expanded).sum(dim=1)
+
+        # Compute sigma
+        centered = features - mu.unsqueeze(1)
+        centered = centered * mask.unsqueeze(-1).float()
+        weighted_centered = centered * weights_expanded.sqrt()
+        sigma = torch.bmm(weighted_centered.transpose(1, 2), weighted_centered)
+
+        return mu, sigma
+
     def _forward_batch(self, model: nn.Module, batch: Dict) -> np.ndarray:
         """Forward pass for a batch."""
         # Check for DKO format (mu, sigma)
@@ -490,21 +530,21 @@ class Evaluator:
             if weights is not None:
                 weights = weights.to(self.device)
 
-            # Handle different model signatures
-            # Try to call with weights first, fall back to simpler signatures
-            try:
-                if weights is not None:
-                    # Try calling with weights (DeepSets style)
-                    outputs = model(features, weights, mask=mask)
-                elif mask is not None:
-                    outputs = model(features, mask=mask)
-                else:
-                    outputs = model(features)
-            except TypeError:
-                # Model doesn't accept weights, try simpler signature
-                if mask is not None:
-                    outputs = model(features, mask=mask)
-                else:
+            # Check if model is DKO variant - needs mu/sigma computation
+            if self._is_dko_model(model):
+                mu, sigma = self._compute_mu_sigma(features, mask)
+                outputs = model(mu, sigma, fit_pca=False)
+            else:
+                # Handle different baseline model signatures
+                try:
+                    if weights is not None:
+                        outputs = model(features, weights, mask=mask)
+                    elif mask is not None:
+                        outputs = model(features, mask=mask)
+                    else:
+                        outputs = model(features)
+                except TypeError:
+                    # Model doesn't accept mask/weights
                     outputs = model(features)
 
             # Handle tuple output

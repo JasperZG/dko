@@ -167,6 +167,7 @@ class DKO(nn.Module):
         self.register_buffer('pca_mean_', None)
         self.register_buffer('pca_components_', None)
         self.register_buffer('pca_explained_variance_', None)
+        self._sigma_std = 1.0  # Normalization factor for sigma
 
         # Dimensions
         self.first_order_dim = feature_dim
@@ -205,11 +206,15 @@ class DKO(nn.Module):
         batch_size, D, _ = sigma_batch.shape
         device = sigma_batch.device
 
+        # Normalize sigma for numerical stability (store for consistent transform)
+        self._sigma_std = sigma_batch.std().clamp(min=1e-6).item()
+        sigma_normalized = sigma_batch / self._sigma_std
+
         # Extract upper triangle (D*(D+1)/2 unique elements due to symmetry)
         indices = torch.triu_indices(D, D, device=device)
         flat_features_list = []
         for i in range(batch_size):
-            upper_values = sigma_batch[i][indices[0], indices[1]]
+            upper_values = sigma_normalized[i][indices[0], indices[1]]
             flat_features_list.append(upper_values.detach().cpu().numpy())
 
         flat_features = np.array(flat_features_list)  # (batch, D*(D+1)/2)
@@ -351,11 +356,14 @@ class DKO(nn.Module):
         batch_size, D, _ = sigma.shape
         device = sigma.device
 
+        # Normalize sigma using the same scale factor from PCA fitting
+        sigma_normalized = sigma / self._sigma_std
+
         # Extract upper triangle
         indices = torch.triu_indices(D, D, device=device)
         flat_features_list = []
         for i in range(batch_size):
-            upper_values = sigma[i][indices[0], indices[1]]
+            upper_values = sigma_normalized[i][indices[0], indices[1]]
             flat_features_list.append(upper_values)
 
         flat_features = torch.stack(flat_features_list)  # (batch, D*(D+1)/2)
@@ -404,6 +412,11 @@ class DKO(nn.Module):
         batch_size = mu.size(0)
         device = mu.device
 
+        # Normalize mu for numerical stability
+        mu_mean = mu.mean()
+        mu_std = mu.std().clamp(min=1e-6)
+        mu = (mu - mu_mean) / mu_std
+
         # Handle second-order features
         if self.use_second_order and sigma is not None:
             # Fit PCA on first batch
@@ -442,6 +455,11 @@ class DKO(nn.Module):
 
             # Extract diagonal as features (these are guaranteed positive)
             kernel_features = torch.diagonal(K, dim1=1, dim2=2)  # (batch, k_dim)
+
+            # Normalize kernel features for numerical stability
+            kf_mean = kernel_features.mean()
+            kf_std = kernel_features.std().clamp(min=1e-6)
+            kernel_features = (kernel_features - kf_mean) / kf_std
         else:
             kernel_features = kernel_output
 

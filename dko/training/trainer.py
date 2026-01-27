@@ -29,7 +29,13 @@ import numpy as np
 import torch
 import torch.nn as nn
 from torch.utils.data import DataLoader
-from torch.amp import GradScaler, autocast
+# Handle different PyTorch versions for mixed precision
+try:
+    from torch.amp import GradScaler, autocast
+    AUTOCAST_DEVICE_ARG = True  # torch.amp.autocast takes device_type arg
+except ImportError:
+    from torch.cuda.amp import GradScaler, autocast
+    AUTOCAST_DEVICE_ARG = False  # torch.cuda.amp.autocast doesn't
 
 # Optional imports
 try:
@@ -181,9 +187,22 @@ class Trainer:
         if device is None:
             device = 'cuda' if torch.cuda.is_available() else 'cpu'
 
-        self.model = model.to(device)
-        self.task = task
         self.device = device
+        self.task = task
+
+        # Check if model is DKO variant (PCA fitting doesn't work with DataParallel)
+        model_class_name = model.__class__.__name__
+        is_dko = model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+
+        # Multi-GPU support with DataParallel (but not for DKO due to PCA)
+        if device == 'cuda' and torch.cuda.device_count() > 1 and not is_dko:
+            print(f"Using {torch.cuda.device_count()} GPUs with DataParallel")
+            model = model.to(device)
+            self.model = nn.DataParallel(model)
+        else:
+            if is_dko and torch.cuda.device_count() > 1:
+                print(f"DKO model: using single GPU (PCA doesn't support DataParallel)")
+            self.model = model.to(device)
         self.max_epochs = max_epochs
         self.gradient_clip_max_norm = gradient_clip_max_norm
         self.use_mixed_precision = use_mixed_precision and device == 'cuda'
@@ -218,7 +237,17 @@ class Trainer:
         )
 
         # Mixed precision scaler
-        self.scaler = GradScaler('cuda') if self.use_mixed_precision else None
+        # Note: PyTorch 2.0.x GradScaler doesn't take device arg (first arg is init_scale)
+        # PyTorch 2.1+ torch.amp.GradScaler takes device as first arg
+        if self.use_mixed_precision:
+            if AUTOCAST_DEVICE_ARG:
+                # torch.amp.GradScaler (PyTorch 2.1+)
+                self.scaler = GradScaler('cuda')
+            else:
+                # torch.cuda.amp.GradScaler (PyTorch 2.0.x) - no device arg
+                self.scaler = GradScaler()
+        else:
+            self.scaler = None
 
         # Checkpointing
         if checkpoint_dir:
@@ -308,6 +337,70 @@ class Trainer:
 
         raise ValueError("Unknown batch format. Expected 'mu'/'sigma' or 'features'")
 
+    def _compute_mu_sigma(
+        self,
+        features: torch.Tensor,
+        mask: Optional[torch.Tensor] = None,
+        weights: Optional[torch.Tensor] = None,
+    ) -> Tuple[torch.Tensor, torch.Tensor]:
+        """
+        Compute first-order (mu) and second-order (sigma) features from conformers.
+
+        Args:
+            features: (batch, n_conformers, feature_dim) conformer features
+            mask: (batch, n_conformers) valid conformer mask
+            weights: (batch, n_conformers) Boltzmann weights
+
+        Returns:
+            mu: (batch, feature_dim) mean features
+            sigma: (batch, feature_dim, feature_dim) covariance features
+        """
+        batch_size, n_conf, feat_dim = features.shape
+
+        # Normalize features for numerical stability
+        feat_mean = features.mean()
+        feat_std = features.std().clamp(min=1e-6)
+        features = (features - feat_mean) / feat_std
+
+        # Create mask if not provided
+        if mask is None:
+            mask = torch.ones(batch_size, n_conf, dtype=torch.bool, device=features.device)
+
+        # Create uniform weights if not provided
+        if weights is None:
+            # Count valid conformers per molecule
+            valid_counts = mask.sum(dim=1, keepdim=True).float().clamp(min=1)
+            weights = mask.float() / valid_counts
+        else:
+            # Normalize weights
+            weights = weights * mask.float()
+            weights = weights / weights.sum(dim=1, keepdim=True).clamp(min=1e-8)
+
+        # Compute weighted mean: mu = sum_i w_i * x_i
+        weights_expanded = weights.unsqueeze(-1)  # (batch, n_conf, 1)
+        mu = (features * weights_expanded).sum(dim=1)  # (batch, feat_dim)
+
+        # Compute weighted covariance: sigma = sum_i w_i * (x_i - mu)(x_i - mu)^T
+        centered = features - mu.unsqueeze(1)  # (batch, n_conf, feat_dim)
+        centered = centered * mask.unsqueeze(-1).float()  # Zero out invalid conformers
+
+        # Weighted outer product sum
+        # sigma[b] = sum_i w[b,i] * centered[b,i] @ centered[b,i].T
+        weighted_centered = centered * weights_expanded.sqrt()  # (batch, n_conf, feat_dim)
+        sigma = torch.bmm(
+            weighted_centered.transpose(1, 2),  # (batch, feat_dim, n_conf)
+            weighted_centered  # (batch, n_conf, feat_dim)
+        )  # (batch, feat_dim, feat_dim)
+
+        return mu, sigma
+
+    def _is_dko_model(self) -> bool:
+        """Check if the model is a DKO variant that needs mu/sigma input."""
+        # Handle DataParallel wrapped models
+        model = self.model.module if isinstance(self.model, nn.DataParallel) else self.model
+        model_class_name = model.__class__.__name__
+        return model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+
     def _forward_pass(
         self,
         data: Dict,
@@ -324,12 +417,20 @@ class Trainer:
             Model predictions
         """
         if data['format'] == 'dko':
-            # DKO model with mu, sigma
+            # DKO model with pre-computed mu, sigma
             outputs = self.model(
                 data['mu'],
                 data['sigma'],
                 fit_pca=fit_pca
             )
+        elif self._is_dko_model():
+            # DKO model but data has conformer features - compute mu/sigma
+            features = data['features']
+            mask = data.get('mask')
+            weights = data.get('weights')
+
+            mu, sigma = self._compute_mu_sigma(features, mask, weights)
+            outputs = self.model(mu, sigma, fit_pca=fit_pca)
         else:
             # Baseline model with conformer features
             features = data['features']
@@ -337,12 +438,15 @@ class Trainer:
             weights = data.get('weights')
 
             # Handle different baseline model signatures
-            if weights is not None:
-                # DeepSets with Boltzmann weights
-                outputs = self.model(features, weights, mask=mask)
-            elif mask is not None:
-                outputs = self.model(features, mask=mask)
-            else:
+            try:
+                if weights is not None:
+                    outputs = self.model(features, weights, mask=mask)
+                elif mask is not None:
+                    outputs = self.model(features, mask=mask)
+                else:
+                    outputs = self.model(features)
+            except TypeError:
+                # Model doesn't accept mask/weights, try simpler call
                 outputs = self.model(features)
 
             # Handle tuple output (output, attention_info)
@@ -388,7 +492,9 @@ class Trainer:
             self.optimizer.zero_grad()
 
             if self.use_mixed_precision:
-                with autocast('cuda'):
+                # Handle different PyTorch versions
+                ctx = autocast('cuda') if AUTOCAST_DEVICE_ARG else autocast()
+                with ctx:
                     outputs = self._forward_pass(data, fit_pca=do_fit_pca)
                     loss = self.criterion(outputs.squeeze(), labels.squeeze())
 

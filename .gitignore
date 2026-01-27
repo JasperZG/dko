@@ -164,7 +164,8 @@ CODEBASE_SUMMARY.md
 RESEARCH_PLAN_VS_IMPLEMENTATION.md
 
 # Data files (large) - only at root level
-/data/
+/data/raw/
+/data/logs/
 *.sdf
 *.mol2
 *.pdb
@@ -195,7 +196,6 @@ temp/
 *.tmp
 
 # Conformer files (can be regenerated)
-conformers/
 *.conformers
 
 # Model weights (large)

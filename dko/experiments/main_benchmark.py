@@ -14,7 +14,7 @@ import torch
 
 from dko.utils.config import Config, create_experiment_config
 from dko.utils.logging_utils import ExperimentTracker, get_logger
-from dko.data.datasets import create_dataloaders, AVAILABLE_DATASETS
+from dko.data.datasets import create_dataloaders, create_dataloaders_from_precomputed, AVAILABLE_DATASETS
 from dko.models import (
     DKO,
     DKOFirstOrder,
@@ -94,13 +94,24 @@ def run_single_experiment(
     torch.manual_seed(seed)
     np.random.seed(seed)
 
-    # Load data
+    # Load data from precomputed conformers
     logger.info(f"Loading dataset: {dataset_name}")
-    train_loader, val_loader, test_loader = create_dataloaders(
-        dataset_name,
-        batch_size=config.get("training.batch_size", 32),
-        num_workers=config.get("project.num_workers", 4),
-    )
+    try:
+        # Try precomputed first (much faster)
+        train_loader, val_loader, test_loader = create_dataloaders_from_precomputed(
+            dataset_name,
+            batch_size=config.get("training.batch_size", 32),
+            num_workers=config.get("project.num_workers", 4),
+        )
+        logger.info(f"Loaded precomputed conformers for {dataset_name}")
+    except FileNotFoundError as e:
+        # Fall back to on-the-fly generation
+        logger.warning(f"Precomputed conformers not found, generating on-the-fly: {e}")
+        train_loader, val_loader, test_loader = create_dataloaders(
+            dataset_name,
+            batch_size=config.get("training.batch_size", 32),
+            num_workers=config.get("project.num_workers", 4),
+        )
 
     # Get feature dimension from data
     sample = next(iter(train_loader))
@@ -112,21 +123,43 @@ def run_single_experiment(
     model_config = config.get("model", {})
     model_config["feature_dim"] = feature_dim
 
-    # Set number of outputs
+    # Set number of outputs (different models use different param names)
     if dataset_name in ["tox21"]:
-        model_config["num_outputs"] = 12  # Multi-task
+        n_outputs = 12  # Multi-task
     else:
-        model_config["num_outputs"] = 1
+        n_outputs = 1
 
-    model = model_class(**model_config)
+    # DKO-family uses output_dim, others use num_outputs
+    model_config["output_dim"] = n_outputs
+    model_config["num_outputs"] = n_outputs  # For legacy models
+
+    # DKO-specific config for numerical stability
+    is_dko = model_name in ["dko", "dko_first_order"]
+    if is_dko:
+        model_config["kernel_output_dim"] = 32  # Smaller for stability (default 64 causes gradient explosion)
+
+    # Clean up conflicting args before passing to model
+    try:
+        model = model_class(**model_config)
+    except TypeError as e:
+        # Try removing one of the output params
+        if "num_outputs" in str(e):
+            del model_config["num_outputs"]
+            model = model_class(**model_config)
+        elif "output_dim" in str(e):
+            del model_config["output_dim"]
+            model = model_class(**model_config)
+        else:
+            raise
 
     # Determine task type
-    task_type = "classification" if dataset_name in ["herg", "cyp3a4", "tox21", "bbbp"] else "regression"
+    task_type = "classification" if dataset_name in ["bace", "herg", "cyp3a4", "tox21", "bbbp"] else "regression"
 
-    # Training config
+    # Training config - use lower learning rate for DKO (large gradients)
+    base_lr = 1e-5 if is_dko else config.get("training.base_learning_rate", 1e-4)
     training_config = {
         "optimizer": config.get("training.optimizer", "AdamW"),
-        "base_learning_rate": config.get("training.base_learning_rate", 1e-4),
+        "base_learning_rate": base_lr,
         "weight_decay": config.get("training.weight_decay", 1e-5),
         "max_epochs": config.get("training.max_epochs", 300),
         "early_stopping_patience": config.get("training.early_stopping_patience", 30),
@@ -148,8 +181,8 @@ def run_single_experiment(
     )
 
     # Evaluate on test set
-    evaluator = Evaluator(task_type=task_type)
-    test_metrics = evaluator.evaluate(model, test_loader, device)
+    evaluator = Evaluator(task_type=task_type, device=device)
+    test_metrics = evaluator.evaluate(model, test_loader)
 
     logger.info(f"Test metrics: {test_metrics}")
 

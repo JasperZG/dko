@@ -529,8 +529,18 @@ class AugmentedBasisConstructor:
         if n_conformers == 0:
             raise ValueError("Cannot construct augmented basis from empty list")
 
+        # Pad features to same length (different conformers may have different feature dims)
+        max_len = max(len(f) for f in features_list)
+        padded_features = []
+        for f in features_list:
+            if len(f) < max_len:
+                padded = np.pad(f, (0, max_len - len(f)), mode='constant', constant_values=0)
+                padded_features.append(padded)
+            else:
+                padded_features.append(f)
+
         # Stack features
-        features = np.stack(features_list, axis=0)  # (n_conformers, feature_dim)
+        features = np.stack(padded_features, axis=0)  # (n_conformers, feature_dim)
         feature_dim = features.shape[1]
 
         # Truncate if needed
