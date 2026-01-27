@@ -157,6 +157,11 @@ def run_single_experiment(
 
     # Training config - use lower learning rate for DKO (large gradients)
     base_lr = 1e-5 if is_dko else config.get("training.base_learning_rate", 1e-4)
+
+    # Disable mixed precision for DKO models - the large covariance matrices (1024x1024)
+    # cause float16 overflow leading to NaN losses
+    use_mixed_precision = False if is_dko else config.get("training.mixed_precision", True)
+
     training_config = {
         "optimizer": config.get("training.optimizer", "AdamW"),
         "base_learning_rate": base_lr,
@@ -164,7 +169,7 @@ def run_single_experiment(
         "max_epochs": config.get("training.max_epochs", 300),
         "early_stopping_patience": config.get("training.early_stopping_patience", 30),
         "gradient_clip_max_norm": config.get("training.gradient_clip_max_norm", 1.0),
-        "mixed_precision": config.get("training.mixed_precision", True),
+        "mixed_precision": use_mixed_precision,
         "task_type": task_type,
         "scheduler": config.get("training.scheduler", {}),
     }
@@ -303,11 +308,11 @@ def aggregate_results(all_results: Dict) -> Dict:
             for metric, values in metrics_per_seed.items():
                 if values:
                     summary[dataset][model_name][metric] = {
-                        "mean": np.mean(values),
-                        "std": np.std(values),
-                        "min": np.min(values),
-                        "max": np.max(values),
-                        "n": len(values),
+                        "mean": float(np.mean(values)),
+                        "std": float(np.std(values)),
+                        "min": float(np.min(values)),
+                        "max": float(np.max(values)),
+                        "n": int(len(values)),
                     }
 
     return summary
