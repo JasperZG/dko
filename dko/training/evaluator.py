@@ -486,9 +486,13 @@ class Evaluator:
         """Compute mu and sigma from conformer features for DKO models."""
         batch_size, n_conf, feat_dim = features.shape
 
-        # Normalize features for numerical stability
-        feat_mean = features.mean()
-        feat_std = features.std().clamp(min=1e-6)
+        # Check for NaN/Inf in input features
+        if torch.isnan(features).any() or torch.isinf(features).any():
+            features = torch.nan_to_num(features, nan=0.0, posinf=1.0, neginf=-1.0)
+
+        # Normalize features per sample for numerical stability
+        feat_mean = features.mean(dim=(1, 2), keepdim=True)
+        feat_std = features.std(dim=(1, 2), keepdim=True).clamp(min=1e-6)
         features = (features - feat_mean) / feat_std
 
         # Create mask if not provided
@@ -506,8 +510,16 @@ class Evaluator:
         # Compute sigma
         centered = features - mu.unsqueeze(1)
         centered = centered * mask.unsqueeze(-1).float()
+
+        # Clamp centered values to prevent extreme covariances
+        centered = torch.clamp(centered, min=-10.0, max=10.0)
+
         weighted_centered = centered * weights_expanded.sqrt()
         sigma = torch.bmm(weighted_centered.transpose(1, 2), weighted_centered)
+
+        # Add small regularization to diagonal for numerical stability
+        eye = torch.eye(feat_dim, device=sigma.device, dtype=sigma.dtype)
+        sigma = sigma + 1e-4 * eye.unsqueeze(0)
 
         return mu, sigma
 

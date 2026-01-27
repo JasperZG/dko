@@ -357,7 +357,9 @@ class DKO(nn.Module):
         device = sigma.device
 
         # Normalize sigma using the same scale factor from PCA fitting
-        sigma_normalized = sigma / self._sigma_std
+        # Clamp to prevent extreme values
+        sigma_clamped = torch.clamp(sigma, min=-1e6, max=1e6)
+        sigma_normalized = sigma_clamped / max(self._sigma_std, 1e-6)
 
         # Extract upper triangle
         indices = torch.triu_indices(D, D, device=device)
@@ -368,12 +370,17 @@ class DKO(nn.Module):
 
         flat_features = torch.stack(flat_features_list)  # (batch, D*(D+1)/2)
 
+        # Check for NaN/Inf
+        if torch.isnan(flat_features).any() or torch.isinf(flat_features).any():
+            flat_features = torch.nan_to_num(flat_features, nan=0.0, posinf=1.0, neginf=-1.0)
+
         if self.pca is None:
             # No PCA - use diagonal of sigma instead of upper triangle
             # This is more numerically stable for small batches
-            batch_size, D, _ = sigma.shape
-            device = sigma.device
-            diag_features = torch.diagonal(sigma, dim1=1, dim2=2)  # (batch, D)
+            diag_features = torch.diagonal(sigma_clamped, dim1=1, dim2=2)  # (batch, D)
+            # Normalize diagonal
+            diag_std = diag_features.std().clamp(min=1e-6)
+            diag_features = diag_features / diag_std
             # Truncate to reduced_dim
             return diag_features[:, :self.reduced_dim]
 
@@ -384,10 +391,14 @@ class DKO(nn.Module):
 
             centered = flat_features - pca_mean
             reduced = torch.matmul(centered, pca_components.T)
+
+            # Clamp reduced features to prevent explosion
+            reduced = torch.clamp(reduced, min=-100.0, max=100.0)
         else:
             # Fallback to numpy (slower, for compatibility)
             flat_np = flat_features.detach().cpu().numpy()
             reduced_np = self.pca.transform(flat_np)
+            reduced_np = np.clip(reduced_np, -100.0, 100.0)
             reduced = torch.tensor(reduced_np, dtype=torch.float32, device=device)
 
         return reduced
@@ -412,13 +423,21 @@ class DKO(nn.Module):
         batch_size = mu.size(0)
         device = mu.device
 
-        # Normalize mu for numerical stability
-        mu_mean = mu.mean()
-        mu_std = mu.std().clamp(min=1e-6)
+        # Check for NaN/Inf in input
+        if torch.isnan(mu).any() or torch.isinf(mu).any():
+            mu = torch.nan_to_num(mu, nan=0.0, posinf=1.0, neginf=-1.0)
+
+        # Normalize mu for numerical stability (per-sample normalization)
+        mu_mean = mu.mean(dim=1, keepdim=True)
+        mu_std = mu.std(dim=1, keepdim=True).clamp(min=1e-6)
         mu = (mu - mu_mean) / mu_std
 
         # Handle second-order features
         if self.use_second_order and sigma is not None:
+            # Check for NaN/Inf in sigma
+            if torch.isnan(sigma).any() or torch.isinf(sigma).any():
+                sigma = torch.nan_to_num(sigma, nan=0.0, posinf=1.0, neginf=-1.0)
+
             # Fit PCA on first batch
             if fit_pca and not self.pca_fitted:
                 self._fit_pca(sigma)
@@ -426,6 +445,11 @@ class DKO(nn.Module):
             # Reduce dimensionality
             if self.pca_fitted:
                 sigma_reduced = self._reduce_second_order(sigma)
+
+                # Normalize sigma_reduced for numerical stability
+                sr_mean = sigma_reduced.mean(dim=1, keepdim=True)
+                sr_std = sigma_reduced.std(dim=1, keepdim=True).clamp(min=1e-6)
+                sigma_reduced = (sigma_reduced - sr_mean) / sr_std
 
                 # Concatenate first and second order: [μ, reduced_Σ]
                 combined = torch.cat([mu, sigma_reduced], dim=1)
@@ -447,8 +471,14 @@ class DKO(nn.Module):
 
         # Apply PSD constraint if enabled
         if self.use_psd_constraint:
+            # Clamp kernel output to prevent explosion before forming L
+            kernel_output = torch.clamp(kernel_output, min=-10.0, max=10.0)
+
             # Reshape to L matrix
             L = kernel_output.view(batch_size, self.kernel_output_dim, self.kernel_output_dim)
+
+            # Scale L by 1/sqrt(k_dim) to control magnitude of LL^T
+            L = L / (self.kernel_output_dim ** 0.5)
 
             # Compute K = LL^T (ensures PSD)
             K = torch.bmm(L, L.transpose(1, 2))  # (batch, k_dim, k_dim)
@@ -456,10 +486,17 @@ class DKO(nn.Module):
             # Extract diagonal as features (these are guaranteed positive)
             kernel_features = torch.diagonal(K, dim1=1, dim2=2)  # (batch, k_dim)
 
-            # Normalize kernel features for numerical stability
-            kf_mean = kernel_features.mean()
-            kf_std = kernel_features.std().clamp(min=1e-6)
+            # Apply log transform for numerical stability (diagonal is always positive)
+            # Use log1p to handle small values gracefully
+            kernel_features = torch.log1p(kernel_features)
+
+            # Normalize kernel features
+            kf_mean = kernel_features.mean(dim=1, keepdim=True)
+            kf_std = kernel_features.std(dim=1, keepdim=True).clamp(min=1e-6)
             kernel_features = (kernel_features - kf_mean) / kf_std
+
+            # Final safety clamp
+            kernel_features = torch.clamp(kernel_features, min=-10.0, max=10.0)
         else:
             kernel_features = kernel_output
 
