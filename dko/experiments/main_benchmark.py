@@ -76,6 +76,7 @@ def run_single_experiment(
     config: Config,
     seed: int = 42,
     device: str = "cuda",
+    output_dir: str = "results/benchmark",
 ) -> Dict:
     """
     Run a single experiment (one dataset, one model, one seed).
@@ -183,6 +184,7 @@ def run_single_experiment(
         training_config,
         device=device,
         experiment_name=experiment_name,
+        output_dir=output_dir,
     )
 
     # Evaluate on test set
@@ -237,40 +239,71 @@ def run_main_benchmark(
     # Run experiments
     all_results = {}
 
+    # Load partial results if they exist (resume support)
+    results_path = output_dir / "benchmark_results.json"
+    if results_path.exists():
+        try:
+            with open(results_path, "r") as f:
+                all_results = json.load(f)
+            logger.info(f"Loaded existing partial results from {results_path}")
+        except Exception:
+            all_results = {}
+
     for dataset in datasets:
         logger.info(f"=== Dataset: {dataset} ===")
-        all_results[dataset] = {}
+        if dataset not in all_results:
+            all_results[dataset] = {}
 
         for model_name in models:
             logger.info(f"--- Model: {model_name} ---")
-            all_results[dataset][model_name] = []
+            if model_name not in all_results[dataset]:
+                all_results[dataset][model_name] = []
+
+            # Check which seeds are already done
+            done_seeds = set()
+            for r in all_results[dataset][model_name]:
+                if isinstance(r, dict) and 'seed' in r:
+                    done_seeds.add(r['seed'])
 
             for seed in seeds:
+                if seed in done_seeds:
+                    logger.info(f"Skipping {dataset}/{model_name}/seed{seed} (already done)")
+                    continue
+
                 try:
                     result = run_single_experiment(
-                        dataset, model_name, config, seed, device
+                        dataset, model_name, config, seed, device,
+                        output_dir=str(output_dir),
                     )
                     all_results[dataset][model_name].append(result)
                 except Exception as e:
                     logger.error(f"Error in {dataset}/{model_name}/seed{seed}: {e}")
+                    import traceback
+                    traceback.print_exc()
                     all_results[dataset][model_name].append({
                         "error": str(e),
                         "seed": seed,
                     })
 
-    # Aggregate results
+                # Save results incrementally after each experiment
+                with open(results_path, "w") as f:
+                    json.dump(all_results, f, indent=2, default=str)
+
+                # Save incremental summary too
+                summary = aggregate_results(all_results)
+                summary_path = output_dir / "benchmark_summary.json"
+                with open(summary_path, "w") as f:
+                    json.dump(summary, f, indent=2)
+
+                logger.info(f"Results saved incrementally to {output_dir}")
+
+    # Final summary
     summary = aggregate_results(all_results)
-
-    # Save results
-    results_path = output_dir / "benchmark_results.json"
-    with open(results_path, "w") as f:
-        json.dump(all_results, f, indent=2, default=str)
-
     summary_path = output_dir / "benchmark_summary.json"
     with open(summary_path, "w") as f:
         json.dump(summary, f, indent=2)
 
-    logger.info(f"Results saved to {output_dir}")
+    logger.info(f"All results saved to {output_dir}")
 
     return {"results": all_results, "summary": summary}
 

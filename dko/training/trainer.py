@@ -20,6 +20,7 @@ Research plan specifications:
 """
 
 import os
+import csv
 from pathlib import Path
 from typing import Any, Dict, List, Optional, Tuple, Union
 import time
@@ -157,6 +158,8 @@ class Trainer:
         device: Optional[str] = None,
         use_mixed_precision: bool = True,
         checkpoint_dir: Optional[Union[str, Path]] = None,
+        log_dir: Optional[Union[str, Path]] = None,
+        checkpoint_every: int = 25,
         use_wandb: bool = False,
         wandb_project: Optional[str] = None,
         wandb_run_name: Optional[str] = None,
@@ -177,6 +180,8 @@ class Trainer:
             device: Device to train on (auto-detect if None)
             use_mixed_precision: Whether to use FP16 training (default: True)
             checkpoint_dir: Directory to save checkpoints
+            log_dir: Directory for log files and CSVs
+            checkpoint_every: Save checkpoint every N epochs (default: 25)
             use_wandb: Whether to use W&B logging
             wandb_project: W&B project name
             wandb_run_name: W&B run name
@@ -250,11 +255,50 @@ class Trainer:
             self.scaler = None
 
         # Checkpointing
+        self.checkpoint_every = checkpoint_every
         if checkpoint_dir:
             self.checkpoint_dir = Path(checkpoint_dir)
             self.checkpoint_dir.mkdir(parents=True, exist_ok=True)
         else:
             self.checkpoint_dir = None
+
+        # File logging + CSV
+        self.log_dir = None
+        self.file_logger = None
+        self.batch_csv_path = None
+        self.epoch_csv_path = None
+        if log_dir:
+            self.log_dir = Path(log_dir)
+            self.log_dir.mkdir(parents=True, exist_ok=True)
+
+            # Set up file logger
+            self.file_logger = logging.getLogger(f"trainer.{wandb_run_name or 'default'}")
+            self.file_logger.setLevel(logging.INFO)
+            self.file_logger.handlers.clear()
+            fh = logging.FileHandler(self.log_dir / "training.log")
+            fh.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            self.file_logger.addHandler(fh)
+            # Also log to console
+            ch = logging.StreamHandler()
+            ch.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+            self.file_logger.addHandler(ch)
+
+            # Batch-level CSV
+            self.batch_csv_path = self.log_dir / "batch_logs.csv"
+            with open(self.batch_csv_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow(['epoch', 'batch', 'loss', 'grad_norm', 'lr', 'timestamp'])
+
+            # Epoch-level CSV
+            self.epoch_csv_path = self.log_dir / "epoch_logs.csv"
+            with open(self.epoch_csv_path, 'w', newline='') as f:
+                writer = csv.writer(f)
+                writer.writerow([
+                    'epoch', 'train_loss', 'val_loss', 'lr', 'epoch_time_s',
+                    'val_rmse', 'val_mae', 'val_r2', 'val_pearson',
+                    'val_auc', 'val_accuracy', 'val_f1',
+                    'is_best', 'early_stop_counter',
+                ])
 
         # W&B logging
         self.use_wandb = use_wandb and WANDB_AVAILABLE
@@ -531,11 +575,30 @@ class Trainer:
                 )
                 self.optimizer.step()
 
-            total_loss += loss.item()
+            batch_loss = loss.item()
+            total_loss += batch_loss
             num_batches += 1
 
+            # Compute gradient norm for logging
+            grad_norm = 0.0
+            for p in self.model.parameters():
+                if p.grad is not None:
+                    grad_norm += p.grad.data.norm(2).item() ** 2
+            grad_norm = grad_norm ** 0.5
+
             if self.verbose and TQDM_AVAILABLE:
-                pbar.set_postfix({'loss': f'{loss.item():.4f}'})
+                pbar.set_postfix({'loss': f'{batch_loss:.4f}'})
+
+            # Batch-level CSV logging
+            if self.batch_csv_path is not None:
+                current_lr = self.optimizer.param_groups[0]['lr']
+                with open(self.batch_csv_path, 'a', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
+                        self.current_epoch + 1, batch_idx + 1,
+                        f'{batch_loss:.6f}', f'{grad_norm:.6f}',
+                        f'{current_lr:.2e}', time.strftime('%Y-%m-%d %H:%M:%S'),
+                    ])
 
         avg_loss = total_loss / max(num_batches, 1)
         return {'loss': avg_loss}
@@ -552,12 +615,14 @@ class Trainer:
             val_loader: Validation data loader
 
         Returns:
-            Dictionary of validation metrics
+            Dictionary of validation metrics including loss and task-specific metrics
         """
         self.model.eval()
 
         total_loss = 0.0
         num_batches = 0
+        all_preds = []
+        all_labels = []
 
         for batch in val_loader:
             # Extract data
@@ -570,8 +635,59 @@ class Trainer:
             total_loss += loss.item()
             num_batches += 1
 
+            all_preds.append(outputs.squeeze().cpu().numpy())
+            all_labels.append(labels.squeeze().cpu().numpy())
+
         avg_loss = total_loss / max(num_batches, 1)
-        return {'loss': avg_loss}
+        metrics = {'loss': avg_loss}
+
+        # Compute task-specific metrics
+        try:
+            preds = np.concatenate(all_preds, axis=0).flatten()
+            labels_np = np.concatenate(all_labels, axis=0).flatten()
+
+            # Remove NaN
+            valid = ~(np.isnan(preds) | np.isnan(labels_np))
+            preds = preds[valid]
+            labels_np = labels_np[valid]
+
+            if len(preds) > 0:
+                if self.task == 'regression':
+                    metrics['rmse'] = float(np.sqrt(np.mean((preds - labels_np) ** 2)))
+                    metrics['mae'] = float(np.mean(np.abs(preds - labels_np)))
+                    ss_res = np.sum((labels_np - preds) ** 2)
+                    ss_tot = np.sum((labels_np - np.mean(labels_np)) ** 2)
+                    metrics['r2'] = float(1 - ss_res / ss_tot) if ss_tot > 0 else 0.0
+                    if len(preds) > 1:
+                        from scipy import stats as sp_stats
+                        r, _ = sp_stats.pearsonr(preds, labels_np)
+                        metrics['pearson'] = float(r)
+                elif self.task == 'classification':
+                    # Apply sigmoid if logits
+                    if preds.min() < 0 or preds.max() > 1:
+                        probs = 1 / (1 + np.exp(-np.clip(preds, -500, 500)))
+                    else:
+                        probs = preds
+                    binary_preds = (probs >= 0.5).astype(int)
+                    targets_int = labels_np.astype(int)
+                    metrics['accuracy'] = float(np.mean(binary_preds == targets_int))
+                    tp = np.sum((binary_preds == 1) & (targets_int == 1))
+                    fp = np.sum((binary_preds == 1) & (targets_int == 0))
+                    fn = np.sum((binary_preds == 0) & (targets_int == 1))
+                    prec = tp / (tp + fp) if (tp + fp) > 0 else 0
+                    rec = tp / (tp + fn) if (tp + fn) > 0 else 0
+                    metrics['f1'] = float(2 * prec * rec / (prec + rec)) if (prec + rec) > 0 else 0.0
+                    if len(np.unique(targets_int)) > 1:
+                        try:
+                            from sklearn.metrics import roc_auc_score
+                            metrics['auc'] = float(roc_auc_score(targets_int, probs))
+                        except Exception:
+                            pass
+        except Exception as e:
+            if self.file_logger:
+                self.file_logger.warning(f"Failed to compute val metrics: {e}")
+
+        return metrics
 
     def fit(
         self,
@@ -588,11 +704,13 @@ class Trainer:
         Returns:
             Training history
         """
+        n_params = sum(p.numel() for p in self.model.parameters())
+        start_msg = (f"Starting training on {self.device} | "
+                     f"params: {n_params:,} | max_epochs: {self.max_epochs}")
         if self.verbose:
-            n_params = sum(p.numel() for p in self.model.parameters())
-            print(f"Starting training on {self.device}")
-            print(f"Model parameters: {n_params:,}")
-            print(f"Max epochs: {self.max_epochs}")
+            print(start_msg)
+        if self.file_logger:
+            self.file_logger.info(start_msg)
 
         # Reset early stopping
         self.early_stopping.reset()
@@ -605,7 +723,7 @@ class Trainer:
             fit_pca = (epoch == 0)
             train_metrics = self.train_epoch(train_loader, fit_pca=fit_pca)
 
-            # Validate
+            # Validate (now includes RMSE/MAE/R²/AUC)
             val_metrics = self.validate(val_loader)
 
             # Update scheduler
@@ -617,42 +735,112 @@ class Trainer:
             self.history['val_loss'].append(val_metrics['loss'])
             self.history['learning_rate'].append(current_lr)
 
+            # Store val metrics in history
+            for k, v in val_metrics.items():
+                if k != 'loss':
+                    key = f'val_{k}'
+                    if key not in self.history:
+                        self.history[key] = []
+                    self.history[key].append(v)
+
             epoch_time = time.time() - epoch_start
 
+            # Build log message with val metrics
+            is_best = val_metrics['loss'] < self.best_val_loss
+            log_parts = [
+                f"Epoch {epoch+1}/{self.max_epochs} ({epoch_time:.1f}s)",
+                f"train_loss: {train_metrics['loss']:.4f}",
+                f"val_loss: {val_metrics['loss']:.4f}",
+            ]
+            if 'rmse' in val_metrics:
+                log_parts.append(f"val_rmse: {val_metrics['rmse']:.4f}")
+            if 'mae' in val_metrics:
+                log_parts.append(f"val_mae: {val_metrics['mae']:.4f}")
+            if 'r2' in val_metrics:
+                log_parts.append(f"val_r2: {val_metrics['r2']:.4f}")
+            if 'pearson' in val_metrics:
+                log_parts.append(f"val_pearson: {val_metrics['pearson']:.4f}")
+            if 'auc' in val_metrics:
+                log_parts.append(f"val_auc: {val_metrics['auc']:.4f}")
+            if 'accuracy' in val_metrics:
+                log_parts.append(f"val_acc: {val_metrics['accuracy']:.4f}")
+            log_parts.append(f"lr: {current_lr:.2e}")
+            epoch_msg = " - ".join(log_parts)
+
             if self.verbose:
-                print(f"Epoch {epoch+1}/{self.max_epochs} ({epoch_time:.1f}s) - "
-                      f"train_loss: {train_metrics['loss']:.4f}, "
-                      f"val_loss: {val_metrics['loss']:.4f}, "
-                      f"lr: {current_lr:.2e}")
+                print(epoch_msg)
+            if self.file_logger:
+                self.file_logger.info(epoch_msg)
+
+            # Epoch-level CSV logging
+            if self.epoch_csv_path is not None:
+                with open(self.epoch_csv_path, 'a', newline='') as f:
+                    writer = csv.writer(f)
+                    writer.writerow([
+                        epoch + 1,
+                        f'{train_metrics["loss"]:.6f}',
+                        f'{val_metrics["loss"]:.6f}',
+                        f'{current_lr:.2e}',
+                        f'{epoch_time:.1f}',
+                        f'{val_metrics.get("rmse", ""):.6f}' if 'rmse' in val_metrics else '',
+                        f'{val_metrics.get("mae", ""):.6f}' if 'mae' in val_metrics else '',
+                        f'{val_metrics.get("r2", ""):.6f}' if 'r2' in val_metrics else '',
+                        f'{val_metrics.get("pearson", ""):.6f}' if 'pearson' in val_metrics else '',
+                        f'{val_metrics.get("auc", ""):.6f}' if 'auc' in val_metrics else '',
+                        f'{val_metrics.get("accuracy", ""):.6f}' if 'accuracy' in val_metrics else '',
+                        f'{val_metrics.get("f1", ""):.6f}' if 'f1' in val_metrics else '',
+                        is_best,
+                        self.early_stopping.counter,
+                    ])
 
             # W&B logging
             if self.use_wandb and self.wandb_initialized:
-                wandb.log({
+                wb_metrics = {
                     'epoch': epoch + 1,
                     'train_loss': train_metrics['loss'],
                     'val_loss': val_metrics['loss'],
                     'learning_rate': current_lr,
-                })
+                }
+                for k, v in val_metrics.items():
+                    if k != 'loss':
+                        wb_metrics[f'val_{k}'] = v
+                wandb.log(wb_metrics)
 
             # Save best model
-            if val_metrics['loss'] < self.best_val_loss:
+            if is_best:
                 self.best_val_loss = val_metrics['loss']
                 self.best_epoch = epoch + 1
                 if self.checkpoint_dir:
                     self.save_checkpoint('best_model.pt')
                 if self.verbose:
                     print(f"  -> New best model (val_loss: {self.best_val_loss:.4f})")
+                if self.file_logger:
+                    self.file_logger.info(f"New best model at epoch {epoch+1} (val_loss: {self.best_val_loss:.4f})")
+
+            # Periodic checkpoint every N epochs
+            if self.checkpoint_dir and self.checkpoint_every > 0 and (epoch + 1) % self.checkpoint_every == 0:
+                self.save_checkpoint(f'checkpoint_epoch{epoch+1}.pt')
+                if self.file_logger:
+                    self.file_logger.info(f"Saved periodic checkpoint at epoch {epoch+1}")
 
             # Early stopping
             if self.early_stopping(val_metrics['loss']):
+                stop_msg = (f"Early stopping at epoch {epoch+1} | "
+                            f"Best epoch: {self.best_epoch}, Best val_loss: {self.best_val_loss:.4f}")
                 if self.verbose:
-                    print(f"\nEarly stopping at epoch {epoch+1}")
-                    print(f"Best epoch: {self.best_epoch}, Best val_loss: {self.best_val_loss:.4f}")
+                    print(f"\n{stop_msg}")
+                if self.file_logger:
+                    self.file_logger.info(stop_msg)
                 break
 
         # Load best model
         if self.checkpoint_dir and (self.checkpoint_dir / 'best_model.pt').exists():
             self.load_checkpoint('best_model.pt')
+
+        # Final summary
+        if self.file_logger:
+            self.file_logger.info(f"Training complete. Best epoch: {self.best_epoch}, "
+                                  f"Best val_loss: {self.best_val_loss:.4f}")
 
         return self.history
 
@@ -757,6 +945,8 @@ def create_trainer(
             training_config.get('mixed_precision', True)
         ),
         checkpoint_dir=kwargs.get('checkpoint_dir', training_config.get('checkpoint_dir')),
+        log_dir=kwargs.get('log_dir', training_config.get('log_dir')),
+        checkpoint_every=kwargs.get('checkpoint_every', training_config.get('checkpoint_every', 25)),
         use_wandb=kwargs.get('use_wandb', training_config.get('use_wandb', False)),
         wandb_project=kwargs.get('wandb_project', training_config.get('wandb_project')),
         wandb_run_name=kwargs.get('wandb_run_name', training_config.get('wandb_run_name')),
@@ -771,6 +961,7 @@ def train_model(
     config: Dict[str, Any],
     device: str = "cuda",
     experiment_name: str = "experiment",
+    output_dir: Optional[Union[str, Path]] = None,
 ) -> Tuple[nn.Module, Dict[str, Any]]:
     """
     Train a model using the Trainer class.
@@ -784,10 +975,22 @@ def train_model(
         config: Training configuration dictionary
         device: Device to train on
         experiment_name: Name for the experiment
+        output_dir: Base output directory for logs/checkpoints
 
     Returns:
         Tuple of (trained model, training results dict)
     """
+    # Set up output directories
+    checkpoint_dir = config.get('checkpoint_dir')
+    log_dir = config.get('log_dir')
+
+    if output_dir is not None:
+        output_dir = Path(output_dir)
+        if checkpoint_dir is None:
+            checkpoint_dir = output_dir / "checkpoints" / experiment_name
+        if log_dir is None:
+            log_dir = output_dir / "logs" / experiment_name
+
     # Create trainer from config
     trainer = Trainer(
         model=model,
@@ -799,7 +1002,9 @@ def train_model(
         gradient_clip_max_norm=config.get('gradient_clip_max_norm', 1.0),
         device=device,
         use_mixed_precision=config.get('mixed_precision', True),
-        checkpoint_dir=config.get('checkpoint_dir'),
+        checkpoint_dir=checkpoint_dir,
+        log_dir=log_dir,
+        checkpoint_every=config.get('checkpoint_every', 25),
         use_wandb=config.get('use_wandb', False),
         wandb_project=config.get('wandb_project'),
         wandb_run_name=experiment_name,
