@@ -1,0 +1,221 @@
+2026-01-27 18:15:05,028 - INFO - Starting training on cuda | params: 827,265 | max_epochs: 300
+2026-01-27 18:15:08,214 - INFO - Epoch 1/300 (3.2s) - train_loss: 10.5196 - val_loss: 14.3397 - val_rmse: 3.7900 - val_mae: 3.2290 - val_r2: -2.4453 - val_pearson: -0.0052 - lr: 1.00e-05
+2026-01-27 18:15:08,253 - INFO - New best model at epoch 1 (val_loss: 14.3397)
+2026-01-27 18:15:11,829 - INFO - Epoch 2/300 (3.6s) - train_loss: 9.3754 - val_loss: 13.0659 - val_rmse: 3.6161 - val_mae: 3.0469 - val_r2: -2.1363 - val_pearson: 0.0609 - lr: 1.00e-05
+2026-01-27 18:15:11,879 - INFO - New best model at epoch 2 (val_loss: 13.0659)
+2026-01-27 18:15:15,451 - INFO - Epoch 3/300 (3.6s) - train_loss: 8.6054 - val_loss: 12.0957 - val_rmse: 3.4821 - val_mae: 2.9044 - val_r2: -1.9082 - val_pearson: 0.0946 - lr: 1.00e-05
+2026-01-27 18:15:15,493 - INFO - New best model at epoch 3 (val_loss: 12.0957)
+2026-01-27 18:15:19,033 - INFO - Epoch 4/300 (3.5s) - train_loss: 7.9456 - val_loss: 11.2635 - val_rmse: 3.3622 - val_mae: 2.7742 - val_r2: -1.7114 - val_pearson: 0.1205 - lr: 1.00e-05
+2026-01-27 18:15:19,083 - INFO - New best model at epoch 4 (val_loss: 11.2635)
+2026-01-27 18:15:22,637 - INFO - Epoch 5/300 (3.6s) - train_loss: 7.3839 - val_loss: 10.6202 - val_rmse: 3.2665 - val_mae: 2.6767 - val_r2: -1.5592 - val_pearson: 0.1352 - lr: 9.99e-06
+2026-01-27 18:15:22,689 - INFO - New best model at epoch 5 (val_loss: 10.6202)
+2026-01-27 18:15:26,050 - INFO - Epoch 6/300 (3.4s) - train_loss: 6.9077 - val_loss: 10.1344 - val_rmse: 3.1916 - val_mae: 2.5976 - val_r2: -1.4432 - val_pearson: 0.1138 - lr: 9.99e-06
+2026-01-27 18:15:26,091 - INFO - New best model at epoch 6 (val_loss: 10.1344)
+2026-01-27 18:15:29,438 - INFO - Epoch 7/300 (3.3s) - train_loss: 6.9226 - val_loss: 9.6416 - val_rmse: 3.1145 - val_mae: 2.5178 - val_r2: -1.3266 - val_pearson: 0.1432 - lr: 9.99e-06
+2026-01-27 18:15:29,480 - INFO - New best model at epoch 7 (val_loss: 9.6416)
+2026-01-27 18:15:33,321 - INFO - Epoch 8/300 (3.8s) - train_loss: 6.4371 - val_loss: 9.1982 - val_rmse: 3.0426 - val_mae: 2.4484 - val_r2: -1.2203 - val_pearson: 0.1795 - lr: 9.98e-06
+2026-01-27 18:15:33,370 - INFO - New best model at epoch 8 (val_loss: 9.1982)
+2026-01-27 18:15:36,913 - INFO - Epoch 9/300 (3.5s) - train_loss: 6.1809 - val_loss: 8.8329 - val_rmse: 2.9826 - val_mae: 2.3882 - val_r2: -1.1337 - val_pearson: 0.2090 - lr: 9.98e-06
+2026-01-27 18:15:36,949 - INFO - New best model at epoch 9 (val_loss: 8.8329)
+2026-01-27 18:15:40,370 - INFO - Epoch 10/300 (3.4s) - train_loss: 5.8923 - val_loss: 8.5590 - val_rmse: 2.9365 - val_mae: 2.3403 - val_r2: -1.0683 - val_pearson: 0.1851 - lr: 9.98e-06
+2026-01-27 18:15:40,410 - INFO - New best model at epoch 10 (val_loss: 8.5590)
+2026-01-27 18:15:43,834 - INFO - Epoch 11/300 (3.4s) - train_loss: 5.7037 - val_loss: 8.2818 - val_rmse: 2.8897 - val_mae: 2.2931 - val_r2: -1.0028 - val_pearson: 0.1934 - lr: 9.97e-06
+2026-01-27 18:15:43,868 - INFO - New best model at epoch 11 (val_loss: 8.2818)
+2026-01-27 18:15:47,225 - INFO - Epoch 12/300 (3.4s) - train_loss: 5.4425 - val_loss: 8.0615 - val_rmse: 2.8518 - val_mae: 2.2538 - val_r2: -0.9507 - val_pearson: 0.1983 - lr: 9.96e-06
+2026-01-27 18:15:47,278 - INFO - New best model at epoch 12 (val_loss: 8.0615)
+2026-01-27 18:15:50,558 - INFO - Epoch 13/300 (3.3s) - train_loss: 5.6116 - val_loss: 7.8034 - val_rmse: 2.8074 - val_mae: 2.2080 - val_r2: -0.8903 - val_pearson: 0.1977 - lr: 9.96e-06
+2026-01-27 18:15:50,608 - INFO - New best model at epoch 13 (val_loss: 7.8034)
+2026-01-27 18:15:53,994 - INFO - Epoch 14/300 (3.4s) - train_loss: 5.1622 - val_loss: 7.5666 - val_rmse: 2.7648 - val_mae: 2.1698 - val_r2: -0.8335 - val_pearson: 0.2315 - lr: 9.95e-06
+2026-01-27 18:15:54,033 - INFO - New best model at epoch 14 (val_loss: 7.5666)
+2026-01-27 18:15:57,438 - INFO - Epoch 15/300 (3.4s) - train_loss: 5.3186 - val_loss: 7.3589 - val_rmse: 2.7264 - val_mae: 2.1333 - val_r2: -0.7829 - val_pearson: 0.2663 - lr: 9.94e-06
+2026-01-27 18:15:57,474 - INFO - New best model at epoch 15 (val_loss: 7.3589)
+2026-01-27 18:16:00,994 - INFO - Epoch 16/300 (3.5s) - train_loss: 4.9078 - val_loss: 7.1815 - val_rmse: 2.6955 - val_mae: 2.1015 - val_r2: -0.7427 - val_pearson: 0.2595 - lr: 9.94e-06
+2026-01-27 18:16:01,032 - INFO - New best model at epoch 16 (val_loss: 7.1815)
+2026-01-27 18:16:04,380 - INFO - Epoch 17/300 (3.3s) - train_loss: 4.7756 - val_loss: 6.9984 - val_rmse: 2.6617 - val_mae: 2.0717 - val_r2: -0.6993 - val_pearson: 0.2808 - lr: 9.93e-06
+2026-01-27 18:16:04,427 - INFO - New best model at epoch 17 (val_loss: 6.9984)
+2026-01-27 18:16:07,696 - INFO - Epoch 18/300 (3.3s) - train_loss: 4.9117 - val_loss: 6.8410 - val_rmse: 2.6320 - val_mae: 2.0461 - val_r2: -0.6616 - val_pearson: 0.2967 - lr: 9.92e-06
+2026-01-27 18:16:07,735 - INFO - New best model at epoch 18 (val_loss: 6.8410)
+2026-01-27 18:16:11,015 - INFO - Epoch 19/300 (3.3s) - train_loss: 4.7051 - val_loss: 6.6965 - val_rmse: 2.6047 - val_mae: 2.0186 - val_r2: -0.6273 - val_pearson: 0.2912 - lr: 9.91e-06
+2026-01-27 18:16:11,059 - INFO - New best model at epoch 19 (val_loss: 6.6965)
+2026-01-27 18:16:14,533 - INFO - Epoch 20/300 (3.5s) - train_loss: 4.6256 - val_loss: 6.5721 - val_rmse: 2.5819 - val_mae: 1.9971 - val_r2: -0.5989 - val_pearson: 0.2963 - lr: 9.90e-06
+2026-01-27 18:16:14,573 - INFO - New best model at epoch 20 (val_loss: 6.5721)
+2026-01-27 18:16:17,767 - INFO - Epoch 21/300 (3.2s) - train_loss: 4.3307 - val_loss: 6.4087 - val_rmse: 2.5503 - val_mae: 1.9677 - val_r2: -0.5600 - val_pearson: 0.3162 - lr: 9.89e-06
+2026-01-27 18:16:17,806 - INFO - New best model at epoch 21 (val_loss: 6.4087)
+2026-01-27 18:16:21,054 - INFO - Epoch 22/300 (3.2s) - train_loss: 4.3068 - val_loss: 6.2881 - val_rmse: 2.5270 - val_mae: 1.9464 - val_r2: -0.5316 - val_pearson: 0.3174 - lr: 9.88e-06
+2026-01-27 18:16:21,092 - INFO - New best model at epoch 22 (val_loss: 6.2881)
+2026-01-27 18:16:24,761 - INFO - Epoch 23/300 (3.7s) - train_loss: 4.0843 - val_loss: 6.1518 - val_rmse: 2.5001 - val_mae: 1.9213 - val_r2: -0.4992 - val_pearson: 0.3517 - lr: 9.87e-06
+2026-01-27 18:16:24,801 - INFO - New best model at epoch 23 (val_loss: 6.1518)
+2026-01-27 18:16:28,128 - INFO - Epoch 24/300 (3.3s) - train_loss: 4.0654 - val_loss: 6.0539 - val_rmse: 2.4810 - val_mae: 1.9010 - val_r2: -0.4764 - val_pearson: 0.3347 - lr: 9.86e-06
+2026-01-27 18:16:28,164 - INFO - New best model at epoch 24 (val_loss: 6.0539)
+2026-01-27 18:16:31,523 - INFO - Epoch 25/300 (3.4s) - train_loss: 3.9838 - val_loss: 5.9505 - val_rmse: 2.4602 - val_mae: 1.8854 - val_r2: -0.4517 - val_pearson: 0.3451 - lr: 9.85e-06
+2026-01-27 18:16:31,565 - INFO - New best model at epoch 25 (val_loss: 5.9505)
+2026-01-27 18:16:31,596 - INFO - Saved periodic checkpoint at epoch 25
+2026-01-27 18:16:34,923 - INFO - Epoch 26/300 (3.3s) - train_loss: 4.2319 - val_loss: 5.8130 - val_rmse: 2.4322 - val_mae: 1.8578 - val_r2: -0.4189 - val_pearson: 0.3571 - lr: 9.83e-06
+2026-01-27 18:16:34,960 - INFO - New best model at epoch 26 (val_loss: 5.8130)
+2026-01-27 18:16:38,257 - INFO - Epoch 27/300 (3.3s) - train_loss: 3.8627 - val_loss: 5.6910 - val_rmse: 2.4076 - val_mae: 1.8383 - val_r2: -0.3903 - val_pearson: 0.3723 - lr: 9.82e-06
+2026-01-27 18:16:38,311 - INFO - New best model at epoch 27 (val_loss: 5.6910)
+2026-01-27 18:16:42,013 - INFO - Epoch 28/300 (3.7s) - train_loss: 3.8080 - val_loss: 5.6030 - val_rmse: 2.3896 - val_mae: 1.8188 - val_r2: -0.3696 - val_pearson: 0.3618 - lr: 9.81e-06
+2026-01-27 18:16:42,052 - INFO - New best model at epoch 28 (val_loss: 5.6030)
+2026-01-27 18:16:45,513 - INFO - Epoch 29/300 (3.5s) - train_loss: 3.7249 - val_loss: 5.5208 - val_rmse: 2.3732 - val_mae: 1.8101 - val_r2: -0.3509 - val_pearson: 0.3598 - lr: 9.79e-06
+2026-01-27 18:16:45,552 - INFO - New best model at epoch 29 (val_loss: 5.5208)
+2026-01-27 18:16:49,041 - INFO - Epoch 30/300 (3.5s) - train_loss: 3.5267 - val_loss: 5.4262 - val_rmse: 2.3531 - val_mae: 1.7912 - val_r2: -0.3281 - val_pearson: 0.3631 - lr: 9.78e-06
+2026-01-27 18:16:49,078 - INFO - New best model at epoch 30 (val_loss: 5.4262)
+2026-01-27 18:16:52,451 - INFO - Epoch 31/300 (3.4s) - train_loss: 3.5103 - val_loss: 5.3403 - val_rmse: 2.3359 - val_mae: 1.7756 - val_r2: -0.3088 - val_pearson: 0.3736 - lr: 9.76e-06
+2026-01-27 18:16:52,489 - INFO - New best model at epoch 31 (val_loss: 5.3403)
+2026-01-27 18:16:55,757 - INFO - Epoch 32/300 (3.3s) - train_loss: 3.3887 - val_loss: 5.2125 - val_rmse: 2.3080 - val_mae: 1.7470 - val_r2: -0.2777 - val_pearson: 0.3768 - lr: 9.75e-06
+2026-01-27 18:16:55,805 - INFO - New best model at epoch 32 (val_loss: 5.2125)
+2026-01-27 18:16:59,009 - INFO - Epoch 33/300 (3.2s) - train_loss: 3.3328 - val_loss: 5.1332 - val_rmse: 2.2915 - val_mae: 1.7359 - val_r2: -0.2594 - val_pearson: 0.3806 - lr: 9.73e-06
+2026-01-27 18:16:59,045 - INFO - New best model at epoch 33 (val_loss: 5.1332)
+2026-01-27 18:17:02,293 - INFO - Epoch 34/300 (3.2s) - train_loss: 3.3120 - val_loss: 5.0315 - val_rmse: 2.2692 - val_mae: 1.7172 - val_r2: -0.2351 - val_pearson: 0.3924 - lr: 9.72e-06
+2026-01-27 18:17:02,328 - INFO - New best model at epoch 34 (val_loss: 5.0315)
+2026-01-27 18:17:05,918 - INFO - Epoch 35/300 (3.6s) - train_loss: 3.1901 - val_loss: 4.9947 - val_rmse: 2.2620 - val_mae: 1.7119 - val_r2: -0.2273 - val_pearson: 0.3944 - lr: 9.70e-06
+2026-01-27 18:17:05,956 - INFO - New best model at epoch 35 (val_loss: 4.9947)
+2026-01-27 18:17:09,322 - INFO - Epoch 36/300 (3.4s) - train_loss: 3.0625 - val_loss: 4.8554 - val_rmse: 2.2306 - val_mae: 1.6883 - val_r2: -0.1934 - val_pearson: 0.4124 - lr: 9.68e-06
+2026-01-27 18:17:09,358 - INFO - New best model at epoch 36 (val_loss: 4.8554)
+2026-01-27 18:17:13,049 - INFO - Epoch 37/300 (3.7s) - train_loss: 3.2512 - val_loss: 4.8441 - val_rmse: 2.2285 - val_mae: 1.6832 - val_r2: -0.1912 - val_pearson: 0.3887 - lr: 9.67e-06
+2026-01-27 18:17:13,100 - INFO - New best model at epoch 37 (val_loss: 4.8441)
+2026-01-27 18:17:16,416 - INFO - Epoch 38/300 (3.3s) - train_loss: 3.0403 - val_loss: 4.7464 - val_rmse: 2.2078 - val_mae: 1.6668 - val_r2: -0.1691 - val_pearson: 0.3981 - lr: 9.65e-06
+2026-01-27 18:17:16,456 - INFO - New best model at epoch 38 (val_loss: 4.7464)
+2026-01-27 18:17:19,804 - INFO - Epoch 39/300 (3.3s) - train_loss: 2.9893 - val_loss: 4.6986 - val_rmse: 2.1975 - val_mae: 1.6618 - val_r2: -0.1583 - val_pearson: 0.3919 - lr: 9.63e-06
+2026-01-27 18:17:19,862 - INFO - New best model at epoch 39 (val_loss: 4.6986)
+2026-01-27 18:17:23,421 - INFO - Epoch 40/300 (3.6s) - train_loss: 2.9926 - val_loss: 4.6479 - val_rmse: 2.1855 - val_mae: 1.6628 - val_r2: -0.1456 - val_pearson: 0.4017 - lr: 9.61e-06
+2026-01-27 18:17:23,470 - INFO - New best model at epoch 40 (val_loss: 4.6479)
+2026-01-27 18:17:26,763 - INFO - Epoch 41/300 (3.3s) - train_loss: 2.8712 - val_loss: 4.5862 - val_rmse: 2.1724 - val_mae: 1.6433 - val_r2: -0.1320 - val_pearson: 0.3873 - lr: 9.59e-06
+2026-01-27 18:17:26,801 - INFO - New best model at epoch 41 (val_loss: 4.5862)
+2026-01-27 18:17:30,521 - INFO - Epoch 42/300 (3.7s) - train_loss: 2.7632 - val_loss: 4.5180 - val_rmse: 2.1563 - val_mae: 1.6353 - val_r2: -0.1152 - val_pearson: 0.3859 - lr: 9.57e-06
+2026-01-27 18:17:30,564 - INFO - New best model at epoch 42 (val_loss: 4.5180)
+2026-01-27 18:17:33,989 - INFO - Epoch 43/300 (3.4s) - train_loss: 2.7397 - val_loss: 4.4547 - val_rmse: 2.1420 - val_mae: 1.6315 - val_r2: -0.1004 - val_pearson: 0.4066 - lr: 9.55e-06
+2026-01-27 18:17:34,023 - INFO - New best model at epoch 43 (val_loss: 4.4547)
+2026-01-27 18:17:37,289 - INFO - Epoch 44/300 (3.3s) - train_loss: 2.6955 - val_loss: 4.4054 - val_rmse: 2.1310 - val_mae: 1.6131 - val_r2: -0.0892 - val_pearson: 0.3950 - lr: 9.53e-06
+2026-01-27 18:17:37,350 - INFO - New best model at epoch 44 (val_loss: 4.4054)
+2026-01-27 18:17:41,146 - INFO - Epoch 45/300 (3.8s) - train_loss: 2.5889 - val_loss: 4.3611 - val_rmse: 2.1208 - val_mae: 1.6056 - val_r2: -0.0788 - val_pearson: 0.4048 - lr: 9.51e-06
+2026-01-27 18:17:41,194 - INFO - New best model at epoch 45 (val_loss: 4.3611)
+2026-01-27 18:17:44,986 - INFO - Epoch 46/300 (3.8s) - train_loss: 2.5083 - val_loss: 4.3128 - val_rmse: 2.1100 - val_mae: 1.5922 - val_r2: -0.0679 - val_pearson: 0.4130 - lr: 9.49e-06
+2026-01-27 18:17:45,024 - INFO - New best model at epoch 46 (val_loss: 4.3128)
+2026-01-27 18:17:48,670 - INFO - Epoch 47/300 (3.6s) - train_loss: 2.5715 - val_loss: 4.2670 - val_rmse: 2.0978 - val_mae: 1.5878 - val_r2: -0.0555 - val_pearson: 0.4155 - lr: 9.47e-06
+2026-01-27 18:17:48,706 - INFO - New best model at epoch 47 (val_loss: 4.2670)
+2026-01-27 18:17:52,149 - INFO - Epoch 48/300 (3.4s) - train_loss: 2.5000 - val_loss: 4.1628 - val_rmse: 2.0736 - val_mae: 1.5662 - val_r2: -0.0314 - val_pearson: 0.4229 - lr: 9.44e-06
+2026-01-27 18:17:52,201 - INFO - New best model at epoch 48 (val_loss: 4.1628)
+2026-01-27 18:17:55,701 - INFO - Epoch 49/300 (3.5s) - train_loss: 2.4485 - val_loss: 4.0875 - val_rmse: 2.0540 - val_mae: 1.5557 - val_r2: -0.0119 - val_pearson: 0.4479 - lr: 9.42e-06
+2026-01-27 18:17:55,754 - INFO - New best model at epoch 49 (val_loss: 4.0875)
+2026-01-27 18:17:59,242 - INFO - Epoch 50/300 (3.5s) - train_loss: 2.4180 - val_loss: 4.0633 - val_rmse: 2.0486 - val_mae: 1.5440 - val_r2: -0.0066 - val_pearson: 0.4349 - lr: 9.40e-06
+2026-01-27 18:17:59,280 - INFO - New best model at epoch 50 (val_loss: 4.0633)
+2026-01-27 18:17:59,310 - INFO - Saved periodic checkpoint at epoch 50
+2026-01-27 18:18:02,686 - INFO - Epoch 51/300 (3.4s) - train_loss: 2.2950 - val_loss: 4.0413 - val_rmse: 2.0431 - val_mae: 1.5399 - val_r2: -0.0012 - val_pearson: 0.4332 - lr: 9.37e-06
+2026-01-27 18:18:02,727 - INFO - New best model at epoch 51 (val_loss: 4.0413)
+2026-01-27 18:18:06,277 - INFO - Epoch 52/300 (3.5s) - train_loss: 2.2713 - val_loss: 4.0346 - val_rmse: 2.0380 - val_mae: 1.5324 - val_r2: 0.0038 - val_pearson: 0.4207 - lr: 9.35e-06
+2026-01-27 18:18:06,330 - INFO - New best model at epoch 52 (val_loss: 4.0346)
+2026-01-27 18:18:09,869 - INFO - Epoch 53/300 (3.5s) - train_loss: 2.2852 - val_loss: 3.9705 - val_rmse: 2.0242 - val_mae: 1.5279 - val_r2: 0.0172 - val_pearson: 0.4354 - lr: 9.32e-06
+2026-01-27 18:18:09,910 - INFO - New best model at epoch 53 (val_loss: 3.9705)
+2026-01-27 18:18:13,258 - INFO - Epoch 54/300 (3.3s) - train_loss: 2.2672 - val_loss: 3.9707 - val_rmse: 2.0252 - val_mae: 1.5226 - val_r2: 0.0163 - val_pearson: 0.4312 - lr: 9.30e-06
+2026-01-27 18:18:16,529 - INFO - Epoch 55/300 (3.3s) - train_loss: 2.2725 - val_loss: 3.9135 - val_rmse: 2.0106 - val_mae: 1.5087 - val_r2: 0.0304 - val_pearson: 0.4493 - lr: 9.27e-06
+2026-01-27 18:18:16,567 - INFO - New best model at epoch 55 (val_loss: 3.9135)
+2026-01-27 18:18:19,908 - INFO - Epoch 56/300 (3.3s) - train_loss: 2.1124 - val_loss: 3.8864 - val_rmse: 2.0038 - val_mae: 1.4930 - val_r2: 0.0369 - val_pearson: 0.4439 - lr: 9.25e-06
+2026-01-27 18:18:19,950 - INFO - New best model at epoch 56 (val_loss: 3.8864)
+2026-01-27 18:18:23,613 - INFO - Epoch 57/300 (3.7s) - train_loss: 2.0714 - val_loss: 3.8430 - val_rmse: 1.9930 - val_mae: 1.4884 - val_r2: 0.0473 - val_pearson: 0.4408 - lr: 9.22e-06
+2026-01-27 18:18:23,654 - INFO - New best model at epoch 57 (val_loss: 3.8430)
+2026-01-27 18:18:27,092 - INFO - Epoch 58/300 (3.4s) - train_loss: 2.0036 - val_loss: 3.7923 - val_rmse: 1.9742 - val_mae: 1.4720 - val_r2: 0.0652 - val_pearson: 0.4555 - lr: 9.20e-06
+2026-01-27 18:18:27,137 - INFO - New best model at epoch 58 (val_loss: 3.7923)
+2026-01-27 18:18:30,768 - INFO - Epoch 59/300 (3.6s) - train_loss: 1.9851 - val_loss: 3.7985 - val_rmse: 1.9789 - val_mae: 1.4765 - val_r2: 0.0607 - val_pearson: 0.4567 - lr: 9.17e-06
+2026-01-27 18:18:34,030 - INFO - Epoch 60/300 (3.3s) - train_loss: 1.9664 - val_loss: 3.7534 - val_rmse: 1.9676 - val_mae: 1.4696 - val_r2: 0.0714 - val_pearson: 0.4678 - lr: 9.14e-06
+2026-01-27 18:18:34,066 - INFO - New best model at epoch 60 (val_loss: 3.7534)
+2026-01-27 18:18:37,459 - INFO - Epoch 61/300 (3.4s) - train_loss: 1.9432 - val_loss: 3.8194 - val_rmse: 1.9818 - val_mae: 1.4675 - val_r2: 0.0579 - val_pearson: 0.4573 - lr: 9.11e-06
+2026-01-27 18:18:40,853 - INFO - Epoch 62/300 (3.4s) - train_loss: 1.8091 - val_loss: 3.6566 - val_rmse: 1.9433 - val_mae: 1.4510 - val_r2: 0.0942 - val_pearson: 0.4773 - lr: 9.08e-06
+2026-01-27 18:18:40,889 - INFO - New best model at epoch 62 (val_loss: 3.6566)
+2026-01-27 18:18:44,050 - INFO - Epoch 63/300 (3.2s) - train_loss: 1.8335 - val_loss: 3.6588 - val_rmse: 1.9446 - val_mae: 1.4403 - val_r2: 0.0931 - val_pearson: 0.4609 - lr: 9.06e-06
+2026-01-27 18:18:47,294 - INFO - Epoch 64/300 (3.2s) - train_loss: 1.8022 - val_loss: 3.7308 - val_rmse: 1.9592 - val_mae: 1.4542 - val_r2: 0.0794 - val_pearson: 0.4697 - lr: 9.03e-06
+2026-01-27 18:18:50,421 - INFO - Epoch 65/300 (3.1s) - train_loss: 1.7224 - val_loss: 3.6719 - val_rmse: 1.9486 - val_mae: 1.4437 - val_r2: 0.0893 - val_pearson: 0.4599 - lr: 9.00e-06
+2026-01-27 18:18:53,731 - INFO - Epoch 66/300 (3.3s) - train_loss: 1.7704 - val_loss: 3.6141 - val_rmse: 1.9310 - val_mae: 1.4261 - val_r2: 0.1056 - val_pearson: 0.4771 - lr: 8.97e-06
+2026-01-27 18:18:53,770 - INFO - New best model at epoch 66 (val_loss: 3.6141)
+2026-01-27 18:18:57,143 - INFO - Epoch 67/300 (3.4s) - train_loss: 1.6814 - val_loss: 3.5739 - val_rmse: 1.9281 - val_mae: 1.4324 - val_r2: 0.1084 - val_pearson: 0.4669 - lr: 8.94e-06
+2026-01-27 18:18:57,190 - INFO - New best model at epoch 67 (val_loss: 3.5739)
+2026-01-27 18:19:00,870 - INFO - Epoch 68/300 (3.7s) - train_loss: 1.6197 - val_loss: 3.6361 - val_rmse: 1.9369 - val_mae: 1.4378 - val_r2: 0.1002 - val_pearson: 0.4653 - lr: 8.91e-06
+2026-01-27 18:19:04,110 - INFO - Epoch 69/300 (3.2s) - train_loss: 1.6222 - val_loss: 3.5125 - val_rmse: 1.9078 - val_mae: 1.4164 - val_r2: 0.1270 - val_pearson: 0.4792 - lr: 8.88e-06
+2026-01-27 18:19:04,149 - INFO - New best model at epoch 69 (val_loss: 3.5125)
+2026-01-27 18:19:07,537 - INFO - Epoch 70/300 (3.4s) - train_loss: 1.6928 - val_loss: 3.5171 - val_rmse: 1.9070 - val_mae: 1.4216 - val_r2: 0.1277 - val_pearson: 0.4841 - lr: 8.84e-06
+2026-01-27 18:19:11,005 - INFO - Epoch 71/300 (3.5s) - train_loss: 1.6169 - val_loss: 3.5374 - val_rmse: 1.9109 - val_mae: 1.4191 - val_r2: 0.1242 - val_pearson: 0.4714 - lr: 8.81e-06
+2026-01-27 18:19:14,174 - INFO - Epoch 72/300 (3.2s) - train_loss: 1.5785 - val_loss: 3.5155 - val_rmse: 1.9057 - val_mae: 1.4281 - val_r2: 0.1289 - val_pearson: 0.4798 - lr: 8.78e-06
+2026-01-27 18:19:17,519 - INFO - Epoch 73/300 (3.3s) - train_loss: 1.5785 - val_loss: 3.5539 - val_rmse: 1.9097 - val_mae: 1.4142 - val_r2: 0.1253 - val_pearson: 0.4731 - lr: 8.75e-06
+2026-01-27 18:19:21,121 - INFO - Epoch 74/300 (3.6s) - train_loss: 1.4939 - val_loss: 3.4601 - val_rmse: 1.8960 - val_mae: 1.4050 - val_r2: 0.1378 - val_pearson: 0.4575 - lr: 8.72e-06
+2026-01-27 18:19:21,158 - INFO - New best model at epoch 74 (val_loss: 3.4601)
+2026-01-27 18:19:24,636 - INFO - Epoch 75/300 (3.5s) - train_loss: 1.4514 - val_loss: 3.4840 - val_rmse: 1.8972 - val_mae: 1.4122 - val_r2: 0.1367 - val_pearson: 0.4733 - lr: 8.68e-06
+2026-01-27 18:19:24,673 - INFO - Saved periodic checkpoint at epoch 75
+2026-01-27 18:19:28,129 - INFO - Epoch 76/300 (3.5s) - train_loss: 1.5189 - val_loss: 3.4599 - val_rmse: 1.8957 - val_mae: 1.4086 - val_r2: 0.1381 - val_pearson: 0.4722 - lr: 8.65e-06
+2026-01-27 18:19:28,166 - INFO - New best model at epoch 76 (val_loss: 3.4599)
+2026-01-27 18:19:31,594 - INFO - Epoch 77/300 (3.4s) - train_loss: 1.3978 - val_loss: 3.4933 - val_rmse: 1.8964 - val_mae: 1.4017 - val_r2: 0.1374 - val_pearson: 0.4671 - lr: 8.61e-06
+2026-01-27 18:19:35,014 - INFO - Epoch 78/300 (3.4s) - train_loss: 1.4520 - val_loss: 3.5370 - val_rmse: 1.9109 - val_mae: 1.4211 - val_r2: 0.1242 - val_pearson: 0.4568 - lr: 8.58e-06
+2026-01-27 18:19:38,575 - INFO - Epoch 79/300 (3.6s) - train_loss: 1.3558 - val_loss: 3.5437 - val_rmse: 1.9115 - val_mae: 1.4024 - val_r2: 0.1236 - val_pearson: 0.4584 - lr: 8.55e-06
+2026-01-27 18:19:41,888 - INFO - Epoch 80/300 (3.3s) - train_loss: 1.3415 - val_loss: 3.5133 - val_rmse: 1.8966 - val_mae: 1.3947 - val_r2: 0.1372 - val_pearson: 0.4778 - lr: 8.51e-06
+2026-01-27 18:19:45,031 - INFO - Epoch 81/300 (3.1s) - train_loss: 1.3328 - val_loss: 3.4227 - val_rmse: 1.8825 - val_mae: 1.4037 - val_r2: 0.1500 - val_pearson: 0.4755 - lr: 8.48e-06
+2026-01-27 18:19:45,080 - INFO - New best model at epoch 81 (val_loss: 3.4227)
+2026-01-27 18:19:48,467 - INFO - Epoch 82/300 (3.4s) - train_loss: 1.3523 - val_loss: 3.4174 - val_rmse: 1.8823 - val_mae: 1.3985 - val_r2: 0.1502 - val_pearson: 0.4606 - lr: 8.44e-06
+2026-01-27 18:19:48,504 - INFO - New best model at epoch 82 (val_loss: 3.4174)
+2026-01-27 18:19:51,837 - INFO - Epoch 83/300 (3.3s) - train_loss: 1.3209 - val_loss: 3.5560 - val_rmse: 1.9092 - val_mae: 1.4012 - val_r2: 0.1257 - val_pearson: 0.4687 - lr: 8.40e-06
+2026-01-27 18:19:55,255 - INFO - Epoch 84/300 (3.4s) - train_loss: 1.2450 - val_loss: 3.5525 - val_rmse: 1.9124 - val_mae: 1.4186 - val_r2: 0.1228 - val_pearson: 0.4657 - lr: 8.37e-06
+2026-01-27 18:19:58,738 - INFO - Epoch 85/300 (3.5s) - train_loss: 1.3334 - val_loss: 3.4786 - val_rmse: 1.8961 - val_mae: 1.4043 - val_r2: 0.1377 - val_pearson: 0.4553 - lr: 8.33e-06
+2026-01-27 18:20:02,094 - INFO - Epoch 86/300 (3.4s) - train_loss: 1.2215 - val_loss: 3.4262 - val_rmse: 1.8834 - val_mae: 1.4027 - val_r2: 0.1492 - val_pearson: 0.4745 - lr: 8.30e-06
+2026-01-27 18:20:05,389 - INFO - Epoch 87/300 (3.3s) - train_loss: 1.1909 - val_loss: 3.3873 - val_rmse: 1.8756 - val_mae: 1.4019 - val_r2: 0.1562 - val_pearson: 0.4740 - lr: 8.26e-06
+2026-01-27 18:20:05,455 - INFO - New best model at epoch 87 (val_loss: 3.3873)
+2026-01-27 18:20:08,789 - INFO - Epoch 88/300 (3.3s) - train_loss: 1.1265 - val_loss: 3.4514 - val_rmse: 1.8908 - val_mae: 1.3987 - val_r2: 0.1425 - val_pearson: 0.4644 - lr: 8.22e-06
+2026-01-27 18:20:12,005 - INFO - Epoch 89/300 (3.2s) - train_loss: 1.1804 - val_loss: 3.4757 - val_rmse: 1.8920 - val_mae: 1.3859 - val_r2: 0.1414 - val_pearson: 0.4769 - lr: 8.18e-06
+2026-01-27 18:20:15,479 - INFO - Epoch 90/300 (3.5s) - train_loss: 1.1187 - val_loss: 3.3479 - val_rmse: 1.8663 - val_mae: 1.3926 - val_r2: 0.1645 - val_pearson: 0.4734 - lr: 8.15e-06
+2026-01-27 18:20:15,529 - INFO - New best model at epoch 90 (val_loss: 3.3479)
+2026-01-27 18:20:18,681 - INFO - Epoch 91/300 (3.2s) - train_loss: 1.1680 - val_loss: 3.3099 - val_rmse: 1.8546 - val_mae: 1.3762 - val_r2: 0.1750 - val_pearson: 0.4782 - lr: 8.11e-06
+2026-01-27 18:20:18,720 - INFO - New best model at epoch 91 (val_loss: 3.3099)
+2026-01-27 18:20:22,145 - INFO - Epoch 92/300 (3.4s) - train_loss: 1.0957 - val_loss: 3.2903 - val_rmse: 1.8534 - val_mae: 1.3847 - val_r2: 0.1761 - val_pearson: 0.4769 - lr: 8.07e-06
+2026-01-27 18:20:22,183 - INFO - New best model at epoch 92 (val_loss: 3.2903)
+2026-01-27 18:20:25,289 - INFO - Epoch 93/300 (3.1s) - train_loss: 1.0998 - val_loss: 3.2620 - val_rmse: 1.8494 - val_mae: 1.3850 - val_r2: 0.1796 - val_pearson: 0.4708 - lr: 8.03e-06
+2026-01-27 18:20:25,344 - INFO - New best model at epoch 93 (val_loss: 3.2620)
+2026-01-27 18:20:28,665 - INFO - Epoch 94/300 (3.3s) - train_loss: 1.0929 - val_loss: 3.4122 - val_rmse: 1.8806 - val_mae: 1.3939 - val_r2: 0.1517 - val_pearson: 0.4611 - lr: 7.99e-06
+2026-01-27 18:20:31,735 - INFO - Epoch 95/300 (3.1s) - train_loss: 1.0830 - val_loss: 3.3553 - val_rmse: 1.8704 - val_mae: 1.3904 - val_r2: 0.1609 - val_pearson: 0.4520 - lr: 7.95e-06
+2026-01-27 18:20:35,249 - INFO - Epoch 96/300 (3.5s) - train_loss: 1.0675 - val_loss: 3.3737 - val_rmse: 1.8658 - val_mae: 1.3872 - val_r2: 0.1651 - val_pearson: 0.4693 - lr: 7.91e-06
+2026-01-27 18:20:38,925 - INFO - Epoch 97/300 (3.7s) - train_loss: 1.0670 - val_loss: 3.3593 - val_rmse: 1.8664 - val_mae: 1.3839 - val_r2: 0.1645 - val_pearson: 0.4715 - lr: 7.87e-06
+2026-01-27 18:20:42,503 - INFO - Epoch 98/300 (3.6s) - train_loss: 1.0218 - val_loss: 3.2870 - val_rmse: 1.8561 - val_mae: 1.3795 - val_r2: 0.1737 - val_pearson: 0.4748 - lr: 7.83e-06
+2026-01-27 18:20:46,106 - INFO - Epoch 99/300 (3.6s) - train_loss: 1.0537 - val_loss: 3.3948 - val_rmse: 1.8709 - val_mae: 1.3816 - val_r2: 0.1605 - val_pearson: 0.4666 - lr: 7.79e-06
+2026-01-27 18:20:49,738 - INFO - Epoch 100/300 (3.6s) - train_loss: 0.9979 - val_loss: 3.2989 - val_rmse: 1.8569 - val_mae: 1.3840 - val_r2: 0.1730 - val_pearson: 0.4612 - lr: 7.75e-06
+2026-01-27 18:20:49,772 - INFO - Saved periodic checkpoint at epoch 100
+2026-01-27 18:20:53,265 - INFO - Epoch 101/300 (3.5s) - train_loss: 1.0293 - val_loss: 3.3049 - val_rmse: 1.8591 - val_mae: 1.3846 - val_r2: 0.1710 - val_pearson: 0.4653 - lr: 7.71e-06
+2026-01-27 18:20:56,801 - INFO - Epoch 102/300 (3.5s) - train_loss: 1.0295 - val_loss: 3.3367 - val_rmse: 1.8595 - val_mae: 1.3843 - val_r2: 0.1707 - val_pearson: 0.4727 - lr: 7.67e-06
+2026-01-27 18:21:00,582 - INFO - Epoch 103/300 (3.8s) - train_loss: 1.0251 - val_loss: 3.4559 - val_rmse: 1.8996 - val_mae: 1.4048 - val_r2: 0.1345 - val_pearson: 0.4674 - lr: 7.63e-06
+2026-01-27 18:21:04,546 - INFO - Epoch 104/300 (4.0s) - train_loss: 1.0183 - val_loss: 3.3444 - val_rmse: 1.8638 - val_mae: 1.3866 - val_r2: 0.1668 - val_pearson: 0.4738 - lr: 7.58e-06
+2026-01-27 18:21:08,437 - INFO - Epoch 105/300 (3.9s) - train_loss: 0.9998 - val_loss: 3.3355 - val_rmse: 1.8647 - val_mae: 1.3853 - val_r2: 0.1660 - val_pearson: 0.4720 - lr: 7.54e-06
+2026-01-27 18:21:12,162 - INFO - Epoch 106/300 (3.7s) - train_loss: 0.9912 - val_loss: 3.2788 - val_rmse: 1.8505 - val_mae: 1.3880 - val_r2: 0.1787 - val_pearson: 0.4685 - lr: 7.50e-06
+2026-01-27 18:21:16,017 - INFO - Epoch 107/300 (3.9s) - train_loss: 0.9262 - val_loss: 3.4257 - val_rmse: 1.8801 - val_mae: 1.3904 - val_r2: 0.1522 - val_pearson: 0.4576 - lr: 7.46e-06
+2026-01-27 18:21:19,794 - INFO - Epoch 108/300 (3.8s) - train_loss: 0.8754 - val_loss: 3.2719 - val_rmse: 1.8489 - val_mae: 1.3843 - val_r2: 0.1801 - val_pearson: 0.4807 - lr: 7.42e-06
+2026-01-27 18:21:23,579 - INFO - Epoch 109/300 (3.8s) - train_loss: 0.8818 - val_loss: 3.3006 - val_rmse: 1.8615 - val_mae: 1.3857 - val_r2: 0.1688 - val_pearson: 0.4722 - lr: 7.37e-06
+2026-01-27 18:21:27,197 - INFO - Epoch 110/300 (3.6s) - train_loss: 0.9907 - val_loss: 3.4233 - val_rmse: 1.8886 - val_mae: 1.4024 - val_r2: 0.1445 - val_pearson: 0.4533 - lr: 7.33e-06
+2026-01-27 18:21:30,850 - INFO - Epoch 111/300 (3.7s) - train_loss: 0.8991 - val_loss: 3.1359 - val_rmse: 1.8223 - val_mae: 1.3634 - val_r2: 0.2035 - val_pearson: 0.4869 - lr: 7.29e-06
+2026-01-27 18:21:30,891 - INFO - New best model at epoch 111 (val_loss: 3.1359)
+2026-01-27 18:21:34,675 - INFO - Epoch 112/300 (3.8s) - train_loss: 0.9700 - val_loss: 3.2740 - val_rmse: 1.8486 - val_mae: 1.3731 - val_r2: 0.1804 - val_pearson: 0.4773 - lr: 7.24e-06
+2026-01-27 18:21:38,493 - INFO - Epoch 113/300 (3.8s) - train_loss: 0.9286 - val_loss: 3.1897 - val_rmse: 1.8338 - val_mae: 1.3616 - val_r2: 0.1934 - val_pearson: 0.4825 - lr: 7.20e-06
+2026-01-27 18:21:42,206 - INFO - Epoch 114/300 (3.7s) - train_loss: 0.8563 - val_loss: 3.3415 - val_rmse: 1.8688 - val_mae: 1.3932 - val_r2: 0.1623 - val_pearson: 0.4681 - lr: 7.16e-06
+2026-01-27 18:21:45,857 - INFO - Epoch 115/300 (3.6s) - train_loss: 0.8913 - val_loss: 3.5759 - val_rmse: 1.9213 - val_mae: 1.4415 - val_r2: 0.1146 - val_pearson: 0.4582 - lr: 7.11e-06
+2026-01-27 18:21:49,443 - INFO - Epoch 116/300 (3.6s) - train_loss: 0.8516 - val_loss: 3.2875 - val_rmse: 1.8610 - val_mae: 1.3922 - val_r2: 0.1693 - val_pearson: 0.4721 - lr: 7.07e-06
+2026-01-27 18:21:53,126 - INFO - Epoch 117/300 (3.7s) - train_loss: 0.8993 - val_loss: 3.4098 - val_rmse: 1.8786 - val_mae: 1.3953 - val_r2: 0.1535 - val_pearson: 0.4674 - lr: 7.02e-06
+2026-01-27 18:21:56,673 - INFO - Epoch 118/300 (3.5s) - train_loss: 0.9311 - val_loss: 3.4415 - val_rmse: 1.8936 - val_mae: 1.4112 - val_r2: 0.1399 - val_pearson: 0.4581 - lr: 6.98e-06
+2026-01-27 18:22:00,324 - INFO - Epoch 119/300 (3.6s) - train_loss: 0.8651 - val_loss: 3.2772 - val_rmse: 1.8568 - val_mae: 1.3824 - val_r2: 0.1730 - val_pearson: 0.4778 - lr: 6.94e-06
+2026-01-27 18:22:04,007 - INFO - Epoch 120/300 (3.7s) - train_loss: 0.7925 - val_loss: 3.2844 - val_rmse: 1.8596 - val_mae: 1.3863 - val_r2: 0.1706 - val_pearson: 0.4626 - lr: 6.89e-06
+2026-01-27 18:22:07,773 - INFO - Epoch 121/300 (3.8s) - train_loss: 0.8101 - val_loss: 3.2314 - val_rmse: 1.8409 - val_mae: 1.3766 - val_r2: 0.1872 - val_pearson: 0.4815 - lr: 6.85e-06
+2026-01-27 18:22:11,524 - INFO - Epoch 122/300 (3.8s) - train_loss: 0.7846 - val_loss: 3.2380 - val_rmse: 1.8420 - val_mae: 1.3766 - val_r2: 0.1862 - val_pearson: 0.4739 - lr: 6.80e-06
+2026-01-27 18:22:15,202 - INFO - Epoch 123/300 (3.7s) - train_loss: 0.8204 - val_loss: 3.2271 - val_rmse: 1.8503 - val_mae: 1.3808 - val_r2: 0.1788 - val_pearson: 0.4685 - lr: 6.76e-06
+2026-01-27 18:22:19,070 - INFO - Epoch 124/300 (3.9s) - train_loss: 0.7696 - val_loss: 3.3828 - val_rmse: 1.8802 - val_mae: 1.4063 - val_r2: 0.1521 - val_pearson: 0.4701 - lr: 6.71e-06
+2026-01-27 18:22:22,824 - INFO - Epoch 125/300 (3.8s) - train_loss: 0.7928 - val_loss: 3.1654 - val_rmse: 1.8216 - val_mae: 1.3584 - val_r2: 0.2042 - val_pearson: 0.4882 - lr: 6.66e-06
+2026-01-27 18:22:22,860 - INFO - Saved periodic checkpoint at epoch 125
+2026-01-27 18:22:26,722 - INFO - Epoch 126/300 (3.9s) - train_loss: 0.8856 - val_loss: 3.3558 - val_rmse: 1.8813 - val_mae: 1.4051 - val_r2: 0.1511 - val_pearson: 0.4697 - lr: 6.62e-06
+2026-01-27 18:22:30,635 - INFO - Epoch 127/300 (3.9s) - train_loss: 0.7419 - val_loss: 3.2459 - val_rmse: 1.8420 - val_mae: 1.3718 - val_r2: 0.1862 - val_pearson: 0.4854 - lr: 6.57e-06
+2026-01-27 18:22:34,518 - INFO - Epoch 128/300 (3.9s) - train_loss: 0.8395 - val_loss: 3.2797 - val_rmse: 1.8542 - val_mae: 1.3845 - val_r2: 0.1753 - val_pearson: 0.4844 - lr: 6.53e-06
+2026-01-27 18:22:38,540 - INFO - Epoch 129/300 (4.0s) - train_loss: 0.8092 - val_loss: 3.2598 - val_rmse: 1.8475 - val_mae: 1.3838 - val_r2: 0.1813 - val_pearson: 0.4819 - lr: 6.48e-06
+2026-01-27 18:22:42,390 - INFO - Epoch 130/300 (3.8s) - train_loss: 0.7960 - val_loss: 3.1643 - val_rmse: 1.8248 - val_mae: 1.3613 - val_r2: 0.2013 - val_pearson: 0.4924 - lr: 6.44e-06
+2026-01-27 18:22:46,126 - INFO - Epoch 131/300 (3.7s) - train_loss: 0.7897 - val_loss: 3.2528 - val_rmse: 1.8524 - val_mae: 1.3840 - val_r2: 0.1769 - val_pearson: 0.4796 - lr: 6.39e-06
+2026-01-27 18:22:50,058 - INFO - Epoch 132/300 (3.9s) - train_loss: 0.6916 - val_loss: 3.3323 - val_rmse: 1.8678 - val_mae: 1.3973 - val_r2: 0.1633 - val_pearson: 0.4765 - lr: 6.34e-06
+2026-01-27 18:22:54,010 - INFO - Epoch 133/300 (4.0s) - train_loss: 0.6887 - val_loss: 3.2906 - val_rmse: 1.8534 - val_mae: 1.3931 - val_r2: 0.1761 - val_pearson: 0.4781 - lr: 6.30e-06
+2026-01-27 18:22:57,554 - INFO - Epoch 134/300 (3.5s) - train_loss: 0.7340 - val_loss: 3.3521 - val_rmse: 1.8749 - val_mae: 1.4192 - val_r2: 0.1569 - val_pearson: 0.4715 - lr: 6.25e-06
+2026-01-27 18:23:01,194 - INFO - Epoch 135/300 (3.6s) - train_loss: 0.7722 - val_loss: 3.2201 - val_rmse: 1.8457 - val_mae: 1.3697 - val_r2: 0.1830 - val_pearson: 0.4787 - lr: 6.20e-06
+2026-01-27 18:23:04,963 - INFO - Epoch 136/300 (3.8s) - train_loss: 0.7803 - val_loss: 3.3459 - val_rmse: 1.8752 - val_mae: 1.4076 - val_r2: 0.1566 - val_pearson: 0.4657 - lr: 6.16e-06
+2026-01-27 18:23:08,718 - INFO - Epoch 137/300 (3.8s) - train_loss: 0.8209 - val_loss: 3.3717 - val_rmse: 1.8840 - val_mae: 1.4225 - val_r2: 0.1486 - val_pearson: 0.4625 - lr: 6.11e-06
+2026-01-27 18:23:12,603 - INFO - Epoch 138/300 (3.9s) - train_loss: 0.7170 - val_loss: 3.4249 - val_rmse: 1.8840 - val_mae: 1.4146 - val_r2: 0.1486 - val_pearson: 0.4694 - lr: 6.06e-06
+2026-01-27 18:23:15,614 - INFO - Epoch 139/300 (3.0s) - train_loss: 0.7343 - val_loss: 3.3342 - val_rmse: 1.8744 - val_mae: 1.4134 - val_r2: 0.1574 - val_pearson: 0.4635 - lr: 6.02e-06
+2026-01-27 18:23:18,589 - INFO - Epoch 140/300 (3.0s) - train_loss: 0.6947 - val_loss: 3.2736 - val_rmse: 1.8543 - val_mae: 1.3889 - val_r2: 0.1753 - val_pearson: 0.4849 - lr: 5.97e-06
+2026-01-27 18:23:21,546 - INFO - Epoch 141/300 (3.0s) - train_loss: 0.6444 - val_loss: 3.3263 - val_rmse: 1.8669 - val_mae: 1.4157 - val_r2: 0.1640 - val_pearson: 0.4718 - lr: 5.92e-06
+2026-01-27 18:23:21,551 - INFO - Early stopping at epoch 141 | Best epoch: 111, Best val_loss: 3.1359
+2026-01-27 18:23:21,592 - INFO - Training complete. Best epoch: 111, Best val_loss: 3.1359

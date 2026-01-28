@@ -184,7 +184,11 @@ logs/
 checkpoints/
 wandb/
 outputs/
-results/
+
+# Results - ignore checkpoints but keep logs and summaries
+results/**/checkpoints/
+!results/benchmark/logs/**/*.csv
+!results/benchmark/logs/**/*.log
 
 # Cache
 .cache/
