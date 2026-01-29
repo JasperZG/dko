@@ -9,8 +9,13 @@ Contains utilities for:
 
 from dko.analysis.scc import (
     StatisticalConsistencyChecker,
+    StructuralConformationalComplexity,
     compute_scc_scores,
     validate_scc,
+    compute_dataset_scc,
+    compute_sigma_label_correlation,
+    diagnose_dataset_for_second_order,
+    run_residual_diagnostic,
 )
 from dko.analysis.statistics import (
     compute_confidence_intervals,
@@ -32,10 +37,15 @@ from dko.analysis.visualization import (
 )
 
 __all__ = [
-    # SCC
+    # SCC and Diagnostics
     "StatisticalConsistencyChecker",
+    "StructuralConformationalComplexity",
     "compute_scc_scores",
     "validate_scc",
+    "compute_dataset_scc",
+    "compute_sigma_label_correlation",
+    "diagnose_dataset_for_second_order",
+    "run_residual_diagnostic",
     # Statistics
     "compute_confidence_intervals",
     "perform_significance_tests",

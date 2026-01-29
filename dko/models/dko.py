@@ -112,6 +112,8 @@ class DKO(nn.Module):
         task: str = 'regression',
         pca_variance: float = 0.95,
         pca_max_components: Optional[int] = 1000,
+        use_diagonal_sigma: bool = False,  # Use diagonal of sigma instead of PCA
+        separate_mu_sigma_nets: bool = False,  # Use separate networks for mu and sigma
         kernel_hidden_dims: List[int] = [512, 256, 128],
         kernel_output_dim: int = 64,
         branch_hidden_dim: int = 128,
@@ -148,6 +150,8 @@ class DKO(nn.Module):
         self.task = task
         self.pca_variance = pca_variance
         self.pca_max_components = pca_max_components
+        self.use_diagonal_sigma = use_diagonal_sigma
+        self.separate_mu_sigma_nets = separate_mu_sigma_nets
         self.use_psd_constraint = use_psd_constraint
         self.use_second_order = use_second_order
         self.kernel_output_dim = kernel_output_dim
@@ -176,6 +180,17 @@ class DKO(nn.Module):
         # Kernel network (built after PCA determines input dimension)
         self.kernel_layers = None
 
+        # Sigma projection network (projects reduced sigma to same dim as mu)
+        # This ensures sigma has equal representation power as mu
+        # Built dynamically after PCA determines reduced_dim
+        self.sigma_projection = None
+
+        # Separate networks for mu and sigma (when separate_mu_sigma_nets=True)
+        # This gives sigma its own processing pathway so it doesn't get overwhelmed by mu
+        self.mu_net = None
+        self.sigma_net = None
+        self.separate_hidden_dim = 256  # Hidden dimension for each separate network
+
         # Branch network
         if use_psd_constraint:
             branch_input_dim = kernel_output_dim
@@ -200,11 +215,30 @@ class DKO(nn.Module):
         Args:
             sigma_batch: (batch, D, D) second-order features
         """
-        if not SKLEARN_AVAILABLE:
-            raise ImportError("scikit-learn is required for PCA. Install with: pip install scikit-learn")
-
         batch_size, D, _ = sigma_batch.shape
         device = sigma_batch.device
+
+        # If using diagonal, skip PCA entirely
+        if self.use_diagonal_sigma:
+            self.reduced_dim = D  # Diagonal has same dimension as feature_dim
+            self.second_order_dim = D
+            self.pca = None
+            self._sigma_std = 1.0
+
+            if self.verbose:
+                print(f"[DKO] Using diagonal of sigma: {D} dims (no PCA)")
+
+            # No sigma projection needed - already same dim as mu
+            self.sigma_projection = None
+
+            # Build kernel network with mu + diagonal
+            total_input_dim = self.first_order_dim + D
+            self._build_kernel_network(total_input_dim)
+            self.pca_fitted = True
+            return
+
+        if not SKLEARN_AVAILABLE:
+            raise ImportError("scikit-learn is required for PCA. Install with: pip install scikit-learn")
 
         # Normalize sigma for numerical stability (store for consistent transform)
         self._sigma_std = sigma_batch.std().clamp(min=1e-6).item()
@@ -296,9 +330,60 @@ class DKO(nn.Module):
                 self.pca.explained_variance_, dtype=torch.float32
             )
 
-        # Now build kernel network with known input dimension
-        total_input_dim = self.first_order_dim + self.reduced_dim
-        self._build_kernel_network(total_input_dim)
+        # Get device for creating networks
+        device = next(self.branch_net.parameters()).device
+
+        if self.separate_mu_sigma_nets:
+            # Separate networks approach: mu and sigma each get their own network
+            # This prevents sigma from being overwhelmed by mu's 1024 dimensions
+            h_dim = self.separate_hidden_dim
+
+            # Mu network: first_order_dim -> h_dim
+            self.mu_net = nn.Sequential(
+                nn.Linear(self.first_order_dim, h_dim * 2),
+                nn.BatchNorm1d(h_dim * 2),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(h_dim * 2, h_dim),
+                nn.BatchNorm1d(h_dim),
+                nn.ReLU(),
+            ).to(device)
+
+            # Sigma network: reduced_dim -> h_dim (same output as mu)
+            self.sigma_net = nn.Sequential(
+                nn.Linear(self.reduced_dim, h_dim),
+                nn.BatchNorm1d(h_dim),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+                nn.Linear(h_dim, h_dim),
+                nn.BatchNorm1d(h_dim),
+                nn.ReLU(),
+            ).to(device)
+
+            self.sigma_projection = None  # Not used with separate nets
+
+            if self.verbose:
+                print(f"[DKO] Separate networks: mu ({self.first_order_dim} -> {h_dim}), "
+                      f"sigma ({self.reduced_dim} -> {h_dim})")
+
+            # Kernel network takes concatenated outputs: h_dim + h_dim = 2*h_dim
+            total_input_dim = h_dim * 2
+            self._build_kernel_network(total_input_dim)
+        else:
+            # Original approach: project sigma to same dim as mu, then concatenate
+            self.sigma_projection = nn.Sequential(
+                nn.Linear(self.reduced_dim, self.first_order_dim),
+                nn.BatchNorm1d(self.first_order_dim),
+                nn.ReLU(),
+                nn.Dropout(self.dropout),
+            ).to(device)
+
+            if self.verbose:
+                print(f"[DKO] Sigma projection: {self.reduced_dim} -> {self.first_order_dim} dims")
+
+            # Kernel network with equal representation from mu and sigma
+            total_input_dim = self.first_order_dim * 2  # mu + projected_sigma
+            self._build_kernel_network(total_input_dim)
 
         self.pca_fitted = True
 
@@ -427,10 +512,9 @@ class DKO(nn.Module):
         if torch.isnan(mu).any() or torch.isinf(mu).any():
             mu = torch.nan_to_num(mu, nan=0.0, posinf=1.0, neginf=-1.0)
 
-        # Normalize mu for numerical stability (per-sample normalization)
-        mu_mean = mu.mean(dim=1, keepdim=True)
-        mu_std = mu.std(dim=1, keepdim=True).clamp(min=1e-6)
-        mu = (mu - mu_mean) / mu_std
+        # NOTE: Removed per-sample normalization that was destroying distributional signal
+        # The BatchNorm layers in kernel_network handle normalization properly
+        # Per-sample normalization erases relative differences between molecules
 
         # Handle second-order features
         if self.use_second_order and sigma is not None:
@@ -446,13 +530,19 @@ class DKO(nn.Module):
             if self.pca_fitted:
                 sigma_reduced = self._reduce_second_order(sigma)
 
-                # Normalize sigma_reduced for numerical stability
-                sr_mean = sigma_reduced.mean(dim=1, keepdim=True)
-                sr_std = sigma_reduced.std(dim=1, keepdim=True).clamp(min=1e-6)
-                sigma_reduced = (sigma_reduced - sr_mean) / sr_std
-
-                # Concatenate first and second order: [μ, reduced_Σ]
-                combined = torch.cat([mu, sigma_reduced], dim=1)
+                # Use separate networks if enabled
+                if self.separate_mu_sigma_nets and self.mu_net is not None:
+                    # Process mu and sigma through separate networks
+                    mu_processed = self.mu_net(mu)
+                    sigma_processed = self.sigma_net(sigma_reduced)
+                    combined = torch.cat([mu_processed, sigma_processed], dim=1)
+                # Project sigma if needed (only when using PCA with small output)
+                elif self.sigma_projection is not None:
+                    sigma_projected = self.sigma_projection(sigma_reduced)
+                    combined = torch.cat([mu, sigma_projected], dim=1)
+                else:
+                    # When using diagonal sigma, no projection needed
+                    combined = torch.cat([mu, sigma_reduced], dim=1)
             else:
                 # PCA not fitted yet, temporarily use first-order only
                 combined = mu
@@ -490,12 +580,11 @@ class DKO(nn.Module):
             # Use log1p to handle small values gracefully
             kernel_features = torch.log1p(kernel_features)
 
-            # Normalize kernel features
-            kf_mean = kernel_features.mean(dim=1, keepdim=True)
-            kf_std = kernel_features.std(dim=1, keepdim=True).clamp(min=1e-6)
-            kernel_features = (kernel_features - kf_mean) / kf_std
+            # NOTE: Removed per-sample normalization that was destroying distributional signal
+            # The branch_net has its own normalization via the linear layers
+            # Per-sample normalization erases the kernel's learned magnitude information
 
-            # Final safety clamp
+            # Final safety clamp (still needed to prevent extreme values)
             kernel_features = torch.clamp(kernel_features, min=-10.0, max=10.0)
         else:
             kernel_features = kernel_output
@@ -527,7 +616,15 @@ class DKO(nn.Module):
         with torch.no_grad():
             if self.use_second_order and sigma is not None and self.pca_fitted:
                 sigma_reduced = self._reduce_second_order(sigma)
-                combined = torch.cat([mu, sigma_reduced], dim=1)
+                if self.separate_mu_sigma_nets and self.mu_net is not None:
+                    mu_processed = self.mu_net(mu)
+                    sigma_processed = self.sigma_net(sigma_reduced)
+                    combined = torch.cat([mu_processed, sigma_processed], dim=1)
+                elif self.sigma_projection is not None:
+                    sigma_projected = self.sigma_projection(sigma_reduced)
+                    combined = torch.cat([mu, sigma_projected], dim=1)
+                else:
+                    combined = torch.cat([mu, sigma_reduced], dim=1)
             else:
                 combined = mu
 
@@ -565,7 +662,15 @@ class DKO(nn.Module):
         with torch.no_grad():
             if self.use_second_order and sigma is not None and self.pca_fitted:
                 sigma_reduced = self._reduce_second_order(sigma)
-                combined = torch.cat([mu, sigma_reduced], dim=1)
+                if self.separate_mu_sigma_nets and self.mu_net is not None:
+                    mu_processed = self.mu_net(mu)
+                    sigma_processed = self.sigma_net(sigma_reduced)
+                    combined = torch.cat([mu_processed, sigma_processed], dim=1)
+                elif self.sigma_projection is not None:
+                    sigma_projected = self.sigma_projection(sigma_reduced)
+                    combined = torch.cat([mu, sigma_projected], dim=1)
+                else:
+                    combined = torch.cat([mu, sigma_reduced], dim=1)
             else:
                 combined = mu
 

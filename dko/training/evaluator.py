@@ -490,7 +490,7 @@ class Evaluator:
         if torch.isnan(features).any() or torch.isinf(features).any():
             features = torch.nan_to_num(features, nan=0.0, posinf=1.0, neginf=-1.0)
 
-        # Normalize features per sample for numerical stability
+        # Per-sample normalization of conformer features for numerical stability
         feat_mean = features.mean(dim=(1, 2), keepdim=True)
         feat_std = features.std(dim=(1, 2), keepdim=True).clamp(min=1e-6)
         features = (features - feat_mean) / feat_std

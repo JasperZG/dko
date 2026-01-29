@@ -405,8 +405,9 @@ class Trainer:
         if torch.isnan(features).any() or torch.isinf(features).any():
             features = torch.nan_to_num(features, nan=0.0, posinf=1.0, neginf=-1.0)
 
-        # Normalize features per sample for numerical stability
-        # This keeps relative differences within each molecule
+        # Per-sample normalization of conformer features for numerical stability
+        # This normalizes BEFORE computing mu/sigma, which is different from normalizing
+        # mu/sigma after computation (which would destroy distributional signal)
         feat_mean = features.mean(dim=(1, 2), keepdim=True)
         feat_std = features.std(dim=(1, 2), keepdim=True).clamp(min=1e-6)
         features = (features - feat_mean) / feat_std

@@ -6,15 +6,16 @@ This module implements negative control experiments to validate the SCC hypothes
 Key Hypothesis: DKO's advantage over baselines should be correlated with
 the task's dependence on conformational flexibility (SCC).
 
-Negative Controls (Low-SCC tasks):
-- QM9 electronic properties (HOMO, LUMO, Gap)
-- These properties depend primarily on electronic structure, not flexibility
-- Expected: DKO should show NO significant advantage over simpler methods
+Negative Controls (Properties with no second-order dependence):
+- QM9 electronic properties (HOMO, LUMO, Gap) - determined by electronic structure
+- ESOL aqueous solubility - determined by mean surface properties
+- Lipophilicity - determined by mean hydrophobic/hydrophilic balance
+- Expected: DKO second-order features should show NO advantage over first-order
 
-Positive Controls (High-SCC tasks):
-- Binding affinity (BACE, PDBBind)
-- Solubility (ESOL, FreeSolv)
-- Expected: DKO should show significant advantage
+Positive Controls (Properties with potential second-order dependence):
+- Binding affinity (BACE, PDBBind) - conformational flexibility affects binding
+- FreeSolv hydration free energy - solvation may depend on conformational ensemble
+- Expected: DKO second-order features MAY show advantage
 
 Analysis:
 1. Compare DKO improvement across low-SCC vs high-SCC tasks

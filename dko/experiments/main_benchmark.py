@@ -3,6 +3,24 @@ Main benchmark experiment for DKO.
 
 This script runs the main comparative benchmark across all datasets
 and models, evaluating DKO against baselines.
+
+Key Insight: The primary value of DKO is enabling DECOMPOSITION ANALYSIS,
+not necessarily achieving best performance. DKO's explicit separation of
+first-order (mean) and second-order (covariance) features allows us to:
+
+1. Quantify the 80/20 hypothesis: How much of ensemble improvement comes
+   from better mean estimation vs capturing conformational flexibility?
+
+2. Validate negative controls: Confirm that second-order features don't
+   help on properties that shouldn't depend on conformational variance
+   (ESOL, Lipophilicity, QM9 electronic properties).
+
+3. Identify when ensembles matter: Only binding affinity and potentially
+   FreeSolv show meaningful second-order dependence.
+
+DKO-FirstOrder should match or beat attention on most tasks.
+DKO-Full (with covariance) should only beat DKO-FirstOrder on tasks
+where conformational flexibility affects the property.
 """
 
 import argparse
@@ -45,6 +63,8 @@ MODEL_REGISTRY = {
     # DKO variants
     "dko": DKO,
     "dko_first_order": DKOFirstOrder,
+    "dko_diagonal": lambda **kwargs: DKO(use_diagonal_sigma=True, **kwargs),
+    "dko_separate_nets": lambda **kwargs: DKO(separate_mu_sigma_nets=True, **kwargs),
     # Attention-based
     "attention": AttentionAggregation,
     "attention_augmented": AttentionAugmented,
@@ -156,12 +176,15 @@ def run_single_experiment(
     # Determine task type
     task_type = "classification" if dataset_name in ["bace", "herg", "cyp3a4", "tox21", "bbbp"] else "regression"
 
-    # Training config - use lower learning rate for DKO (large gradients)
-    base_lr = 1e-5 if is_dko else config.get("training.base_learning_rate", 1e-4)
+    # Training config - learning rate settings:
+    # - Full DKO (2nd order): 1e-5 due to large covariance matrices causing gradient issues
+    # - DKO first-order: 1e-4 (same as other models) - no numerical issues with mean-only
+    is_full_dko = model_name == "dko"  # Only full DKO needs special handling
+    base_lr = 1e-5 if is_full_dko else config.get("training.base_learning_rate", 1e-4)
 
-    # Disable mixed precision for DKO models - the large covariance matrices (1024x1024)
-    # cause float16 overflow leading to NaN losses
-    use_mixed_precision = False if is_dko else config.get("training.mixed_precision", True)
+    # Disable mixed precision only for full DKO - the large covariance matrices (1024x1024)
+    # cause float16 overflow leading to NaN losses. First-order is fine with mixed precision.
+    use_mixed_precision = False if is_full_dko else config.get("training.mixed_precision", True)
 
     training_config = {
         "optimizer": config.get("training.optimizer", "AdamW"),
