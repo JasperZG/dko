@@ -36,6 +36,13 @@ from dko.data.datasets import create_dataloaders, create_dataloaders_from_precom
 from dko.models import (
     DKO,
     DKOFirstOrder,
+    DKOEigenspectrum,
+    DKOScalarInvariants,
+    DKOLowRank,
+    DKOGatedFusion,
+    DKOResidual,
+    DKOCrossAttention,
+    DKOSCCRouter,
     AttentionAggregation,
     AttentionAugmented,
     DeepSets,
@@ -65,6 +72,14 @@ MODEL_REGISTRY = {
     "dko_first_order": DKOFirstOrder,
     "dko_diagonal": lambda **kwargs: DKO(use_diagonal_sigma=True, **kwargs),
     "dko_separate_nets": lambda **kwargs: DKO(separate_mu_sigma_nets=True, **kwargs),
+    # DKO eigendecomposition variants
+    "dko_eigenspectrum": DKOEigenspectrum,
+    "dko_invariants": DKOScalarInvariants,
+    "dko_lowrank": DKOLowRank,
+    "dko_gated": DKOGatedFusion,
+    "dko_residual": DKOResidual,
+    "dko_crossattn": DKOCrossAttention,
+    "dko_router": DKOSCCRouter,
     # Attention-based
     "attention": AttentionAggregation,
     "attention_augmented": AttentionAugmented,
@@ -155,8 +170,12 @@ def run_single_experiment(
     model_config["num_outputs"] = n_outputs  # For legacy models
 
     # DKO-specific config
-    is_dko = model_name in ["dko", "dko_first_order", "dko_diagonal", "dko_separate_nets"]
-    if is_dko:
+    is_dko = model_name.startswith("dko")
+    is_dko_variant = model_name in [
+        "dko_eigenspectrum", "dko_invariants", "dko_lowrank",
+        "dko_gated", "dko_residual", "dko_crossattn", "dko_router",
+    ]
+    if is_dko and not is_dko_variant:
         model_config["kernel_output_dim"] = 64  # Full PSD feature dimension (L-matrix scaling handles stability)
 
     # Clean up conflicting args before passing to model
@@ -183,7 +202,11 @@ def run_single_experiment(
     # Mixed precision: disabled for full DKO (ablation shows RMSE 2.685 vs 2.056 with mp=False,
     # and 10x higher variance). L-matrix scaling is insufficient for fp16 covariance matrices.
     # First-order and baselines are fine with mixed precision.
-    is_full_dko = model_name in ["dko", "dko_diagonal", "dko_separate_nets"]
+    is_full_dko = model_name in [
+        "dko", "dko_diagonal", "dko_separate_nets",
+        "dko_eigenspectrum", "dko_invariants", "dko_lowrank",
+        "dko_gated", "dko_residual", "dko_crossattn", "dko_router",
+    ]
     use_mixed_precision = False if is_full_dko else config.get("training.mixed_precision", True)
 
     training_config = {

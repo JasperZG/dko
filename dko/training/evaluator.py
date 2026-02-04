@@ -476,7 +476,11 @@ class Evaluator:
         # Handle DataParallel wrapped models
         actual_model = model.module if isinstance(model, nn.DataParallel) else model
         model_class_name = actual_model.__class__.__name__
-        return model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+        return model_class_name in [
+            'DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD',
+            'DKOEigenspectrum', 'DKOScalarInvariants', 'DKOLowRank',
+            'DKOGatedFusion', 'DKOResidual', 'DKOCrossAttention', 'DKOSCCRouter',
+        ]
 
     def _compute_mu_sigma(
         self,

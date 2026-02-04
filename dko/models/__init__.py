@@ -10,6 +10,15 @@ Contains implementations of:
 """
 
 from dko.models.dko import DKO, DKOKernel, DKOFirstOrder, DKONoPSD
+from dko.models.dko_variants import (
+    DKOEigenspectrum,
+    DKOScalarInvariants,
+    DKOLowRank,
+    DKOGatedFusion,
+    DKOResidual,
+    DKOCrossAttention,
+    DKOSCCRouter,
+)
 from dko.models.attention import (
     AttentionAggregation,
     MultiHeadAttention,
@@ -52,6 +61,14 @@ __all__ = [
     "DKOKernel",
     "DKOFirstOrder",
     "DKONoPSD",
+    # DKO Variants
+    "DKOEigenspectrum",
+    "DKOScalarInvariants",
+    "DKOLowRank",
+    "DKOGatedFusion",
+    "DKOResidual",
+    "DKOCrossAttention",
+    "DKOSCCRouter",
     # Attention
     "AttentionAggregation",
     "AttentionPooling",  # Alias for AttentionAggregation

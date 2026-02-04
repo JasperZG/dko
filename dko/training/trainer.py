@@ -197,7 +197,11 @@ class Trainer:
 
         # Check if model is DKO variant (PCA fitting doesn't work with DataParallel)
         model_class_name = model.__class__.__name__
-        is_dko = model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+        is_dko = model_class_name in [
+            'DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD',
+            'DKOEigenspectrum', 'DKOScalarInvariants', 'DKOLowRank',
+            'DKOGatedFusion', 'DKOResidual', 'DKOCrossAttention', 'DKOSCCRouter',
+        ]
 
         # Multi-GPU support with DataParallel (but not for DKO due to PCA)
         if device == 'cuda' and torch.cuda.device_count() > 1 and not is_dko:
@@ -458,7 +462,11 @@ class Trainer:
         # Handle DataParallel wrapped models
         model = self.model.module if isinstance(self.model, nn.DataParallel) else self.model
         model_class_name = model.__class__.__name__
-        return model_class_name in ['DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD']
+        return model_class_name in [
+            'DKO', 'DKOFirstOrder', 'DKOFull', 'DKONoPSD',
+            'DKOEigenspectrum', 'DKOScalarInvariants', 'DKOLowRank',
+            'DKOGatedFusion', 'DKOResidual', 'DKOCrossAttention', 'DKOSCCRouter',
+        ]
 
     def _forward_pass(
         self,
