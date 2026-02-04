@@ -405,11 +405,11 @@ class Trainer:
         if torch.isnan(features).any() or torch.isinf(features).any():
             features = torch.nan_to_num(features, nan=0.0, posinf=1.0, neginf=-1.0)
 
-        # Per-sample normalization of conformer features for numerical stability
-        # This normalizes BEFORE computing mu/sigma, which is different from normalizing
-        # mu/sigma after computation (which would destroy distributional signal)
-        feat_mean = features.mean(dim=(1, 2), keepdim=True)
-        feat_std = features.std(dim=(1, 2), keepdim=True).clamp(min=1e-6)
+        # Per-sample normalization across conformers only (dim=1).
+        # Normalizing across features too (dim=(1,2)) destroys inter-feature variance
+        # that sigma is meant to capture. dim=1 preserves feature-wise structure.
+        feat_mean = features.mean(dim=1, keepdim=True)
+        feat_std = features.std(dim=1, keepdim=True).clamp(min=1e-6)
         features = (features - feat_mean) / feat_std
 
         # Create mask if not provided
@@ -445,9 +445,11 @@ class Trainer:
             weighted_centered  # (batch, n_conf, feat_dim)
         )  # (batch, feat_dim, feat_dim)
 
-        # Add small regularization to diagonal for numerical stability
+        # Add regularization to diagonal for numerical stability.
+        # 1e-2 is appropriate for geometric feature scales (~0.1-10.0) to prevent
+        # near-singular covariance matrices.
         eye = torch.eye(feat_dim, device=sigma.device, dtype=sigma.dtype)
-        sigma = sigma + 1e-4 * eye.unsqueeze(0)
+        sigma = sigma + 1e-2 * eye.unsqueeze(0)
 
         return mu, sigma
 

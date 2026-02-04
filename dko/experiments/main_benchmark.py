@@ -154,10 +154,10 @@ def run_single_experiment(
     model_config["output_dim"] = n_outputs
     model_config["num_outputs"] = n_outputs  # For legacy models
 
-    # DKO-specific config for numerical stability
-    is_dko = model_name in ["dko", "dko_first_order"]
+    # DKO-specific config
+    is_dko = model_name in ["dko", "dko_first_order", "dko_diagonal", "dko_separate_nets"]
     if is_dko:
-        model_config["kernel_output_dim"] = 32  # Smaller for stability (default 64 causes gradient explosion)
+        model_config["kernel_output_dim"] = 64  # Full PSD feature dimension (L-matrix scaling handles stability)
 
     # Clean up conflicting args before passing to model
     try:
@@ -176,14 +176,14 @@ def run_single_experiment(
     # Determine task type
     task_type = "classification" if dataset_name in ["bace", "herg", "cyp3a4", "tox21", "bbbp"] else "regression"
 
-    # Training config - learning rate settings:
-    # - Full DKO (2nd order): 1e-5 due to large covariance matrices causing gradient issues
-    # - DKO first-order: 1e-4 (same as other models) - no numerical issues with mean-only
-    is_full_dko = model_name == "dko"  # Only full DKO needs special handling
-    base_lr = 1e-5 if is_full_dko else config.get("training.base_learning_rate", 1e-4)
+    # Training config - uniform learning rate for all models.
+    # Gradient clipping (max_norm=1.0) + L-matrix scaling (1/sqrt(k_dim)) handle DKO stability.
+    base_lr = config.get("training.base_learning_rate", 1e-4)
 
-    # Disable mixed precision only for full DKO - the large covariance matrices (1024x1024)
-    # cause float16 overflow leading to NaN losses. First-order is fine with mixed precision.
+    # Mixed precision: disabled for full DKO (ablation shows RMSE 2.685 vs 2.056 with mp=False,
+    # and 10x higher variance). L-matrix scaling is insufficient for fp16 covariance matrices.
+    # First-order and baselines are fine with mixed precision.
+    is_full_dko = model_name in ["dko", "dko_diagonal", "dko_separate_nets"]
     use_mixed_precision = False if is_full_dko else config.get("training.mixed_precision", True)
 
     training_config = {
