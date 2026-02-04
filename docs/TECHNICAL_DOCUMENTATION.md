@@ -1,8 +1,8 @@
 # DKO (Distribution Kernel Operators) - Technical Documentation
 
-**Version:** 1.1.0
-**Last Updated:** January 5, 2026
-**Status:** Complete with all models, baselines, and experiments
+**Version:** 1.2.0
+**Last Updated:** February 3, 2026
+**Status:** Complete with all models, baselines, benchmark results (192 experiments)
 
 ---
 
@@ -95,13 +95,39 @@ dkoproject/
 │   ├── submit_hpc.sh                 # SLURM job template
 │   ├── submit_all_experiments.py     # Batch experiment submission
 │   ├── aggregate_results.py          # Results aggregation
-│   └── test_training_integration.py  # Integration tests
+│   ├── test_training_integration.py  # Integration tests
+│   ├── feature_quality_analysis.py   # sklearn baseline on raw features
+│   ├── run_ablation.py               # Ablation study driver
+│   ├── run_ablation_single.py        # Single ablation experiment runner
+│   ├── launch_phase1.sh              # Phase 1 (ablation) GPU launcher
+│   └── launch_phase2.sh              # Phase 2 (full benchmark) GPU launcher
+├── data/
+│   └── conformers/               # Precomputed conformer features
+│       ├── esol/                     # {train,val,test}.pkl per dataset
+│       ├── freesolv/
+│       ├── lipophilicity/
+│       ├── bace/
+│       ├── bbbp/
+│       ├── qm9_gap/
+│       ├── qm9_homo/
+│       └── qm9_lumo/
+├── results/                      # Experiment results
+│   ├── ablation/                     # Ablation study (7 configs x 3 seeds)
+│   ├── feature_quality/              # sklearn feature quality analysis
+│   └── benchmark_fixed/              # Phase 2 results (8 datasets)
+│       └── {dataset}/benchmark_results.json
 ├── tests/                        # Test suite
 │   ├── test_trainer.py               # 40 trainer tests
 │   ├── test_evaluator.py             # 36 evaluator tests
 │   └── test_hyperopt.py              # 28 hyperopt tests
 └── docs/                         # Documentation
-    └── TECHNICAL_DOCUMENTATION.md
+    ├── TECHNICAL_DOCUMENTATION.md    # This file
+    ├── RESULTS.md                    # Benchmark results (192 experiments)
+    ├── FULL_EXPERIMENT_GUIDE.md      # Experiment workflow guide
+    ├── CLUSTER_GUIDE.md              # HPC deployment reference
+    ├── DEPLOYMENT_CHECKLIST.md       # Pre-launch checklist
+    ├── CRITICAL_ANALYSIS.md          # Research critique
+    └── ERROR_REPORT.md               # Debugging and fixes
 ```
 
 ---
@@ -408,7 +434,36 @@ dko_dataset = DKODataset(
 )
 ```
 
-### 5.6 Scaffold Splitter
+### 5.6 Precomputed Conformer Workflow
+
+The benchmark uses precomputed conformer features stored as pickle files. This avoids regenerating conformers for every experiment:
+
+```python
+from dko.data.datasets import ConformerDataset, create_dataloaders_from_precomputed
+
+# Precomputed files are stored at:
+#   data/conformers/{dataset_name}/{split}.pkl
+# Each pickle contains per-molecule conformer features, labels, and metadata.
+
+# Create DataLoaders from precomputed data
+train_loader, val_loader, test_loader = create_dataloaders_from_precomputed(
+    dataset_name='esol',        # Looks in data/conformers/esol/
+    batch_size=32,
+    num_workers=4,
+)
+
+# ConformerDataset returns batches with:
+#   features:      (batch, max_conformers, feature_dim) - padded conformer features
+#   label:         (batch, 1) - target property
+#   mask:          (batch, max_conformers) - 1 for real conformers, 0 for padding
+#   n_conformers:  (batch,) - actual conformer count per molecule
+#   smiles:        list of SMILES strings
+#   idx:           (batch,) - dataset indices
+```
+
+**Available precomputed datasets:** esol, freesolv, lipophilicity, bace, bbbp, qm9_gap, qm9_homo, qm9_lumo
+
+### 5.7 Scaffold Splitter
 
 Splits data by molecular scaffolds (recommended for molecular ML):
 
@@ -495,12 +550,13 @@ Input: [μ, Σ]
 Output: predictions
 ```
 
-### 6.2 DKO Ablations
+### 6.2 DKO Variants
 
 ```python
 from dko.models.dko import DKOFirstOrder, DKOSecondOrder, DKONoPSD
 
 # First-order only (μ only, no covariance)
+# Best DKO variant in benchmarks (avg rank 4.50, wins ESOL with R²=0.336)
 model_first = DKOFirstOrder(feature_dim=200, output_dim=1)
 
 # Second-order only (Σ only, no mean)
@@ -510,7 +566,30 @@ model_second = DKOSecondOrder(feature_dim=200, output_dim=1)
 model_no_psd = DKONoPSD(feature_dim=200, output_dim=1)
 ```
 
-### 6.3 AttentionPoolingBaseline
+**Additional variants available in MODEL_REGISTRY:**
+
+| Variant | Registry Key | Description |
+|---------|-------------|-------------|
+| DKO (full) | `dko` | Mean + full covariance matrix (2nd order) |
+| DKO First Order | `dko_first_order` | Mean only, no covariance features |
+| DKO Diagonal | `dko_diagonal` | Uses diagonal of sigma only, skips PCA. Lower-dimensional alternative to full covariance. |
+| DKO Separate Nets | `dko_separate_nets` | Independent networks for mu and sigma pathways before merging |
+
+### 6.3 Mean Ensemble and Single Conformer Baselines
+
+Simple baselines that don't learn conformer aggregation:
+
+```python
+# Mean ensemble: features → per-conformer network → average predictions
+# Strong baseline -- avg rank 2.67 across regression datasets
+# Key: "mean_ensemble" in MODEL_REGISTRY
+
+# Single conformer: uses only the lowest-energy conformer
+# Discards all conformational information
+# Key: "single_conformer" in MODEL_REGISTRY
+```
+
+### 6.5 AttentionPoolingBaseline
 
 Learnable attention over conformers:
 
@@ -572,7 +651,7 @@ Input: conformer features (B, K, D)
 Output: predictions
 ```
 
-### 6.4 DeepSetsBaseline
+### 6.6 DeepSetsBaseline
 
 Permutation-invariant set function:
 
@@ -627,7 +706,7 @@ Input: conformer features (B, K, D), weights (B, K)
 Output: predictions
 ```
 
-### 6.5 MeanFeatureAggregation (MFA)
+### 6.7 MeanFeatureAggregation (MFA)
 
 Averages conformer features BEFORE passing to the network:
 
@@ -660,7 +739,7 @@ predictions = model(x, mask=mask, energies=energies)
 - MFA: mean(features) → network → prediction
 - MeanEnsemble: features → network → mean(predictions)
 
-### 6.6 MultiInstanceLearning (MIL)
+### 6.8 MultiInstanceLearning (MIL)
 
 Classic MIL with multiple pooling options:
 
@@ -685,7 +764,7 @@ model = MultiInstanceLearning(
 predictions, attention_weights = model(x, mask=mask, return_attention=True)
 ```
 
-### 6.7 GNN Baselines (PyTorch Geometric)
+### 6.9 GNN Baselines (PyTorch Geometric)
 
 3D GNN models with conformer aggregation:
 
@@ -772,7 +851,41 @@ trainer.save_checkpoint('checkpoint.pt')
 trainer.load_checkpoint('checkpoint.pt')
 ```
 
-### 7.2 Training Loop Details
+### 7.2 DKO-Specific Training Notes
+
+The following settings are critical for DKO model training. These were identified through ablation testing (see `docs/RESULTS.md`):
+
+**Feature Normalization (trainer.py, evaluator.py):**
+The `_compute_mu_sigma` method normalizes conformer features before computing statistics. The normalization dimension matters:
+- `dim=1` (correct): Normalizes across conformers only, preserving inter-feature variance that sigma captures
+- `dim=(1,2)` (broken): Normalizes across both conformers and features, destroying the variance structure
+
+```python
+# Correct: normalize per-sample across conformers only
+feat_mean = features.mean(dim=1, keepdim=True)
+feat_std = features.std(dim=1, keepdim=True).clamp(min=1e-6)
+features = (features - feat_mean) / feat_std
+```
+
+**Sigma Regularization (trainer.py, evaluator.py):**
+After computing the covariance matrix, diagonal regularization prevents near-singular matrices:
+```python
+# Add regularization to covariance diagonal
+eye = torch.eye(feat_dim, device=sigma.device, dtype=sigma.dtype)
+sigma = sigma + 1e-2 * eye.unsqueeze(0)  # 1e-2, not 1e-4
+```
+A value of `1e-4` is too small given feature scales of ~0.1-10.0, leading to numerical instability.
+
+**Mixed Precision:**
+Mixed precision (FP16) is harmful for full DKO variants that compute covariance matrices. Ablation showed RMSE increases from 2.056 to 2.685 with 10x higher variance when enabled. Mixed precision should be disabled for `dko`, `dko_diagonal`, and `dko_separate_nets`, but can remain enabled for `dko_first_order` and all baselines.
+
+**Learning Rate:**
+All models (including DKO) use a uniform learning rate of `1e-4`. Gradient clipping (`max_norm=1.0`) handles stability.
+
+**Kernel Output Dimension:**
+`kernel_output_dim = 64` is the correct default for DKO variants. The PSD constraint via L-matrix (`K = LL^T`) produces 64-dim features.
+
+### 7.3 Training Loop Details
 
 ```python
 # Per-epoch training loop (internal)
@@ -805,7 +918,7 @@ def train_epoch(self, train_loader, fit_pca=False):
         return True  # Stop training
 ```
 
-### 7.3 EarlyStopping
+### 7.4 EarlyStopping
 
 ```python
 from dko.training.trainer import EarlyStopping
@@ -824,7 +937,7 @@ for epoch in range(max_epochs):
         break
 ```
 
-### 7.4 HPC Trainer
+### 7.5 HPC Trainer
 
 Enhanced trainer for HPC environments with comprehensive logging:
 
@@ -1538,20 +1651,25 @@ python scripts/aggregate_results.py \
 
 ## Appendix A: Benchmark Datasets
 
-| Dataset | Task | Size | Metric | Description |
-|---------|------|------|--------|-------------|
-| ESOL | Regression | 1,128 | RMSE | Aqueous solubility |
-| Lipophilicity | Regression | 4,200 | RMSE | Lipophilicity (logD) |
-| FreeSolv | Regression | 642 | RMSE | Hydration free energy |
-| BACE | Classification | 1,513 | AUC | BACE-1 inhibitors |
-| BBBP | Classification | 2,039 | AUC | Blood-brain barrier |
-| HIV | Classification | 41,127 | AUC | HIV replication inhibition |
-| Tox21 | Multi-task | 7,831 | AUC | Toxicity (12 tasks) |
-| ToxCast | Multi-task | 8,576 | AUC | Toxicity (617 tasks) |
-| SIDER | Multi-task | 1,427 | AUC | Side effects (27 tasks) |
-| ClinTox | Multi-task | 1,478 | AUC | Clinical trial toxicity |
-| MUV | Multi-task | 93,087 | AUC | PubChem bioassays |
-| QM7 | Regression | 7,165 | MAE | Atomization energies |
+| Dataset | Task | Size | Metric | Description | Precomputed |
+|---------|------|------|--------|-------------|-------------|
+| ESOL | Regression | 1,128 | RMSE | Aqueous solubility | Yes |
+| FreeSolv | Regression | 642 | RMSE | Hydration free energy | Yes |
+| Lipophilicity | Regression | 4,200 | RMSE | Lipophilicity (logD) | Yes |
+| QM9-Gap | Regression | ~3,000 | MAE | HOMO-LUMO gap | Yes |
+| QM9-HOMO | Regression | ~3,000 | MAE | HOMO energy | Yes |
+| QM9-LUMO | Regression | ~3,000 | MAE | LUMO energy | Yes |
+| BACE | Classification | 1,513 | AUC | BACE-1 inhibitors | Yes |
+| BBBP | Classification | 2,039 | AUC | Blood-brain barrier | Yes |
+| HIV | Classification | 41,127 | AUC | HIV replication inhibition | No |
+| Tox21 | Multi-task | 7,831 | AUC | Toxicity (12 tasks) | No |
+| ToxCast | Multi-task | 8,576 | AUC | Toxicity (617 tasks) | No |
+| SIDER | Multi-task | 1,427 | AUC | Side effects (27 tasks) | No |
+| ClinTox | Multi-task | 1,478 | AUC | Clinical trial toxicity | No |
+| MUV | Multi-task | 93,087 | AUC | PubChem bioassays | No |
+| QM7 | Regression | 7,165 | MAE | Atomization energies | No |
+
+**Benchmarked datasets (Phase 2, 192 experiments):** ESOL, FreeSolv, Lipophilicity, QM9-Gap, QM9-HOMO, QM9-LUMO, BACE, BBBP. See `docs/RESULTS.md` for full results.
 
 ---
 
@@ -1613,6 +1731,21 @@ If you use this code, please cite:
 ---
 
 ## Changelog
+
+### v1.2.0 (2026-02-03)
+- Fix feature normalization: `dim=(1,2)` -> `dim=1` in trainer and evaluator (critical fix)
+- Fix sigma regularization: `1e-4` -> `1e-2` for numerical stability
+- Fix DKO learning rate: uniform `1e-4` for all models (was `1e-5` for DKO)
+- Fix kernel output dimension: restore to 64 (was halved to 32)
+- Disable mixed precision for full DKO variants (covariance arithmetic needs FP32)
+- Add `dko_diagonal` and `dko_separate_nets` to benchmark model list
+- Add `mean_ensemble` and `single_conformer` baseline documentation
+- Add precomputed conformer workflow documentation (Section 5.6)
+- Add DKO-specific training notes (Section 7.2)
+- Add QM9-Gap, QM9-HOMO, QM9-LUMO to dataset appendix
+- Add ablation study scripts and feature quality analysis scripts
+- Run full 192-experiment benchmark (8 models x 3 seeds x 8 datasets)
+- Update project structure to include results, scripts, and precomputed data
 
 ### v1.1.0 (2026-01-05)
 - Add MeanFeatureAggregation (MFA) baseline
