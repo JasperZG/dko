@@ -1,7 +1,7 @@
 # DKO Benchmark Results
 
 **Date:** 2026-02-06 (updated), 2026-02-04, 2026-02-03 (Phase 1-2), 2026-01-27 (original)
-**Status:** ~650+ total experiments (192 Phase 2 + 21 ablation + 84 Phase 3 variants + 84 Phase 3 remaining + 60 10-seed validation + 24 FP baseline + 42 hybrid + 84 Kraken + 15 BDE + 36 Drugs in progress)
+**Status:** ~700+ total experiments (192 Phase 2 + 21 ablation + 84 Phase 3 variants + 84 Phase 3 remaining + 60 10-seed validation + 24 FP baseline + 42 hybrid + 48 Kraken + 15 BDE + 45 Drugs)
 
 ---
 
@@ -678,9 +678,15 @@ FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the 
 2. **DKO still beats mean baseline** - second-order features help, but attention learns better weights
 3. The ranking is: **Attention > DKO > Mean** on Boltzmann-averaged steric properties
 
-### Drugs-75K Neural Results (In Progress)
+### Drugs-75K Neural Results (Complete - 5 models × 3 targets × 3 seeds)
 
-Running 5 models × 3 targets × 3 seeds on GPUs 5, 6, 8. Results pending.
+| Target | FP+XGB RMSE | attention RMSE | mean_ensemble RMSE | dko_gated RMSE | FP Wins By |
+|--------|------------|----------------|-------------------|----------------|------------|
+| drugs_ip | **0.656** | 0.849 | 0.856 | 0.908 | +29% |
+| drugs_ea | **0.609** | 0.774 | 0.776 | 0.866 | +27% |
+| drugs_chi | **0.360** | 0.435 | 0.437 | 0.526 | +21% |
+
+**Key finding:** FP+XGBoost dominates on all 3 Drugs-75K electronic properties. Neural conformer methods (attention, DKO) fail to match fingerprint baseline, consistent with MoleculeNet results.
 
 ### Key Finding (Updated 2026-02-08)
 
@@ -688,6 +694,10 @@ The picture is nuanced:
 
 1. **On standard MoleculeNet datasets:** FP+XGBoost dominates all neural conformer methods. The gap ranges from 8.5% to 45%. Neural models with geometric conformer features fail to match a simple fingerprint baseline on these scalar property prediction tasks.
 
-2. **On Kraken steric descriptors:** DKO wins on ALL 4 targets (5-20% improvement over mean baseline). This is because Sterimol descriptors are explicitly Boltzmann-averaged 3D properties where conformer variance genuinely affects the target.
+2. **On Drugs-75K electronic properties:** FP+XGBoost still wins (21-29% better than best neural). Electronic properties don't benefit from conformer ensemble modeling.
 
-**Conclusion:** DKO's second-order features work when the target property explicitly depends on the conformer ensemble distribution. For standard scalar molecular properties, first-order features (or fingerprints) suffice.
+3. **On Kraken steric descriptors:** Attention wins all 4 targets, with ranking **Attention > DKO > Mean**. Learned conformer weighting outperforms fixed covariance, but both beat mean baseline. Sterimol descriptors are Boltzmann-averaged 3D properties where conformer modeling genuinely helps.
+
+4. **On BDE:** FP+XGBoost wins by 6.7x. All neural models fail (R²≈0).
+
+**Conclusion:** Conformer ensemble methods help on Boltzmann-averaged 3D properties (Kraken), with attention's learned weighting being most effective. For standard scalar properties (MoleculeNet, Drugs, BDE), fingerprints suffice.
