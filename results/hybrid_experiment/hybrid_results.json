@@ -1,1139 +1,1139 @@
 {
-  "timestamp": "2026-02-06T20:25:25.804670",
+  "timestamp": "2026-02-07T23:39:20.723522",
   "raw_results": [
     {
       "dataset": "esol",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 1.5114290383390065,
-      "mae": 1.1270435735970212,
-      "r2": 0.4404170590064882,
-      "feature_dim": 2048
+      "test_rmse": 1.5114290383390065,
+      "test_mae": 1.1270435735970212,
+      "test_r2": 0.4404170590064882
     },
     {
       "dataset": "esol",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 1.478438733875267,
-      "mae": 1.0915794860689265,
-      "r2": 0.4645787456908075,
-      "feature_dim": 2048
+      "test_rmse": 1.478438733875267,
+      "test_mae": 1.0915794860689265,
+      "test_r2": 0.4645787456908075
     },
     {
       "dataset": "esol",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 1.529535099988095,
-      "mae": 1.1614749890043026,
-      "r2": 0.4269297832783826,
-      "feature_dim": 2048
+      "test_rmse": 1.529535099988095,
+      "test_mae": 1.1614749890043026,
+      "test_r2": 0.4269297832783826
     },
     {
       "dataset": "esol",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 1.6082331115826687,
-      "mae": 1.2480596796065047,
-      "r2": 0.36644117934825904,
-      "feature_dim": 256
+      "test_rmse": 1.587408321378049,
+      "test_mae": 1.170465432593697,
+      "test_r2": 0.38274268132586375
     },
     {
       "dataset": "esol",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 1.6252081969730543,
-      "mae": 1.2238922455227164,
-      "r2": 0.35299602188993007,
-      "feature_dim": 256
+      "test_rmse": 1.6734441967968592,
+      "test_mae": 1.2619915140888147,
+      "test_r2": 0.314020065522977
     },
     {
       "dataset": "esol",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 1.5869675152568272,
-      "mae": 1.2067307208671905,
-      "r2": 0.38308544509047293,
-      "feature_dim": 256
+      "test_rmse": 1.692964230878929,
+      "test_mae": 1.2800268803814,
+      "test_r2": 0.29792338517688843
     },
     {
       "dataset": "esol",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 2.367264792004497,
-      "mae": 1.6824639107564041,
-      "r2": -0.3727220843435326,
-      "feature_dim": 5
+      "test_rmse": 2.372615470708875,
+      "test_mae": 1.7128104619352442,
+      "test_r2": -0.3789345669665509
     },
     {
       "dataset": "esol",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 2.36580930641045,
-      "mae": 1.7002338271852127,
-      "r2": -0.3710345984243779,
-      "feature_dim": 5
+      "test_rmse": 2.3948614907369823,
+      "test_mae": 1.7549297917934887,
+      "test_r2": -0.40491401200746124
     },
     {
       "dataset": "esol",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 2.3901213715005625,
-      "mae": 1.7318203221036679,
-      "r2": -0.3993580585906076,
-      "feature_dim": 5
+      "test_rmse": 2.394236990316144,
+      "test_mae": 1.7285490416392948,
+      "test_r2": -0.4041813976155899
     },
     {
       "dataset": "esol",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 1.376324943145867,
-      "mae": 1.058974253328223,
-      "r2": 0.5359861922807,
-      "feature_dim": 2304
+      "test_rmse": 1.3844798358832602,
+      "test_mae": 1.0897869697370028,
+      "test_r2": 0.5304712255879237
     },
     {
       "dataset": "esol",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 1.3755057930888543,
-      "mae": 1.098238970254597,
-      "r2": 0.5365383639570396,
-      "feature_dim": 2304
+      "test_rmse": 1.489305552797177,
+      "test_mae": 1.110284749662667,
+      "test_r2": 0.4566789137802184
     },
     {
       "dataset": "esol",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 1.3504432977140277,
-      "mae": 1.0794878237749403,
-      "r2": 0.553273567288626,
-      "feature_dim": 2304
+      "test_rmse": 1.4463316009638911,
+      "test_mae": 1.1293875576236794,
+      "test_r2": 0.4875816269585721
     },
     {
       "dataset": "esol",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 1.4098895190594476,
-      "mae": 1.0562820078071795,
-      "r2": 0.5130783254811748,
-      "feature_dim": 2053
+      "test_rmse": 1.3959530654307302,
+      "test_mae": 1.0359972615660284,
+      "test_r2": 0.5226569802123319
     },
     {
       "dataset": "esol",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 1.4513405290238985,
-      "mae": 1.1145116312001884,
-      "r2": 0.48402627188099445,
-      "feature_dim": 2053
+      "test_rmse": 1.3770277887627538,
+      "test_mae": 1.0291659081505058,
+      "test_r2": 0.5355121569234087
     },
     {
       "dataset": "esol",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 1.435927614041327,
-      "mae": 1.0923600962998576,
-      "r2": 0.494927133955506,
-      "feature_dim": 2053
+      "test_rmse": 1.3602242968094898,
+      "test_mae": 1.0000564064184825,
+      "test_r2": 0.5467790268483566
     },
     {
       "dataset": "esol",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 1.3792697554025979,
-      "mae": 1.0775005115500669,
-      "r2": 0.5339984416709447,
-      "feature_dim": 2309
+      "test_rmse": 1.4472973438051582,
+      "test_mae": 1.1271101093835998,
+      "test_r2": 0.48689709570681905
     },
     {
       "dataset": "esol",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 1.3509102711797658,
-      "mae": 1.0700422007744772,
-      "r2": 0.5529645643728013,
-      "feature_dim": 2309
+      "test_rmse": 1.4021764596192077,
+      "test_mae": 1.0905519524833611,
+      "test_r2": 0.5183913415230226
     },
     {
       "dataset": "esol",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 1.3439777064815803,
-      "mae": 1.0704159891061618,
-      "r2": 0.5575409603064242,
-      "feature_dim": 2309
+      "test_rmse": 1.4797674092084367,
+      "test_mae": 1.1548469681279703,
+      "test_r2": 0.4636159453179801
     },
     {
       "dataset": "esol",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 1.5664454822231992,
-      "mae": 1.255872881588183,
-      "r2": 0.39893766828497945,
-      "feature_dim": 261
+      "test_rmse": 1.621888979063071,
+      "test_mae": 1.2202947572156002,
+      "test_r2": 0.3556361195607112
     },
     {
       "dataset": "esol",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 1.5087168397228035,
-      "mae": 1.2171919411483565,
-      "r2": 0.4424235552611948,
-      "feature_dim": 261
+      "test_rmse": 1.6341037092185149,
+      "test_mae": 1.2289053431059187,
+      "test_r2": 0.34589393751191777
     },
     {
       "dataset": "esol",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 1.4656813275198568,
-      "mae": 1.1604117274953607,
-      "r2": 0.4737791486388958,
-      "feature_dim": 261
+      "test_rmse": 1.5779466170647656,
+      "test_mae": 1.212599014290592,
+      "test_r2": 0.39007904294436757
     },
     {
       "dataset": "lipophilicity",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 0.9041275755847389,
-      "mae": 0.7062201347833589,
-      "r2": 0.3973590426329796,
-      "feature_dim": 2048
+      "test_rmse": 0.9041275755847389,
+      "test_mae": 0.7062201347833589,
+      "test_r2": 0.3973590426329796
     },
     {
       "dataset": "lipophilicity",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 0.9190049731800419,
-      "mae": 0.7270659518915983,
-      "r2": 0.3773629827779662,
-      "feature_dim": 2048
+      "test_rmse": 0.9190049731800419,
+      "test_mae": 0.7270659518915983,
+      "test_r2": 0.3773629827779662
     },
     {
       "dataset": "lipophilicity",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 0.9069707638695867,
-      "mae": 0.7118235588714126,
-      "r2": 0.3935628620178552,
-      "feature_dim": 2048
+      "test_rmse": 0.9069707638695867,
+      "test_mae": 0.7118235588714126,
+      "test_r2": 0.3935628620178552
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 1.1044142154150616,
-      "mae": 0.8666720371246338,
-      "r2": 0.10078573098391919,
-      "feature_dim": 256
+      "test_rmse": 1.0887667452957204,
+      "test_mae": 0.855980644646145,
+      "test_r2": 0.12608557314543445
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 1.1251573469449545,
-      "mae": 0.8881528317814782,
-      "r2": 0.06669039681061584,
-      "feature_dim": 256
+      "test_rmse": 1.0958103297110509,
+      "test_mae": 0.8714494221948442,
+      "test_r2": 0.11474172747319211
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 1.1055557750570446,
-      "mae": 0.8841069658313481,
-      "r2": 0.09892585409970867,
-      "feature_dim": 256
+      "test_rmse": 1.0975141948836364,
+      "test_mae": 0.8618380974105426,
+      "test_r2": 0.11198662767839218
     },
     {
       "dataset": "lipophilicity",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 1.1978278668259252,
-      "mae": 0.9496016349657661,
-      "r2": -0.057762189510202955,
-      "feature_dim": 5
+      "test_rmse": 1.2293285220777932,
+      "test_mae": 0.9881245426393691,
+      "test_r2": -0.11412810454366795
     },
     {
       "dataset": "lipophilicity",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 1.1984824264855112,
-      "mae": 0.9606199331113271,
-      "r2": -0.05891854536425356,
-      "feature_dim": 5
+      "test_rmse": 1.2240028206098177,
+      "test_mae": 0.985098390232949,
+      "test_r2": -0.10449575488149376
     },
     {
       "dataset": "lipophilicity",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 1.2002001822632025,
-      "mae": 0.9568686595890848,
-      "r2": -0.061956165186226375,
-      "feature_dim": 5
+      "test_rmse": 1.2193322745045148,
+      "test_mae": 0.9815744263387862,
+      "test_r2": -0.09608277383613273
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 0.9479012928002784,
-      "mae": 0.7409153718574062,
-      "r2": 0.3375921889608273,
-      "feature_dim": 2304
+      "test_rmse": 0.9318845307852862,
+      "test_mae": 0.7212681853572528,
+      "test_r2": 0.3597885768935688
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 0.9261289506422653,
-      "mae": 0.7303320667040313,
-      "r2": 0.36767240560930514,
-      "feature_dim": 2304
+      "test_rmse": 0.9379153704974896,
+      "test_mae": 0.7359031822312445,
+      "test_r2": 0.3514753021767143
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 0.9426349216428457,
-      "mae": 0.7381342774743127,
-      "r2": 0.34493218251172586,
-      "feature_dim": 2304
+      "test_rmse": 0.9351205667884221,
+      "test_mae": 0.7464375278183394,
+      "test_r2": 0.3553344963894375
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 0.9101425278956673,
-      "mae": 0.7186462396227179,
-      "r2": 0.3893139074439431,
-      "feature_dim": 2053
+      "test_rmse": 0.8964990394289528,
+      "test_mae": 0.7083280002446402,
+      "test_r2": 0.40748565270979054
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 0.9147377481718963,
-      "mae": 0.7199130232476052,
-      "r2": 0.3831317519319174,
-      "feature_dim": 2053
+      "test_rmse": 0.896705703644619,
+      "test_mae": 0.704386830456821,
+      "test_r2": 0.4072124441028623
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 0.917454484921451,
-      "mae": 0.7223156706004271,
-      "r2": 0.37946215968875063,
-      "feature_dim": 2053
+      "test_rmse": 0.896685241873125,
+      "test_mae": 0.7023490408687364,
+      "test_r2": 0.4072394972264761
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 0.9556695182330053,
-      "mae": 0.7429208066236405,
-      "r2": 0.3266905932803411,
-      "feature_dim": 2309
+      "test_rmse": 0.9366093550743368,
+      "test_mae": 0.7314770514851525,
+      "test_r2": 0.3532801421153916
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 0.9647005819337598,
-      "mae": 0.7564079183453606,
-      "r2": 0.3139049361219354,
-      "feature_dim": 2309
+      "test_rmse": 0.9245728973813897,
+      "test_mae": 0.7205187624930627,
+      "test_r2": 0.36979545515993795
     },
     {
       "dataset": "lipophilicity",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 0.9494991858280728,
-      "mae": 0.7367029753540245,
-      "r2": 0.3353570428332143,
-      "feature_dim": 2309
+      "test_rmse": 0.9260566381096199,
+      "test_mae": 0.7335931976778167,
+      "test_r2": 0.36777114655603527
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 1.0811262959319379,
-      "mae": 0.8565221817947569,
-      "r2": 0.13830797173807796,
-      "feature_dim": 261
+      "test_rmse": 1.099298886223683,
+      "test_mae": 0.8644237653953688,
+      "test_r2": 0.10909624440017329
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 1.0963298759671791,
-      "mae": 0.8635179151183083,
-      "r2": 0.1139020901007547,
-      "feature_dim": 261
+      "test_rmse": 1.0733180364786437,
+      "test_mae": 0.8500210891962052,
+      "test_r2": 0.15070988605407876
     },
     {
       "dataset": "lipophilicity",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 1.129955761721614,
-      "mae": 0.8943448843587013,
-      "r2": 0.0587129240659674,
-      "feature_dim": 261
+      "test_rmse": 1.080173560416944,
+      "test_mae": 0.8523540970030286,
+      "test_r2": 0.13982602354487295
     },
     {
       "dataset": "freesolv",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 3.0267592906800322,
-      "mae": 2.1588874861679295,
-      "r2": 0.340830970897644,
-      "feature_dim": 2048
+      "test_rmse": 3.0267592906800322,
+      "test_mae": 2.1588874861679295,
+      "test_r2": 0.340830970897644
     },
     {
       "dataset": "freesolv",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 3.030339115396785,
-      "mae": 2.202741388169202,
-      "r2": 0.3392708170828015,
-      "feature_dim": 2048
+      "test_rmse": 3.030339115396785,
+      "test_mae": 2.202741388169202,
+      "test_r2": 0.3392708170828015
     },
     {
       "dataset": "freesolv",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 2.7594843669949944,
-      "mae": 2.040294442913749,
-      "r2": 0.45210554932612745,
-      "feature_dim": 2048
+      "test_rmse": 2.7594843669949944,
+      "test_mae": 2.040294442913749,
+      "test_r2": 0.45210554932612745
     },
     {
       "dataset": "freesolv",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 4.148585468731619,
-      "mae": 3.13796247586337,
-      "r2": -0.23834344395921137,
-      "feature_dim": 256
+      "test_rmse": 3.972396416097197,
+      "test_mae": 3.049012523130937,
+      "test_r2": -0.13539293743268344
     },
     {
       "dataset": "freesolv",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 4.042910792450802,
-      "mae": 3.1054765155098654,
-      "r2": -0.17605963139121772,
-      "feature_dim": 256
+      "test_rmse": 3.9282212989093472,
+      "test_mae": 2.9172915795066134,
+      "test_r2": -0.11028102523988959
     },
     {
       "dataset": "freesolv",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 3.975676489115881,
-      "mae": 3.128785015973178,
-      "r2": -0.1372687367761185,
-      "feature_dim": 256
+      "test_rmse": 4.143418447070315,
+      "test_mae": 3.2224777967062854,
+      "test_r2": -0.23526067621395952
     },
     {
       "dataset": "freesolv",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 4.250349420278073,
-      "mae": 3.1159097498980426,
-      "r2": -0.29984119055673664,
-      "feature_dim": 5
+      "test_rmse": 4.000327371639942,
+      "test_mae": 2.742122078635475,
+      "test_r2": -0.15141555760521097
     },
     {
       "dataset": "freesolv",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 4.292983133887684,
-      "mae": 3.1250766320607877,
-      "r2": -0.3260484435375801,
-      "feature_dim": 5
+      "test_rmse": 3.961162811735533,
+      "test_mae": 2.7026080617904653,
+      "test_r2": -0.12898042502792517
     },
     {
       "dataset": "freesolv",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 4.142670051046853,
-      "mae": 2.9208534610271455,
-      "r2": -0.23481448392121806,
-      "feature_dim": 5
+      "test_rmse": 3.9939056271860114,
+      "test_mae": 2.744812561555342,
+      "test_r2": -0.14772177912369133
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 2.632058413491835,
-      "mae": 1.986425668109547,
-      "r2": 0.5015379808257536,
-      "feature_dim": 2304
+      "test_rmse": 2.7650353411919295,
+      "test_mae": 2.103287018255754,
+      "test_r2": 0.44989904511105494
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 3.04976316403092,
-      "mae": 2.4010273597023706,
-      "r2": 0.33077330741329647,
-      "feature_dim": 2304
+      "test_rmse": 2.9732910167291946,
+      "test_mae": 2.221883074413647,
+      "test_r2": 0.36391396188017655
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 2.812425269555082,
-      "mae": 2.1040193383476953,
-      "r2": 0.4308810999958693,
-      "feature_dim": 2304
+      "test_rmse": 2.695563052570816,
+      "test_mae": 2.1387704435695305,
+      "test_r2": 0.4771946591554923
     },
     {
       "dataset": "freesolv",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 2.9944394463803046,
-      "mae": 2.2643036021752794,
-      "r2": 0.35483307323292657,
-      "feature_dim": 2053
+      "test_rmse": 3.1480749272964825,
+      "test_mae": 2.337745766898448,
+      "test_r2": 0.28693167283676624
     },
     {
       "dataset": "freesolv",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 3.183775522813942,
-      "mae": 2.272176718505946,
-      "r2": 0.2706669324693244,
-      "feature_dim": 2053
+      "test_rmse": 3.000467385191986,
+      "test_mae": 2.2178132192763416,
+      "test_r2": 0.352232959776726
     },
     {
       "dataset": "freesolv",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 3.1778317879834903,
-      "mae": 2.3627567094279955,
-      "r2": 0.2733875488524532,
-      "feature_dim": 2053
+      "test_rmse": 3.0974777412168684,
+      "test_mae": 2.2986167255856773,
+      "test_r2": 0.3096689400277798
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 3.1113891668950964,
-      "mae": 2.5045935986258763,
-      "r2": 0.30345417066644864,
-      "feature_dim": 2309
+      "test_rmse": 2.8509860295751634,
+      "test_mae": 2.2305006758082997,
+      "test_r2": 0.41516789726852943
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 2.6458843878536817,
-      "mae": 2.0508491285497494,
-      "r2": 0.49628747128263373,
-      "feature_dim": 2309
+      "test_rmse": 2.9201919028070336,
+      "test_mae": 2.2375866626392713,
+      "test_r2": 0.38643043309421277
     },
     {
       "dataset": "freesolv",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 2.7140590244122613,
-      "mae": 2.1326359777450565,
-      "r2": 0.4699954447636606,
-      "feature_dim": 2309
+      "test_rmse": 2.7774957261256072,
+      "test_mae": 2.2031935489827936,
+      "test_r2": 0.44492991211246335
     },
     {
       "dataset": "freesolv",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 4.231660313550553,
-      "mae": 3.3125547455007376,
-      "r2": -0.288435322685374,
-      "feature_dim": 261
+      "test_rmse": 4.240997523042266,
+      "test_mae": 3.19748313999176,
+      "test_r2": -0.2941274918260415
     },
     {
       "dataset": "freesolv",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 4.260295508489961,
-      "mae": 3.222740206718445,
-      "r2": -0.30593173061661205,
-      "feature_dim": 261
+      "test_rmse": 4.075851135062972,
+      "test_mae": 3.2076762844432483,
+      "test_r2": -0.19530201835425665
     },
     {
       "dataset": "freesolv",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 4.201325389385158,
-      "mae": 3.3331321849389512,
-      "r2": -0.2700290732455819,
-      "feature_dim": 261
+      "test_rmse": 4.022701032441637,
+      "test_mae": 3.2049722036881874,
+      "test_r2": -0.1643312116914899
     },
     {
       "dataset": "qm9_gap",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 0.02018610974884746,
-      "mae": 0.014766983265801874,
-      "r2": 0.8353355223173524,
-      "feature_dim": 2048
+      "test_rmse": 0.02018610974884746,
+      "test_mae": 0.014766983265801874,
+      "test_r2": 0.8353355223173524
     },
     {
       "dataset": "qm9_gap",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 0.020274256204686553,
-      "mae": 0.014807476746124747,
-      "r2": 0.8338943054965707,
-      "feature_dim": 2048
+      "test_rmse": 0.020274256204686553,
+      "test_mae": 0.014807476746124747,
+      "test_r2": 0.8338943054965707
     },
     {
       "dataset": "qm9_gap",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 0.02038461512428242,
-      "mae": 0.014908048160413174,
-      "r2": 0.8320810566100082,
-      "feature_dim": 2048
+      "test_rmse": 0.02038461512428242,
+      "test_mae": 0.014908048160413174,
+      "test_r2": 0.8320810566100082
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 0.03508896443729303,
-      "mae": 0.02803610040462454,
-      "r2": 0.5024511082097884,
-      "feature_dim": 256
+      "test_rmse": 0.03440730005002535,
+      "test_mae": 0.027105030169137487,
+      "test_r2": 0.5215948455700652
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 0.035086528304517986,
-      "mae": 0.02781851258380251,
-      "r2": 0.5025201927841355,
-      "feature_dim": 256
+      "test_rmse": 0.03495570562458891,
+      "test_mae": 0.02723331559633085,
+      "test_r2": 0.5062230561853236
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 0.034757070982686766,
-      "mae": 0.02747993574931359,
-      "r2": 0.5118188542423061,
-      "feature_dim": 256
+      "test_rmse": 0.034633981858092196,
+      "test_mae": 0.02735324448385788,
+      "test_r2": 0.5152704332628273
     },
     {
       "dataset": "qm9_gap",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 0.046517266691236125,
-      "mae": 0.03721430638655318,
-      "r2": 0.12557405135334465,
-      "feature_dim": 5
+      "test_rmse": 0.04135961373017441,
+      "test_mae": 0.032633975920951803,
+      "test_r2": 0.30873016035958756
     },
     {
       "dataset": "qm9_gap",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 0.046507901914883944,
-      "mae": 0.03714721084564769,
-      "r2": 0.1259260917783348,
-      "feature_dim": 5
+      "test_rmse": 0.04122092085190025,
+      "test_mae": 0.03244848675533115,
+      "test_r2": 0.313358513753359
     },
     {
       "dataset": "qm9_gap",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 0.046546385013322714,
-      "mae": 0.0373435065972493,
-      "r2": 0.12447898333379681,
-      "feature_dim": 5
+      "test_rmse": 0.04109733399376317,
+      "test_mae": 0.03243324865842989,
+      "test_r2": 0.31746966171101876
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 0.021199884747946356,
-      "mae": 0.01555302561285608,
-      "r2": 0.8183808409216973,
-      "feature_dim": 2304
+      "test_rmse": 0.020983714242503223,
+      "test_mae": 0.015543523967228634,
+      "test_r2": 0.8220658174717014
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 0.02109786507308241,
-      "mae": 0.015448493690965065,
-      "r2": 0.8201246376556904,
-      "feature_dim": 2304
+      "test_rmse": 0.020838904178946203,
+      "test_mae": 0.015233864110627097,
+      "test_r2": 0.8245132156045221
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 0.020715900463436188,
-      "mae": 0.015350463985672797,
-      "r2": 0.8265787581066155,
-      "feature_dim": 2304
+      "test_rmse": 0.021436532580784862,
+      "test_mae": 0.015763362573154308,
+      "test_r2": 0.8143034918241221
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 0.02039495250774156,
-      "mae": 0.014981961318460435,
-      "r2": 0.8319107043482801,
-      "feature_dim": 2053
+      "test_rmse": 0.020291265079084617,
+      "test_mae": 0.01486924945883726,
+      "test_r2": 0.8336154833309875
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 0.020226792274338812,
-      "mae": 0.01487956084770682,
-      "r2": 0.8346711330565989,
-      "feature_dim": 2053
+      "test_rmse": 0.020313444642375455,
+      "test_mae": 0.014893531458415285,
+      "test_r2": 0.833251548132039
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 0.0201466554585949,
-      "mae": 0.014881893405390036,
-      "r2": 0.8359785755030449,
-      "feature_dim": 2053
+      "test_rmse": 0.020016580474954797,
+      "test_mae": 0.014712256069632725,
+      "test_r2": 0.8380897160018862
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 0.021050996393531907,
-      "mae": 0.01542928194924799,
-      "r2": 0.8209229323203102,
-      "feature_dim": 2309
+      "test_rmse": 0.020990438019023772,
+      "test_mae": 0.015443441145582349,
+      "test_r2": 0.8219517688963699
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 0.020991711493375607,
-      "mae": 0.015427297329977547,
-      "r2": 0.8219301641319944,
-      "feature_dim": 2309
+      "test_rmse": 0.02115000057954446,
+      "test_mae": 0.01570738316825547,
+      "test_r2": 0.8192345494817143
     },
     {
       "dataset": "qm9_gap",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 0.021078989565480793,
-      "mae": 0.015399375203691853,
-      "r2": 0.8204463498249537,
-      "feature_dim": 2309
+      "test_rmse": 0.02097142835037051,
+      "test_mae": 0.015414260606066718,
+      "test_r2": 0.8222741161719997
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 0.0349763486483928,
-      "mae": 0.027827316190709616,
-      "r2": 0.5056396859591781,
-      "feature_dim": 261
+      "test_rmse": 0.03452561034822429,
+      "test_mae": 0.02723491932299749,
+      "test_r2": 0.5182991747650586
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 0.03504412898427611,
-      "mae": 0.02782085724211488,
-      "r2": 0.5037217970566129,
-      "feature_dim": 261
+      "test_rmse": 0.033655153118752314,
+      "test_mae": 0.026418607013737345,
+      "test_r2": 0.542282199606832
     },
     {
       "dataset": "qm9_gap",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 0.03530007300220117,
-      "mae": 0.02807139024901764,
-      "r2": 0.49644621151433554,
-      "feature_dim": 261
+      "test_rmse": 0.03452222379269703,
+      "test_mae": 0.02733900820469981,
+      "test_r2": 0.51839366847971
     },
     {
       "dataset": "qm9_homo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 0.014170828188485673,
-      "mae": 0.010169401733912722,
-      "r2": 0.5204400532862898,
-      "feature_dim": 2048
+      "test_rmse": 0.014170828188485673,
+      "test_mae": 0.010169401733912722,
+      "test_r2": 0.5204400532862898
     },
     {
       "dataset": "qm9_homo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 0.01415151687948161,
-      "mae": 0.010197173478466055,
-      "r2": 0.5217462042075005,
-      "feature_dim": 2048
+      "test_rmse": 0.01415151687948161,
+      "test_mae": 0.010197173478466055,
+      "test_r2": 0.5217462042075005
     },
     {
       "dataset": "qm9_homo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 0.014200043998659899,
-      "mae": 0.010159138130617392,
-      "r2": 0.518460610016614,
-      "feature_dim": 2048
+      "test_rmse": 0.014200043998659899,
+      "test_mae": 0.010159138130617392,
+      "test_r2": 0.518460610016614
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 0.017572246488563734,
-      "mae": 0.013108834202327028,
-      "r2": 0.262593415402378,
-      "feature_dim": 256
+      "test_rmse": 0.018082499276815375,
+      "test_mae": 0.013376062113077852,
+      "test_r2": 0.2191468780980017
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 0.01795089551311101,
-      "mae": 0.013440543871649897,
-      "r2": 0.23047155780598538,
-      "feature_dim": 256
+      "test_rmse": 0.01761018705432456,
+      "test_mae": 0.013169404517343532,
+      "test_r2": 0.25940568109214623
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 0.01747391624175474,
-      "mae": 0.013327721018591476,
-      "r2": 0.2708230402977926,
-      "feature_dim": 256
+      "test_rmse": 0.017520674370901875,
+      "test_mae": 0.013066279352297957,
+      "test_r2": 0.2669154368728872
     },
     {
       "dataset": "qm9_homo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 0.02080776118554716,
-      "mae": 0.015448151192065931,
-      "r2": -0.033958594821227095,
-      "feature_dim": 5
+      "test_rmse": 0.020661854420082375,
+      "test_mae": 0.015308363699738268,
+      "test_r2": -0.019508926517380454
     },
     {
       "dataset": "qm9_homo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 0.020603798601930443,
-      "mae": 0.015300769416149997,
-      "r2": -0.013787729414500571,
-      "feature_dim": 5
+      "test_rmse": 0.020601937153594672,
+      "test_mae": 0.015228096508605318,
+      "test_r2": -0.01360455656636228
     },
     {
       "dataset": "qm9_homo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 0.020630576467824097,
-      "mae": 0.01534262711070595,
-      "r2": -0.01642459393888207,
-      "feature_dim": 5
+      "test_rmse": 0.020805160566282996,
+      "test_mae": 0.015405373009486972,
+      "test_r2": -0.033700156195327624
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 0.013632349294572675,
-      "mae": 0.009908180777165277,
-      "r2": 0.5561933057588779,
-      "feature_dim": 2304
+      "test_rmse": 0.013816647496384818,
+      "test_mae": 0.010066766953842801,
+      "test_r2": 0.5441123856468999
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 0.014038701644122846,
-      "mae": 0.010197555176000943,
-      "r2": 0.5293410443008015,
-      "feature_dim": 2304
+      "test_rmse": 0.013854394703632571,
+      "test_mae": 0.01013630597194452,
+      "test_r2": 0.5416180047005343
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 0.01375726437428362,
-      "mae": 0.01005552533214629,
-      "r2": 0.5480227195964982,
-      "feature_dim": 2304
+      "test_rmse": 0.013729131652434608,
+      "test_mae": 0.009913540149034629,
+      "test_r2": 0.5498693585398229
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 0.013867814345817873,
-      "mae": 0.010005954400307222,
-      "r2": 0.5407295788054551,
-      "feature_dim": 2053
+      "test_rmse": 0.013881090260357722,
+      "test_mae": 0.009982369910085387,
+      "test_r2": 0.539849821807264
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 0.013931052341067961,
-      "mae": 0.009946369761122459,
-      "r2": 0.5365314319882725,
-      "feature_dim": 2053
+      "test_rmse": 0.013987694677762362,
+      "test_mae": 0.009943913623450313,
+      "test_r2": 0.5327549316943516
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 0.013981980678169319,
-      "mae": 0.01010254988330821,
-      "r2": 0.5331365947024016,
-      "feature_dim": 2053
+      "test_rmse": 0.014074303438090609,
+      "test_mae": 0.010053802678447743,
+      "test_r2": 0.5269508588866935
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 0.013680950042964591,
-      "mae": 0.009913976878146227,
-      "r2": 0.5530232305965587,
-      "feature_dim": 2309
+      "test_rmse": 0.01388569368173373,
+      "test_mae": 0.010072820274792416,
+      "test_r2": 0.5395445696448518
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 0.013454015261877937,
-      "mae": 0.009874585321411411,
-      "r2": 0.5677288313762829,
-      "feature_dim": 2309
+      "test_rmse": 0.013645819460425668,
+      "test_mae": 0.009943103567418003,
+      "test_r2": 0.5553158189570282
     },
     {
       "dataset": "qm9_homo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 0.013719035017634863,
-      "mae": 0.00987933401055361,
-      "r2": 0.5505311824120134,
-      "feature_dim": 2309
+      "test_rmse": 0.013962298789638046,
+      "test_mae": 0.010166108008055163,
+      "test_r2": 0.5344500403992456
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 0.017701837247494637,
-      "mae": 0.013307323455585858,
-      "r2": 0.2516769457200828,
-      "feature_dim": 261
+      "test_rmse": 0.017491230138394754,
+      "test_mae": 0.013060014788492813,
+      "test_r2": 0.2693773255561134
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 0.017725380293805597,
-      "mae": 0.013203976992012943,
-      "r2": 0.24968511631636714,
-      "feature_dim": 261
+      "test_rmse": 0.01755203001043904,
+      "test_mae": 0.013034025166446625,
+      "test_r2": 0.26428917906822236
     },
     {
       "dataset": "qm9_homo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 0.017604594553944,
-      "mae": 0.013303083428088282,
-      "r2": 0.2598759902764902,
-      "feature_dim": 261
+      "test_rmse": 0.017728563869017996,
+      "test_mae": 0.013172010005306824,
+      "test_r2": 0.24941557080186416
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 42,
-      "rmse": 0.01855526022221467,
-      "mae": 0.01308199196502826,
-      "r2": 0.857964787239917,
-      "feature_dim": 2048
+      "test_rmse": 0.01855526022221467,
+      "test_mae": 0.01308199196502826,
+      "test_r2": 0.857964787239917
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 123,
-      "rmse": 0.018698159998231396,
-      "mae": 0.013215300406331345,
-      "r2": 0.8557686492389989,
-      "feature_dim": 2048
+      "test_rmse": 0.018698159998231396,
+      "test_mae": 0.013215300406331345,
+      "test_r2": 0.8557686492389989
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP only",
+      "feature_dim": 2048,
       "seed": 456,
-      "rmse": 0.01883892455347626,
-      "mae": 0.013248684784720795,
-      "r2": 0.8535888536042046,
-      "feature_dim": 2048
+      "test_rmse": 0.01883892455347626,
+      "test_mae": 0.013248684784720795,
+      "test_r2": 0.8535888536042046
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 42,
-      "rmse": 0.03208646935308412,
-      "mae": 0.02590047375146037,
-      "r2": 0.5752769888167443,
-      "feature_dim": 256
+      "test_rmse": 0.03111842409674309,
+      "test_mae": 0.024597867174740287,
+      "test_r2": 0.6005180896727015
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 123,
-      "rmse": 0.032274845986437393,
-      "mae": 0.025920642131057898,
-      "r2": 0.5702753322331036,
-      "feature_dim": 256
+      "test_rmse": 0.031279411358493964,
+      "test_mae": 0.02487973334900519,
+      "test_r2": 0.5963740589598137
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu only",
+      "feature_dim": 1024,
       "seed": 456,
-      "rmse": 0.0323542520250402,
-      "mae": 0.026041002953799967,
-      "r2": 0.5681582216029517,
-      "feature_dim": 256
+      "test_rmse": 0.03141982289719342,
+      "test_mae": 0.02496736244594066,
+      "test_r2": 0.5927422168242736
     },
     {
       "dataset": "qm9_lumo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 42,
-      "rmse": 0.04692860036078614,
-      "mae": 0.03824164474468832,
-      "r2": 0.09147448041608774,
-      "feature_dim": 5
+      "test_rmse": 0.04059936978118314,
+      "test_mae": 0.03218437340173509,
+      "test_r2": 0.3200131537829597
     },
     {
       "dataset": "qm9_lumo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 123,
-      "rmse": 0.04681383712014716,
-      "mae": 0.03807959280677663,
-      "r2": 0.0959126201568058,
-      "feature_dim": 5
+      "test_rmse": 0.04045159471337061,
+      "test_mae": 0.03201091333032078,
+      "test_r2": 0.32495422691688447
     },
     {
       "dataset": "qm9_lumo",
       "features": "Sigma only",
+      "feature_dim": 5,
       "seed": 456,
-      "rmse": 0.04674503340670812,
-      "mae": 0.037927519584552025,
-      "r2": 0.09856819640782222,
-      "feature_dim": 5
+      "test_rmse": 0.04045541391677681,
+      "test_mae": 0.03213116400545783,
+      "test_r2": 0.32482675313789044
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 42,
-      "rmse": 0.019157430429359325,
-      "mae": 0.01375429170344624,
-      "r2": 0.8485963163687131,
-      "feature_dim": 2304
+      "test_rmse": 0.019228388471608654,
+      "test_mae": 0.013707924591421665,
+      "test_r2": 0.847472657814933
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 123,
-      "rmse": 0.018955547617604956,
-      "mae": 0.013485541786563757,
-      "r2": 0.8517705154161636,
-      "feature_dim": 2304
+      "test_rmse": 0.01939898629958374,
+      "test_mae": 0.013811089911313182,
+      "test_r2": 0.8447541497973631
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu",
+      "feature_dim": 3072,
       "seed": 456,
-      "rmse": 0.018897236795228974,
-      "mae": 0.013755279625464798,
-      "r2": 0.85268107616451,
-      "feature_dim": 2304
+      "test_rmse": 0.019036903185157866,
+      "test_mae": 0.01359665547719562,
+      "test_r2": 0.8504954087495334
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 42,
-      "rmse": 0.018509798157720126,
-      "mae": 0.013119703752089455,
-      "r2": 0.8586599328263239,
-      "feature_dim": 2053
+      "test_rmse": 0.01884327676794065,
+      "test_mae": 0.013493280884414012,
+      "test_r2": 0.8535211972671879
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 123,
-      "rmse": 0.01891146905471984,
-      "mae": 0.013206035293520768,
-      "r2": 0.8524590891384077,
-      "feature_dim": 2053
+      "test_rmse": 0.018968341109600356,
+      "test_mae": 0.01338112609620328,
+      "test_r2": 0.8515703615917102
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Sigma",
+      "feature_dim": 2053,
       "seed": 456,
-      "rmse": 0.018743871535696986,
-      "mae": 0.013316914150056562,
-      "r2": 0.8550625802120075,
-      "feature_dim": 2053
+      "test_rmse": 0.018978857158178868,
+      "test_mae": 0.013419546300715093,
+      "test_r2": 0.851405737183218
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 42,
-      "rmse": 0.01899768244897077,
-      "mae": 0.013686203631005197,
-      "r2": 0.8511108071426902,
-      "feature_dim": 2309
+      "test_rmse": 0.019544912457462607,
+      "test_mae": 0.014001833605605193,
+      "test_r2": 0.8424097347350673
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 123,
-      "rmse": 0.019153377742030343,
-      "mae": 0.013868221206293356,
-      "r2": 0.848660367431394,
-      "feature_dim": 2309
+      "test_rmse": 0.019316366254008618,
+      "test_mae": 0.013860482833818667,
+      "test_r2": 0.8460737141539824
     },
     {
       "dataset": "qm9_lumo",
       "features": "FP + Mu + Sigma",
+      "feature_dim": 3077,
       "seed": 456,
-      "rmse": 0.018842869629906812,
-      "mae": 0.013625196406880934,
-      "r2": 0.8535275269993468,
-      "feature_dim": 2309
+      "test_rmse": 0.01893610928890167,
+      "test_mae": 0.013606321925771941,
+      "test_r2": 0.852074369057717
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 42,
-      "rmse": 0.03225963533873956,
-      "mae": 0.026241065881461936,
-      "r2": 0.5706802822849257,
-      "feature_dim": 261
+      "test_rmse": 0.031267434282117305,
+      "test_mae": 0.02457253102897657,
+      "test_r2": 0.5966831014244911
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 123,
-      "rmse": 0.03199212990602042,
-      "mae": 0.025839002489496072,
-      "r2": 0.5777708269619912,
-      "feature_dim": 261
+      "test_rmse": 0.03125665355884707,
+      "test_mae": 0.025123945163691146,
+      "test_r2": 0.5969611733795548
     },
     {
       "dataset": "qm9_lumo",
       "features": "Mu + Sigma",
+      "feature_dim": 1029,
       "seed": 456,
-      "rmse": 0.03220628525539339,
-      "mae": 0.02593293886638784,
-      "r2": 0.5720991020132766,
-      "feature_dim": 261
+      "test_rmse": 0.031213819637725602,
+      "test_mae": 0.02475389197595132,
+      "test_r2": 0.5980650602188919
     }
   ]
 }
