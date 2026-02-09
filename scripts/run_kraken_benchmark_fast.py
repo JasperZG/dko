@@ -157,8 +157,8 @@ def train_epoch(model, loader, optimizer, criterion, device, use_sigma=False, us
         mu = features.mean(dim=1)  # (B, D)
 
         if use_attention:
-            # Attention model expects full conformer features
-            pred = model(features).squeeze(-1)
+            # Attention model expects full conformer features, returns (pred, attn_weights)
+            pred = model(features)[0].squeeze(-1)
         elif use_sigma:
             # Compute covariance - now D=128 so this is fast (128x128 instead of 2048x2048)
             centered = features - mu.unsqueeze(1)
@@ -190,7 +190,7 @@ def evaluate(model, loader, device, use_sigma=False, use_attention=False):
             mu = features.mean(dim=1)
 
             if use_attention:
-                pred = model(features).squeeze(-1)
+                pred = model(features)[0].squeeze(-1)
             elif use_sigma:
                 centered = features - mu.unsqueeze(1)
                 weights = batch["weights"].to(device).unsqueeze(-1)

@@ -492,8 +492,8 @@ In synthetic validation, DKO achieves 27-30% lower RMSE than first-order models.
 ### Finding 8: Conformer diversity predicts where sigma helps
 The SCC quartile analysis shows Lipophilicity has 3x higher median conformer diversity than QM9. This is exactly the dataset where dko_invariants shows the most benefit. Datasets with low conformer diversity show no benefit from second-order features.
 
-### Finding 10: DKO excels when targets explicitly depend on conformer distributions (NEW)
-On Kraken steric descriptors (Boltzmann-averaged 3D properties), DKO wins on ALL 4 targets with 5-20% RMSE improvement over baselines. This is the clearest validation: when the target property is defined as a conformer-weighted average, DKO's second-order covariance features capture the distribution shape that mean-based methods cannot. This explains the mixed results on MoleculeNet -- solubility and electronic properties don't depend on conformer distributions the way steric descriptors do.
+### Finding 10: Conformer weighting helps on Boltzmann-averaged targets (UPDATED)
+On Kraken steric descriptors (Boltzmann-averaged 3D properties), learned conformer weighting (attention) beats both DKO and mean on all 4 targets. DKO's second-order features still beat mean baseline (5-20% improvement), but attention's adaptive weighting is more effective. The ranking **Attention > DKO > Mean** on Kraken suggests that for conformer-dependent properties, the bottleneck is learning *which* conformers matter, not capturing variance statistics.
 
 ### Finding 9: Feature normalization was the critical bug
 The original `dim=(1,2)` normalization destroyed inter-feature variance in sigma. Fixing to `dim=1` restored Pearson from ~0 to ~0.48. This single change accounted for more improvement than any architectural modification.
@@ -664,16 +664,19 @@ FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the 
 
 ### Kraken Neural Results (COMPLETE - with PCA-compressed features)
 
-**CRITICAL UPDATE (2026-02-08):** With PCA-compressed fingerprints (2048 → 128 dims) for tractable covariance computation, DKO wins on ALL 4 Kraken targets.
+**UPDATE (2026-02-08):** With PCA-compressed fingerprints (2048 → 128 dims) and fixed attention model.
 
-| Target | dko_gated RMSE | dko_invariants RMSE | mean RMSE | DKO Improvement |
-|--------|----------------|---------------------|-----------|-----------------|
-| sterimol_B5 | **1.055 ± 0.033** | 1.151 ± 0.033 | 1.317 ± 0.096 | **-19.9%** |
-| sterimol_L | **1.133 ± 0.139** | 1.351 ± 0.104 | 1.286 ± 0.119 | **-11.9%** |
-| sterimol_burB5 | **0.630 ± 0.025** | 0.952 ± 0.054 | 0.678 ± 0.056 | **-7.1%** |
-| sterimol_burL | **0.391 ± 0.033** | 0.524 ± 0.035 | 0.411 ± 0.029 | **-4.8%** |
+| Target | attention RMSE | dko_gated RMSE | mean RMSE | Best Model |
+|--------|---------------|----------------|-----------|------------|
+| sterimol_B5 | **0.760 ± 0.085** | 1.055 ± 0.033 | 1.317 ± 0.096 | **Attention** |
+| sterimol_L | **0.777 ± 0.034** | 1.133 ± 0.139 | 1.286 ± 0.119 | **Attention** |
+| sterimol_burB5 | **0.432 ± 0.029** | 0.630 ± 0.025 | 0.678 ± 0.056 | **Attention** |
+| sterimol_burL | **0.375 ± 0.075** | 0.391 ± 0.033 | 0.411 ± 0.029 | **Attention** |
 
-**Key insight:** Kraken targets are Boltzmann-averaged steric descriptors that explicitly depend on the conformer ensemble distribution. DKO's second-order features (covariance of conformer representations) capture this conformational variance that the mean baseline cannot.
+**Key findings:**
+1. **Attention wins on all 4 Kraken targets** - learned conformer weighting outperforms fixed covariance
+2. **DKO still beats mean baseline** - second-order features help, but attention learns better weights
+3. The ranking is: **Attention > DKO > Mean** on Boltzmann-averaged steric properties
 
 ### Drugs-75K Neural Results (In Progress)
 
