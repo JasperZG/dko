@@ -158,6 +158,9 @@ def main():
             "smiles": [smiles_map.get(reaction_names[i], "") for i in split_idx],
             "labels": labels[split_idx],
             "features": [results[reaction_names[i]] for i in split_idx],
+            # TODO: Extract actual MMFF94 energies from conformers
+            # Currently using dummy energies (all 1.0) which prevents proper Boltzmann weighting
+            # This is a known limitation - see docs/NATURE_CRITIQUE.md Critique #5
             "energies": [np.ones(len(results[reaction_names[i]])) for i in split_idx],
             "indices": split_idx,
             "dataset_config": {
