@@ -1,11 +1,28 @@
 # DKO Benchmark Results
 
-**Date:** 2026-02-06 (updated), 2026-02-04, 2026-02-03 (Phase 1-2), 2026-01-27 (original)
-**Status:** ~700+ total experiments (192 Phase 2 + 21 ablation + 84 Phase 3 variants + 84 Phase 3 remaining + 60 10-seed validation + 24 FP baseline + 42 hybrid + 48 Kraken + 15 BDE + 45 Drugs)
+**Status:** Complete (~700 experiments across MoleculeNet, MARCEL, ablation, and validation studies)
 
 ---
 
-## Summary of Changes Since Last Report
+## Summary
+
+This document presents comprehensive benchmark results for Distribution Kernel Operators (DKO), a method for molecular property prediction using conformer ensemble statistics. We compare 13 model variants across 8 MoleculeNet datasets and 8 MARCEL benchmark targets.
+
+### Key Findings
+
+1. **Morgan fingerprints + XGBoost beat all neural conformer methods** on standard scalar property prediction tasks (MoleculeNet, Drugs-75K, BDE). The gap ranges from 8.5% to 6.7x.
+
+2. **Conformer features complement fingerprints**: When combined with fingerprints, DKO conformer statistics improve predictions on ESOL (-9.9% RMSE), FreeSolv (-3.9%), and QM9-HOMO (-4.2%).
+
+3. **Attention wins on Boltzmann-averaged 3D properties** (Kraken steric descriptors), with ranking Attention > DKO > Mean.
+
+4. **DKO gating significantly outperforms attention** among neural conformer methods on ESOL (p < 0.001, 12.1% improvement).
+
+5. **Simple sigma representations outperform complex ones**: The `dko_invariants` model (5 scalar features from sigma) achieves the best Lipophilicity RMSE across all neural models.
+
+---
+
+## Critical Bug Fixes
 
 The original benchmark had critical hyperparameter issues that handicapped DKO:
 1. **Learning rate:** DKO used 1e-5 while all others used 1e-4 (10x handicap)
@@ -22,7 +39,7 @@ After targeted fixes and ablation testing:
 
 ---
 
-## Experiment A: Feature Quality Analysis
+## Feature Quality Analysis
 
 **Question:** Are the geometric conformer features inherently predictive, or is the training pipeline the bottleneck?
 
@@ -52,7 +69,7 @@ Features ARE predictive. Random Forest achieves R²=0.24 on ESOL and R²=0.57 on
 
 ---
 
-## Experiment B: Ablation Study
+## Ablation Study
 
 **Question:** Which of the identified bugs matters most?
 
@@ -80,7 +97,7 @@ Features ARE predictive. Random Forest achieves R²=0.24 on ESOL and R²=0.57 on
 
 ---
 
-## Experiment C: Full Benchmark (Phase 2) -- Complete
+## MoleculeNet Benchmark
 
 All fixes applied (lr=1e-4, kdim=64, norm=dim(1), sreg=1e-2, mp=off for full DKO). **192 experiments total** (8 models x 3 seeds x 8 datasets).
 
@@ -238,125 +255,13 @@ Average rank across 6 regression datasets (ESOL, FreeSolv, Lipophilicity, QM9-Ga
 
 ---
 
-## Comparison: Before and After Fixes
+## New DKO Variants
 
-### ESOL (primary comparison dataset)
-
-| Model | Old RMSE | New RMSE | Old R² | New R² | Change |
-|-------|----------|----------|--------|--------|--------|
-| dko (2nd order) | 2.539 | 2.056 | -0.581 | -0.036 | **R² improved by 0.55** |
-| dko_first_order | 2.033 | 1.646 | -0.013 | +0.336 | **R² improved by 0.35** |
-| attention | 1.903 | 1.888 | +0.113 | +0.127 | Marginal improvement |
-| mean_ensemble | - | 2.016 | - | +0.003 | New baseline |
-| deepsets | - | 2.463 | - | -0.586 | High variance (seed-dependent) |
-| single_conformer | - | 2.394 | - | -0.407 | Weakest single-conformer approach |
-
----
-
-## Key Findings
-
-### 1. DKO First-Order Is the Strongest DKO Variant
-- Wins ESOL outright (R²=0.336 vs attention's 0.127)
-- Competitive on QM9-HOMO (rank 3, R²=0.126) and QM9-Gap (rank 5, R²=0.377)
-- Avg regression rank 4.50 -- mid-pack but with clear dataset-specific strengths
-- First-order features (mean only) are more robust than full covariance features
-
-### 2. Full DKO 2nd Order Is No Longer Broken But Still Lags
-- ESOL: R² went from -0.58 to -0.04 (massive improvement, near zero)
-- QM9: Positive R² on all three QM9 datasets (Gap=0.18, HOMO=0.02, LUMO=0.20)
-- But consistently ranks 5-8th across datasets -- covariance features add noise rather than signal
-- The sigma (covariance) features may need task-specific gating or a different aggregation strategy
-
-### 3. Attention Is the Most Consistent Winner
-- Avg rank 1.50 across 6 regression datasets
-- Wins FreeSolv, Lipophilicity, QM9-Gap, QM9-HOMO outright
-- Close 3rd on QM9-LUMO (R²=0.527 vs 0.537)
-- Only loses to DKO first-order on ESOL
-
-### 4. Normalization Was the Silent Killer
-- `dim=(1,2)` normalization destroyed inter-feature variance, making all sigma features ~identical
-- Fixing to `dim=1` immediately restored Pearson correlation from ~0 to ~0.48
-- This was invisible in loss curves but devastating for learned representations
-
-### 5. Features Are Predictive (Training Was the Bottleneck)
-- sklearn RF achieves R²=0.24 on ESOL, 0.57 on QM9-LUMO
-- Neural nets were getting R²~0 due to hyperparameter/normalization bugs
-- After fixes, DKO first-order on ESOL (R²=0.34) now **exceeds** RF (R²=0.24)
-
-### 6. Classification Needs Separate Attention
-- DKO gets degenerate results on BACE (12.5% accuracy)
-- BBBP results are uninformative (all models predict majority class)
-- Classification likely needs different LR schedule, loss weighting, or architecture for DKO
-
-### 7. FreeSolv Remains Unsolved
-- All models have negative R² on FreeSolv (best: attention at -0.20)
-- Feature quality analysis confirms weak features here (RF R²=-0.05)
-- Small dataset (~642 molecules) + weak geometric signal = challenging
-
----
-
-## Experimental Setup
-
-### Phase 1: Ablation (Complete)
-- **Dataset:** ESOL
-- **Model:** DKO (full 2nd order)
-- **Configs:** 7 ablation configurations x 3 seeds = 21 experiments
-- **Hardware:** GPUs 3-9 (NVIDIA RTX 2080 Ti), one config per GPU
-
-### Phase 2: Full Benchmark (Complete)
-- **Datasets:** esol, freesolv, lipophilicity, bace, bbbp, qm9_gap, qm9_homo, qm9_lumo
-- **Models:** 8 (dko, dko_first_order, dko_diagonal, dko_separate_nets, attention, deepsets, mean_ensemble, single_conformer)
-- **Seeds:** 42, 123, 456
-- **Epochs:** 300 max with early stopping (patience=30)
-- **Optimizer:** AdamW (lr=1e-4 for all, weight_decay=1e-5)
-- **Mixed Precision:** Disabled for full DKO variants, enabled for others
-- **Hardware:** 8x NVIDIA RTX 2080 Ti, one dataset per GPU
-- **Total:** 192 experiments (8 models x 3 seeds x 8 datasets)
-
-### Feature Quality Analysis (Complete)
-- **Method:** Ridge Regression (alpha=1,10,100) + Random Forest on raw mean features
-- **All 8 precomputed datasets evaluated**
-
----
-
-## Files
-
-| Path | Description |
-|------|-------------|
-| `results/ablation/` | Ablation study results (7 configs x 3 seeds) |
-| `results/feature_quality/feature_quality_results.json` | sklearn feature quality analysis |
-| `results/benchmark_fixed/*/benchmark_results.json` | Phase 2 results per dataset |
-| `results/benchmark_fixed/*.log` | Phase 2 training logs |
-| `scripts/feature_quality_analysis.py` | Feature quality analysis script |
-| `scripts/run_ablation.py` | Ablation study driver |
-| `scripts/run_ablation_single.py` | Single ablation experiment runner |
-| `scripts/launch_phase1.sh` | Phase 1 GPU launch script |
-| `scripts/launch_phase2.sh` | Phase 2 GPU launch script |
-
----
-
-## Code Changes Applied
-
-| File | Fix | Impact |
-|------|-----|--------|
-| `dko/experiments/main_benchmark.py` | LR: 1e-5 -> 1e-4 for DKO | 30% RMSE reduction |
-| `dko/experiments/main_benchmark.py` | kernel_output_dim: 32 -> 64 | Marginal alone, needed for combined effect |
-| `dko/experiments/main_benchmark.py` | Mixed precision: off for full DKO only | Prevents 10x variance inflation |
-| `dko/experiments/main_benchmark.py` | Added dko_diagonal, dko_separate_nets to benchmark | New model variants |
-| `dko/training/trainer.py` | Normalization: dim=(1,2) -> dim=1 | Pearson 0.0 -> 0.48 (critical fix) |
-| `dko/training/trainer.py` | Sigma regularization: 1e-4 -> 1e-2 | Prevents near-singular covariance |
-| `dko/training/evaluator.py` | Same normalization + regularization fix | Consistent train/eval behavior |
-
----
-
-## Phase 3: New DKO Variants (7 models x 4 datasets x 3 seeds = 84 experiments)
-
-**Date:** 2026-02-04
-**Status:** All experiments complete
+**84 experiments** (7 models x 4 datasets x 3 seeds)
 
 ### Motivation
 
-The original DKO uses PCA to compress the full covariance matrix (sigma), which ranks 12th of 13 models overall. Phase 3 tests 7 alternative sigma representations to find better ways to incorporate second-order information.
+The original DKO uses PCA to compress the full covariance matrix (sigma), which ranks 12th of 13 models overall. We tested 7 alternative sigma representations to find better ways to incorporate second-order information.
 
 ### New Variant Descriptions
 
@@ -376,12 +281,12 @@ All variants use eigendecomposition of sigma. For D > 256 (all real datasets hav
 
 | Model | ESOL | QM9-Gap | QM9-LUMO | Lipophilicity |
 |-------|------|---------|----------|---------------|
-| *Phase 1 baselines:* | | | | |
+| *Baselines:* | | | | |
 | dko (original) | 2.056 +/- 0.030 | 0.045 +/- 0.000 | 0.044 +/- 0.000 | 1.168 +/- 0.001 |
 | dko_first_order | 1.646 +/- 0.036 | 0.039 +/- 0.001 | 0.036 +/- 0.000 | 1.213 +/- 0.007 |
 | attention | 1.888 +/- 0.011 | **0.036 +/- 0.001** | 0.034 +/- 0.001 | 1.141 +/- 0.002 |
 | mean_ensemble | 2.016 +/- 0.070 | 0.037 +/- 0.001 | **0.034 +/- 0.001** | 1.165 +/- 0.015 |
-| *Phase 3 new variants:* | | | | |
+| *New variants:* | | | | |
 | dko_eigenspectrum | 1.695 +/- 0.043 | 0.040 +/- 0.001 | 0.036 +/- 0.000 | 1.182 +/- 0.017 |
 | dko_invariants | 1.807 +/- 0.014 | 0.040 +/- 0.001 | 0.036 +/- 0.000 | **1.131 +/- 0.008** |
 | dko_lowrank | 1.681 +/- 0.023 | 0.042 +/- 0.000 | 0.038 +/- 0.000 | 1.274 +/- 0.040 |
@@ -392,38 +297,38 @@ All variants use eigendecomposition of sigma. For D > 256 (all real datasets hav
 
 Bold = best model for that dataset.
 
-### Best Model Per Dataset (All Phases Combined)
+### Best Model Per Dataset
 
-| Dataset | Best Model | RMSE | Phase |
-|---------|-----------|------|-------|
-| ESOL | **dko_gated** | 1.635 | Phase 3 (new) |
-| QM9-Gap | attention | 0.036 | Phase 1 (baseline) |
-| QM9-LUMO | mean_ensemble | 0.034 | Phase 1 (baseline) |
-| Lipophilicity | **dko_invariants** | 1.131 | Phase 3 (new) |
+| Dataset | Best Model | RMSE | Type |
+|---------|-----------|------|------|
+| ESOL | **dko_gated** | 1.635 | New variant |
+| QM9-Gap | attention | 0.036 | Baseline |
+| QM9-LUMO | mean_ensemble | 0.034 | Baseline |
+| Lipophilicity | **dko_invariants** | 1.131 | New variant |
 
 ### Overall Ranking (13 models, 4 datasets)
 
-| Rank | Model | Mean Rank | ESOL | QM9-Gap | QM9-LUMO | Lipo | Phase |
-|------|-------|-----------|------|---------|----------|------|-------|
-| 1 | attention | 3.25 | 8 | 1 | 2 | 2 | P1 |
-| 2 | mean_ensemble | 4.25 | 10 | 2 | 1 | 4 | P1 |
-| 3 | **dko_invariants** | 4.50 | 7 | 6 | 4 | 1 | P3 |
-| 4 | **dko_gated** | 5.00 | 1 | 4 | 9 | 6 | P3 |
-| 5 | **dko_router** | 5.75 | 3 | 9 | 8 | 3 | P3 |
-| 6 | dko_crossattn | 6.25 | 9 | 3 | 3 | 10 | P3 |
-| 7 | dko_first_order | 6.50 | 2 | 5 | 7 | 12 | P1 |
-| 8 | dko_residual | 7.00 | 6 | 7 | 6 | 9 | P3 |
-| 9 | dko_eigenspectrum | 7.25 | 5 | 8 | 5 | 11 | P3 |
-| 10 | dko_lowrank | 9.25 | 4 | 10 | 10 | 13 | P3 |
-| 11 | dko_diagonal | 10.25 | 11 | 11 | 11 | 8 | P1 |
-| 12 | dko (original) | 10.75 | 12 | 12 | 12 | 7 | P1 |
-| 13 | dko_separate_nets | 11.00 | 13 | 13 | 13 | 5 | P1 |
+| Rank | Model | Mean Rank | ESOL | QM9-Gap | QM9-LUMO | Lipo | Type |
+|------|-------|-----------|------|---------|----------|------|------|
+| 1 | attention | 3.25 | 8 | 1 | 2 | 2 | Baseline |
+| 2 | mean_ensemble | 4.25 | 10 | 2 | 1 | 4 | Baseline |
+| 3 | **dko_invariants** | 4.50 | 7 | 6 | 4 | 1 | New |
+| 4 | **dko_gated** | 5.00 | 1 | 4 | 9 | 6 | New |
+| 5 | **dko_router** | 5.75 | 3 | 9 | 8 | 3 | New |
+| 6 | dko_crossattn | 6.25 | 9 | 3 | 3 | 10 | New |
+| 7 | dko_first_order | 6.50 | 2 | 5 | 7 | 12 | Baseline |
+| 8 | dko_residual | 7.00 | 6 | 7 | 6 | 9 | New |
+| 9 | dko_eigenspectrum | 7.25 | 5 | 8 | 5 | 11 | New |
+| 10 | dko_lowrank | 9.25 | 4 | 10 | 10 | 13 | New |
+| 11 | dko_diagonal | 10.25 | 11 | 11 | 11 | 8 | Baseline |
+| 12 | dko (original) | 10.75 | 12 | 12 | 12 | 7 | Baseline |
+| 13 | dko_separate_nets | 11.00 | 13 | 13 | 13 | 5 | Baseline |
 
 ---
 
-## Phase 3 Analysis Scripts
+## Analysis Scripts
 
-### Experiment G: Feature Variance Audit
+### Feature Variance Audit
 
 Analyzed eigenvalue spectrum of conformer covariance matrices across all 8 datasets.
 
@@ -440,7 +345,7 @@ Analyzed eigenvalue spectrum of conformer covariance matrices across all 8 datas
 
 **Key finding:** Top-10 diagonal eigenvalues capture only 4-8% of variance. Effective rank at 90% ranges from 353 (QM9) to 685 (BACE). The diagonal proxy used at D=1024 loses significant spectral information.
 
-### Experiment T: Synthetic Validation
+### Synthetic Validation
 
 Controlled experiment with synthetic data where y = W@mu + alpha * log(1 + trace(sigma)).
 
@@ -453,7 +358,7 @@ Controlled experiment with synthetic data where y = W@mu + alpha * log(1 + trace
 
 **Key finding:** DKO outperforms first-order by 27-30% even at alpha=0 (no sigma signal). The full second-order kernel provides a beneficial inductive bias. However, all ablated variants (eigenspectrum, residual, etc.) perform similarly to first-order (~9.5-10.2 RMSE), suggesting only the original DKO's kernel formulation captures the sigma signal effectively.
 
-### Experiment R: SCC Quartile Analysis
+### SCC Quartile Analysis
 
 | Dataset | Median SCC | Max SCC | Interpretation |
 |---------|-----------|---------|----------------|
@@ -466,88 +371,9 @@ Controlled experiment with synthetic data where y = W@mu + alpha * log(1 + trace
 
 ---
 
-## Publication-Worthy Findings (Updated 2026-02-06)
+## Fingerprint Baseline & Statistical Validation
 
-### Finding 1: Conformer features complement fingerprints (STRONGEST RESULT)
-When concatenated with Morgan fingerprints, DKO conformer statistics (mu + sigma) improve XGBoost predictions on 3/6 datasets: ESOL (-9.9% RMSE), FreeSolv (-3.9%), QM9-HOMO (-4.2%). This is the key positive result: second-order conformer statistics provide genuine complementary information that 2D fingerprints alone cannot capture, particularly for solvation-related properties.
-
-### Finding 2: Fingerprints beat all neural conformer methods across ALL benchmarks
-Morgan FP + XGBoost outperforms every DKO variant and every attention/ensemble baseline on all 6 MoleculeNet regression datasets AND all 8 MARCEL benchmark targets. The gap ranges from 8.5% (ESOL) to 6.7x (BDE). On MARCEL specifically: Kraken 1.8-2.4x, BDE 6.7x. This is a consistent, dataset-independent result.
-
-### Finding 3: DKO gating significantly outperforms attention (p < 0.001)
-With 10-seed validation on ESOL, dko_gated (RMSE=1.654±0.032) beats attention (1.881±0.027) by 12.1% with p < 0.001. Among neural conformer methods, learned gating for mu/sigma fusion is the best architecture.
-
-### Finding 4: Simple sigma representations outperform complex ones
-The `dko_invariants` model uses just 5 scalar features from sigma (trace, log-determinant, Frobenius norm, eigenvalue ratios) yet achieves the best Lipophilicity RMSE (1.131) across all 13 neural models. The more complex lowrank and cross-attention variants perform worse.
-
-### Finding 5: Second-order features help selectively by dataset
-Sigma-based features improve predictions on ESOL (solvation) and Lipophilicity (membrane partitioning) but not on QM9 electronic properties. This aligns with physical intuition: solvation and lipophilicity depend on conformational ensemble shape, while HOMO/LUMO energies are primarily determined by equilibrium geometry.
-
-### Finding 6: The original DKO's PCA-based sigma is catastrophically bad
-Original DKO ranks 12th of 13 models. All 7 new eigendecomposition-based variants outperform it. The PCA compression loses critical covariance structure. Even 5 scalar invariants far outperform full PCA reconstruction.
-
-### Finding 7: DKO captures sigma signal in synthetic data but less in real data
-In synthetic validation, DKO achieves 27-30% lower RMSE than first-order models. On real molecular datasets, the advantage is smaller but present (Finding 1). The gap suggests the sigma signal in molecular properties is real but more subtle than pure trace(sigma).
-
-### Finding 8: Conformer diversity predicts where sigma helps
-The SCC quartile analysis shows Lipophilicity has 3x higher median conformer diversity than QM9. This is exactly the dataset where dko_invariants shows the most benefit. Datasets with low conformer diversity show no benefit from second-order features.
-
-### Finding 10: Conformer weighting helps on Boltzmann-averaged targets (UPDATED)
-On Kraken steric descriptors (Boltzmann-averaged 3D properties), learned conformer weighting (attention) beats both DKO and mean on all 4 targets. DKO's second-order features still beat mean baseline (5-20% improvement), but attention's adaptive weighting is more effective. The ranking **Attention > DKO > Mean** on Kraken suggests that for conformer-dependent properties, the bottleneck is learning *which* conformers matter, not capturing variance statistics.
-
-### Finding 9: Feature normalization was the critical bug
-The original `dim=(1,2)` normalization destroyed inter-feature variance in sigma. Fixing to `dim=1` restored Pearson from ~0 to ~0.48. This single change accounted for more improvement than any architectural modification.
-
----
-
-## Phase 3 Files
-
-| Path | Description |
-|------|-------------|
-| `dko/models/dko_variants.py` | 7 new model variant classes |
-| `scripts/feature_variance_audit.py` | Experiment G script |
-| `scripts/synthetic_validation.py` | Experiment T script |
-| `scripts/scc_quartile_analysis.py` | Experiment R script |
-| `scripts/launch_new_variants.sh` | Phase 3 GPU launcher |
-| `results/new_variants_20260203_204952/` | Phase 3 benchmark results (7 subdirs) |
-| `results/feature_variance_audit.json` | Experiment G results |
-| `results/synthetic_validation.json` | Experiment T results |
-| `results/scc_quartile_analysis.json` | Experiment R results |
-| `results/new_variants_report.md` | Phase 3 standalone report |
-
-### Phase 4+ Files
-
-| Path | Description |
-|------|-------------|
-| `results/fingerprint_baseline/fingerprint_results.json` | FP+XGBoost baseline (8 datasets) |
-| `results/fingerprint_baseline/analysis.md` | FP baseline analysis |
-| `results/10seed_validation/statistical_analysis.json` | 10-seed Welch's t-test results |
-| `results/hybrid_experiment/hybrid_results.json` | Hybrid FP+conformer experiment |
-| `results/phase3_remaining/` | Phase 3 remaining datasets (7 models × 4 datasets) |
-| `results/kraken_benchmark/` | MARCEL/Kraken benchmark |
-| `results/marcel_benchmark/` | MARCEL BDE + Drugs + FP baseline |
-| `scripts/prepare_kraken.py` | Kraken data preprocessing |
-| `scripts/prepare_bde.py` | BDE data preprocessing |
-| `scripts/prepare_drugs75k.py` | Drugs-75K data preprocessing |
-| `scripts/run_kraken_benchmark.sh` | Kraken DKO benchmark launcher |
-| `scripts/run_bde_benchmark.sh` | BDE DKO benchmark launcher |
-| `scripts/run_drugs_benchmark.sh` | Drugs DKO benchmark launcher |
-| `scripts/run_marcel_fp_baseline.py` | Full MARCEL FP baseline (all datasets) |
-| `scripts/compile_marcel_results.py` | Results compilation script |
-| `scripts/run_hybrid_fast.py` | Fast hybrid FP+conformer experiment |
-| `data/conformers/kraken_*/` | Preprocessed Kraken data (4 targets) |
-
----
-
-## Phase 4: Fingerprint Baseline & Statistical Validation (2026-02-06)
-
-### Motivation
-
-Critical gap identified: no comparison against standard cheminformatics baselines. Morgan fingerprints (ECFP4, 2048-bit) with XGBoost represent the minimum "is this better than off-the-shelf?" test. Additionally, 3-seed experiments lack statistical power for publication.
-
----
-
-### Experiment F: Morgan Fingerprint + XGBoost Baseline
+### Morgan Fingerprint + XGBoost Baseline
 
 **Method:** 2048-bit Morgan fingerprints (radius=2) + XGBoost (100 trees, max_depth=6, lr=0.1, hist tree method), 3 seeds, train+val combined.
 
@@ -560,11 +386,11 @@ Critical gap identified: no comparison against standard cheminformatics baseline
 | QM9-HOMO | **0.014 ± 0.000** | attention 0.019 | +0.005 | YES |
 | QM9-LUMO | **0.019 ± 0.000** | mean_ensemble 0.034 | +0.015 | YES |
 
-**Key finding: Fingerprints beat ALL neural conformer methods on ALL regression datasets.** The gap ranges from 8.5% (ESOL) to 45% (QM9-Gap). This is the most important result so far -- it establishes that our geometric conformer features, as currently formulated, provide less predictive signal than standard 2D molecular fingerprints.
+**Key finding: Fingerprints beat ALL neural conformer methods on ALL regression datasets.** The gap ranges from 8.5% (ESOL) to 45% (QM9-Gap). This establishes that our geometric conformer features, as currently formulated, provide less predictive signal than standard 2D molecular fingerprints.
 
 ---
 
-### Experiment V: 10-Seed Statistical Validation
+### 10-Seed Statistical Validation
 
 **Method:** 10 seeds per model on ESOL and Lipophilicity. One-sided Welch's t-test for statistical significance.
 
@@ -588,7 +414,7 @@ Critical gap identified: no comparison against standard cheminformatics baseline
 
 ---
 
-### Experiment H: Hybrid FP + Conformer Features
+### Hybrid FP + Conformer Features
 
 **Question:** Do DKO conformer features provide complementary information to fingerprints?
 
@@ -619,7 +445,7 @@ This is the **most publication-worthy finding**: DKO's conformer statistics (bot
 
 ---
 
-## Phase 5: MARCEL Benchmark (Kraken + BDE + Drugs-75K)
+## MARCEL Benchmark (Kraken + BDE + Drugs-75K)
 
 ### Motivation
 
@@ -649,7 +475,7 @@ The MARCEL benchmark (ICLR 2024) tests conformer ensemble learning on datasets w
 | drugs_chi | 0.280±0.000 | 0.360±0.000 | 0.634 |
 | bde | 3.025±0.037 | 4.833±0.079 | 0.958 |
 
-### BDE Neural Results (Complete - 5 models × 3 seeds)
+### BDE Neural Results (5 models x 3 seeds)
 
 | Model | MAE | RMSE | R² |
 |-------|-----|------|-----|
@@ -660,11 +486,11 @@ The MARCEL benchmark (ICLR 2024) tests conformer ensemble learning on datasets w
 | dko_first_order | 20.735 | 24.394 | -0.081 |
 | dko_gated | 20.898 | 25.066 | -0.142 |
 
-FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the mean (R²≈0).
+FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the mean (R²~0).
 
-### Kraken Neural Results (COMPLETE - with PCA-compressed features)
+### Kraken Neural Results (with PCA-compressed features)
 
-**UPDATE (2026-02-08):** With PCA-compressed fingerprints (2048 → 128 dims) and fixed attention model.
+**UPDATE (2026-02-08):** With PCA-compressed fingerprints (2048 -> 128 dims) and fixed attention model.
 
 | Target | attention RMSE | dko_gated RMSE | mean RMSE | Best Model |
 |--------|---------------|----------------|-----------|------------|
@@ -678,7 +504,7 @@ FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the 
 2. **DKO still beats mean baseline** - second-order features help, but attention learns better weights
 3. The ranking is: **Attention > DKO > Mean** on Boltzmann-averaged steric properties
 
-### Drugs-75K Neural Results (Complete - 5 models × 3 targets × 3 seeds)
+### Drugs-75K Neural Results (5 models x 3 targets x 3 seeds)
 
 | Target | FP+XGB RMSE | attention RMSE | mean_ensemble RMSE | dko_gated RMSE | FP Wins By |
 |--------|------------|----------------|-------------------|----------------|------------|
@@ -688,7 +514,7 @@ FP+XGBoost is **6.7x better** on MAE. All neural models essentially predict the 
 
 **Key finding:** FP+XGBoost dominates on all 3 Drugs-75K electronic properties. Neural conformer methods (attention, DKO) fail to match fingerprint baseline, consistent with MoleculeNet results.
 
-### Key Finding (Updated 2026-02-08)
+### Summary
 
 The picture is nuanced:
 
@@ -698,6 +524,117 @@ The picture is nuanced:
 
 3. **On Kraken steric descriptors:** Attention wins all 4 targets, with ranking **Attention > DKO > Mean**. Learned conformer weighting outperforms fixed covariance, but both beat mean baseline. Sterimol descriptors are Boltzmann-averaged 3D properties where conformer modeling genuinely helps.
 
-4. **On BDE:** FP+XGBoost wins by 6.7x. All neural models fail (R²≈0).
+4. **On BDE:** FP+XGBoost wins by 6.7x. All neural models fail (R²~0).
 
 **Conclusion:** Conformer ensemble methods help on Boltzmann-averaged 3D properties (Kraken), with attention's learned weighting being most effective. For standard scalar properties (MoleculeNet, Drugs, BDE), fingerprints suffice.
+
+---
+
+## Publication-Worthy Findings
+
+### Finding 1: Conformer features complement fingerprints (STRONGEST RESULT)
+When concatenated with Morgan fingerprints, DKO conformer statistics (mu + sigma) improve XGBoost predictions on 3/6 datasets: ESOL (-9.9% RMSE), FreeSolv (-3.9%), QM9-HOMO (-4.2%). This is the key positive result: second-order conformer statistics provide genuine complementary information that 2D fingerprints alone cannot capture, particularly for solvation-related properties.
+
+### Finding 2: Fingerprints beat all neural conformer methods across ALL benchmarks
+Morgan FP + XGBoost outperforms every DKO variant and every attention/ensemble baseline on all 6 MoleculeNet regression datasets AND all 8 MARCEL benchmark targets. The gap ranges from 8.5% (ESOL) to 6.7x (BDE). On MARCEL specifically: Kraken 1.8-2.4x, BDE 6.7x. This is a consistent, dataset-independent result.
+
+### Finding 3: DKO gating significantly outperforms attention (p < 0.001)
+With 10-seed validation on ESOL, dko_gated (RMSE=1.654±0.032) beats attention (1.881±0.027) by 12.1% with p < 0.001. Among neural conformer methods, learned gating for mu/sigma fusion is the best architecture.
+
+### Finding 4: Simple sigma representations outperform complex ones
+The `dko_invariants` model uses just 5 scalar features from sigma (trace, log-determinant, Frobenius norm, eigenvalue ratios) yet achieves the best Lipophilicity RMSE (1.131) across all 13 neural models. The more complex lowrank and cross-attention variants perform worse.
+
+### Finding 5: Second-order features help selectively by dataset
+Sigma-based features improve predictions on ESOL (solvation) and Lipophilicity (membrane partitioning) but not on QM9 electronic properties. This aligns with physical intuition: solvation and lipophilicity depend on conformational ensemble shape, while HOMO/LUMO energies are primarily determined by equilibrium geometry.
+
+### Finding 6: The original DKO's PCA-based sigma is catastrophically bad
+Original DKO ranks 12th of 13 models. All 7 new eigendecomposition-based variants outperform it. The PCA compression loses critical covariance structure. Even 5 scalar invariants far outperform full PCA reconstruction.
+
+### Finding 7: DKO captures sigma signal in synthetic data but less in real data
+In synthetic validation, DKO achieves 27-30% lower RMSE than first-order models. On real molecular datasets, the advantage is smaller but present (Finding 1). The gap suggests the sigma signal in molecular properties is real but more subtle than pure trace(sigma).
+
+### Finding 8: Conformer diversity predicts where sigma helps
+The SCC quartile analysis shows Lipophilicity has 3x higher median conformer diversity than QM9. This is exactly the dataset where dko_invariants shows the most benefit. Datasets with low conformer diversity show no benefit from second-order features.
+
+### Finding 9: Feature normalization was the critical bug
+The original `dim=(1,2)` normalization destroyed inter-feature variance in sigma. Fixing to `dim=1` restored Pearson from ~0 to ~0.48. This single change accounted for more improvement than any architectural modification.
+
+### Finding 10: Conformer weighting helps on Boltzmann-averaged targets
+On Kraken steric descriptors (Boltzmann-averaged 3D properties), learned conformer weighting (attention) beats both DKO and mean on all 4 targets. DKO's second-order features still beat mean baseline (5-20% improvement), but attention's adaptive weighting is more effective. The ranking **Attention > DKO > Mean** on Kraken suggests that for conformer-dependent properties, the bottleneck is learning *which* conformers matter, not capturing variance statistics.
+
+---
+
+## Experimental Setup
+
+### Ablation Study
+- **Dataset:** ESOL
+- **Model:** DKO (full 2nd order)
+- **Configs:** 7 ablation configurations x 3 seeds = 21 experiments
+- **Hardware:** GPUs 3-9 (NVIDIA RTX 2080 Ti), one config per GPU
+
+### MoleculeNet Benchmark
+- **Datasets:** esol, freesolv, lipophilicity, bace, bbbp, qm9_gap, qm9_homo, qm9_lumo
+- **Models:** 8 (dko, dko_first_order, dko_diagonal, dko_separate_nets, attention, deepsets, mean_ensemble, single_conformer)
+- **Seeds:** 42, 123, 456
+- **Epochs:** 300 max with early stopping (patience=30)
+- **Optimizer:** AdamW (lr=1e-4 for all, weight_decay=1e-5)
+- **Mixed Precision:** Disabled for full DKO variants, enabled for others
+- **Hardware:** 8x NVIDIA RTX 2080 Ti, one dataset per GPU
+- **Total:** 192 experiments (8 models x 3 seeds x 8 datasets)
+
+### Feature Quality Analysis
+- **Method:** Ridge Regression (alpha=1,10,100) + Random Forest on raw mean features
+- **All 8 precomputed datasets evaluated**
+
+---
+
+## Files
+
+| Path | Description |
+|------|-------------|
+| `results/ablation/` | Ablation study results (7 configs x 3 seeds) |
+| `results/feature_quality/feature_quality_results.json` | sklearn feature quality analysis |
+| `results/benchmark_fixed/*/benchmark_results.json` | Benchmark results per dataset |
+| `results/benchmark_fixed/*.log` | Training logs |
+| `scripts/feature_quality_analysis.py` | Feature quality analysis script |
+| `scripts/run_ablation.py` | Ablation study driver |
+| `scripts/run_ablation_single.py` | Single ablation experiment runner |
+| `dko/models/dko_variants.py` | 7 new model variant classes |
+| `scripts/feature_variance_audit.py` | Variance audit script |
+| `scripts/synthetic_validation.py` | Synthetic validation script |
+| `scripts/scc_quartile_analysis.py` | SCC quartile analysis script |
+| `results/new_variants_20260203_204952/` | New variant benchmark results (7 subdirs) |
+| `results/feature_variance_audit.json` | Variance audit results |
+| `results/synthetic_validation.json` | Synthetic validation results |
+| `results/scc_quartile_analysis.json` | SCC quartile results |
+| `results/new_variants_report.md` | New variants standalone report |
+| `results/fingerprint_baseline/fingerprint_results.json` | FP+XGBoost baseline (8 datasets) |
+| `results/fingerprint_baseline/analysis.md` | FP baseline analysis |
+| `results/10seed_validation/statistical_analysis.json` | 10-seed Welch's t-test results |
+| `results/hybrid_experiment/hybrid_results.json` | Hybrid FP+conformer experiment |
+| `results/kraken_benchmark/` | MARCEL/Kraken benchmark |
+| `results/marcel_benchmark/` | MARCEL BDE + Drugs + FP baseline |
+| `scripts/prepare_kraken.py` | Kraken data preprocessing |
+| `scripts/prepare_bde.py` | BDE data preprocessing |
+| `scripts/prepare_drugs75k.py` | Drugs-75K data preprocessing |
+| `scripts/run_kraken_benchmark.sh` | Kraken DKO benchmark launcher |
+| `scripts/run_bde_benchmark.sh` | BDE DKO benchmark launcher |
+| `scripts/run_drugs_benchmark.sh` | Drugs DKO benchmark launcher |
+| `scripts/run_marcel_fp_baseline.py` | Full MARCEL FP baseline (all datasets) |
+| `scripts/compile_marcel_results.py` | Results compilation script |
+| `scripts/run_hybrid_fast.py` | Fast hybrid FP+conformer experiment |
+| `data/conformers/kraken_*/` | Preprocessed Kraken data (4 targets) |
+
+---
+
+## Code Changes Applied
+
+| File | Fix | Impact |
+|------|-----|--------|
+| `dko/experiments/main_benchmark.py` | LR: 1e-5 -> 1e-4 for DKO | 30% RMSE reduction |
+| `dko/experiments/main_benchmark.py` | kernel_output_dim: 32 -> 64 | Marginal alone, needed for combined effect |
+| `dko/experiments/main_benchmark.py` | Mixed precision: off for full DKO only | Prevents 10x variance inflation |
+| `dko/experiments/main_benchmark.py` | Added dko_diagonal, dko_separate_nets to benchmark | New model variants |
+| `dko/training/trainer.py` | Normalization: dim=(1,2) -> dim=1 | Pearson 0.0 -> 0.48 (critical fix) |
+| `dko/training/trainer.py` | Sigma regularization: 1e-4 -> 1e-2 | Prevents near-singular covariance |
+| `dko/training/evaluator.py` | Same normalization + regularization fix | Consistent train/eval behavior |
