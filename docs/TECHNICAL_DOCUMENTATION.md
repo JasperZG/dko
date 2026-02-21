@@ -99,8 +99,8 @@ dkoproject/
 │   ├── feature_quality_analysis.py   # sklearn baseline on raw features
 │   ├── run_ablation.py               # Ablation study driver
 │   ├── run_ablation_single.py        # Single ablation experiment runner
-│   ├── launch_phase1.sh              # Phase 1 (ablation) GPU launcher
-│   └── launch_phase2.sh              # Phase 2 (full benchmark) GPU launcher
+│   ├── launch_phase1.sh              # Ablation GPU launcher
+│   └── launch_phase2.sh              # Full benchmark GPU launcher
 ├── data/
 │   └── conformers/               # Precomputed conformer features
 │       ├── esol/                     # {train,val,test}.pkl per dataset
@@ -114,7 +114,7 @@ dkoproject/
 ├── results/                      # Experiment results
 │   ├── ablation/                     # Ablation study (7 configs x 3 seeds)
 │   ├── feature_quality/              # sklearn feature quality analysis
-│   └── benchmark_fixed/              # Phase 2 results (8 datasets)
+│   └── benchmark_fixed/              # Full benchmark results (8 datasets)
 │       └── {dataset}/benchmark_results.json
 ├── tests/                        # Test suite
 │   ├── test_trainer.py               # 40 trainer tests
@@ -1669,7 +1669,7 @@ python scripts/aggregate_results.py \
 | MUV | Multi-task | 93,087 | AUC | PubChem bioassays | No |
 | QM7 | Regression | 7,165 | MAE | Atomization energies | No |
 
-**Benchmarked datasets (Phase 2, 192 experiments):** ESOL, FreeSolv, Lipophilicity, QM9-Gap, QM9-HOMO, QM9-LUMO, BACE, BBBP. See `docs/RESULTS.md` for full results.
+**Benchmarked datasets (192 experiments):** ESOL, FreeSolv, Lipophilicity, QM9-Gap, QM9-HOMO, QM9-LUMO, BACE, BBBP. See `docs/RESULTS.md` for full results.
 
 ---
 

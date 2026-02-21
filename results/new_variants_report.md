@@ -7,7 +7,7 @@
 
 ## 1. Executive Summary
 
-Seven new DKO model variants were benchmarked against six Phase 1 baselines across four
+Seven new DKO model variants were benchmarked against six baselines across four
 molecular property prediction datasets. Two new variants achieve best-in-class performance
 on specific datasets:
 
@@ -21,7 +21,7 @@ The attention and mean_ensemble baselines remain the strongest overall performer
 
 ## 2. Model Descriptions
 
-### Phase 1 Baselines
+### Baselines
 
 | Model | Description |
 |-------|-------------|
@@ -32,7 +32,7 @@ The attention and mean_ensemble baselines remain the strongest overall performer
 | `attention` | Attention aggregation baseline |
 | `mean_ensemble` | Mean ensemble baseline |
 
-### Phase 2 New Variants
+### New Variants
 
 | Model | Description |
 |-------|-------------|
@@ -91,12 +91,12 @@ For D > 256, a diagonal proxy is used instead of full eigendecomposition to avoi
 
 ### Best Model Per Dataset
 
-| Dataset | Best Model | RMSE | Phase |
-|---------|-----------|------|-------|
-| ESOL | `dko_gated` | 1.6345 | Phase 2 (new) |
-| QM9-Gap | `attention` | 0.0364 | Phase 1 (baseline) |
-| QM9-LUMO | `mean_ensemble` | 0.0335 | Phase 1 (baseline) |
-| Lipophilicity | `dko_invariants` | 1.1310 | Phase 2 (new) |
+| Dataset | Best Model | RMSE | Type |
+|---------|-----------|------|------|
+| ESOL | `dko_gated` | 1.6345 | New variant |
+| QM9-Gap | `attention` | 0.0364 | Baseline |
+| QM9-LUMO | `mean_ensemble` | 0.0335 | Baseline |
+| Lipophilicity | `dko_invariants` | 1.1310 | New variant |
 
 ---
 
@@ -104,7 +104,7 @@ For D > 256, a diagonal proxy is used instead of full eigendecomposition to avoi
 
 Models ranked by mean rank across all 4 datasets (lower = better):
 
-| Rank | Model | Mean Rank | ESOL | QM9-Gap | QM9-LUMO | Lipo | Phase |
+| Rank | Model | Mean Rank | ESOL | QM9-Gap | QM9-LUMO | Lipo | Type |
 |------|-------|-----------|------|---------|----------|------|-------|
 | 1 | `attention` | 3.25 | 8 | 1 | 2 | 2 | Baseline |
 | 2 | `mean_ensemble` | 4.25 | 10 | 2 | 1 | 4 | Baseline |

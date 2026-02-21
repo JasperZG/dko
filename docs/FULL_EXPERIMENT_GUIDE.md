@@ -49,7 +49,7 @@ The full experiment pipeline consists of:
 
 ---
 
-## Phase 1: Setup (30 minutes)
+## Step 1: Setup (30 minutes)
 
 ### 1.1 Transfer Code to Cluster
 
@@ -85,7 +85,7 @@ python scripts/validate_cluster_ready.py
 
 ---
 
-## Phase 2: Hyperparameter Optimization (4-8 hours)
+## Step 2: Hyperparameter Optimization (4-8 hours)
 
 Find optimal hyperparameters for each model before running main experiments.
 
@@ -122,7 +122,7 @@ cat results/hyperopt/esol_dko_best_params.json
 
 ---
 
-## Phase 3: Main Experiments (1-3 days)
+## Step 3: Main Experiments (1-3 days)
 
 ### 3.1 Experiment Configuration
 
@@ -199,7 +199,7 @@ python scripts/recover_failed_jobs.py --resubmit
 
 ---
 
-## Phase 3b: Analysis Experiments (Optional, 4-8 hours)
+## Step 3b: Analysis Experiments (Optional, 4-8 hours)
 
 After main benchmark, run additional analysis experiments to understand DKO's behavior.
 
@@ -270,7 +270,7 @@ python -c "from dko.experiments import run_sketching_experiment; run_sketching_e
 
 ---
 
-## Phase 4: Results Aggregation (10 minutes)
+## Step 4: Results Aggregation (10 minutes)
 
 After all experiments complete:
 
@@ -356,21 +356,21 @@ cat logs/slurm_<job_id>.err  # Check error message
 ## Experiment Checklist
 
 ```
-[ ] Phase 1: Setup
+[ ] Step 1: Setup
     [ ] Code transferred to cluster
     [ ] setup_cluster.sh completed
     [ ] validate_hpc_setup.py passed
 
-[ ] Phase 2: Hyperopt
+[ ] Step 2: Hyperopt
     [ ] Hyperopt jobs submitted
     [ ] Best parameters saved
 
-[ ] Phase 3: Main Experiments
+[ ] Step 3: Main Experiments
     [ ] All experiments submitted (DKO, baselines, GNNs)
     [ ] Jobs completing without errors
     [ ] Failed jobs resubmitted
 
-[ ] Phase 3b: Analysis Experiments (Optional)
+[ ] Step 3b: Analysis Experiments (Optional)
     [ ] Sample efficiency study
     [ ] 80/20 decomposition study
     [ ] Representation vs architecture study
@@ -379,7 +379,7 @@ cat logs/slurm_<job_id>.err  # Check error message
     [ ] Decision rule calibration
     [ ] Sketching experiments
 
-[ ] Phase 4: Results
+[ ] Step 4: Results
     [ ] Results aggregated
     [ ] Summary generated
     [ ] Figures created
