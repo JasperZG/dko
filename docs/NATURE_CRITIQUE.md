@@ -8,17 +8,17 @@
 
 | # | Critique | Current Status | Priority | Gap Level |
 |---|----------|----------------|----------|-----------|
-| 1 | No Mechanistic Insight | Not addressed | HIGH | Critical |
-| 2 | 3D Features Never Fixed | Not addressed | HIGH | Critical |
+| 1 | No Mechanistic Insight | **ADDRESSED in paper** (MI, correlations, importance) | HIGH | Reduced |
+| 2 | 3D Features Never Fixed | **ADDRESSED** (28 enhanced descriptors + paper section) | HIGH | Reduced |
 | 3 | No SOTA 3D GNN Baselines | Not addressed | HIGH | Critical |
-| 4 | Hybrid Result Undersold | Partial (3 seeds) | MEDIUM | Medium |
-| 5 | BDE Failure Unexplained | Not addressed | MEDIUM | Medium |
-| 6 | Kraken Contradicts Narrative | Partial | MEDIUM | Medium |
+| 4 | Hybrid Result Undersold | Partial (3 seeds) + property taxonomy in paper | MEDIUM | Reduced |
+| 5 | BDE Failure Unexplained | **ADDRESSED** (diagnosis in paper + bug fix) | MEDIUM | Resolved |
+| 6 | Kraken Contradicts Narrative | **ADDRESSED** (property taxonomy framework) | MEDIUM | Reduced |
 | 7 | No Prospective Validation | Not addressed | HIGH | High |
 | 8 | Scale Too Small | Not addressed | MEDIUM | Medium |
-| 9 | No Theoretical Contribution | Not addressed | HIGH | High |
+| 9 | No Theoretical Contribution | Partial (property taxonomy + MI analysis) | HIGH | Reduced |
 | 10 | Reproducibility Concerns | Partial | LOW | Low |
-| 11 | "FP Wins" Not Novel | Not addressed | MEDIUM | Medium |
+| 11 | "FP Wins" Not Novel | **Partially addressed** (reframed as complementarity) | MEDIUM | Reduced |
 | 12 | Statistical Rigor Incomplete | Partial | MEDIUM | Medium |
 | 13 | Missing Ablations | Not addressed | MEDIUM | Medium |
 | 14 | No Drug Discovery Connection | Not addressed | HIGH | High |
@@ -334,3 +334,6 @@ While geometric features DO vary, they may not capture property-relevant 3D info
 | 2026-02-21 | #2, #5 | Investigated current feature setup - features ARE 3D-varying (distances, angles, torsions). Created enhanced 3D features module (dko/data/features_3d.py) with PMI, SASA, USR, etc. |
 | 2026-02-21 | #5 | Diagnosed BDE failure: features have ~0 correlation with targets, dummy energies bug found, task requires quantum descriptors |
 | 2026-02-21 | #1 | Created mechanistic analysis script (scripts/mechanistic_analysis.py) for feature-target correlations, MI, XGBoost importance |
+| 2026-02-21 | #1,#2,#5,#6 | **Paper updated**: Added enhanced 3D features section to Methods, mechanistic analysis subsection (MI + correlations + importance), BDE failure diagnosis with root cause, property taxonomy (solvation/steric/electronic) in Discussion, updated abstract+conclusion |
+| 2026-02-21 | #5 | **Bug fix**: Fixed prepare_bde.py dummy energies - now extracts actual MMFF94 conformer energies for Boltzmann weighting |
+| 2026-02-21 | #11 | Paper reframed around complementarity narrative with mechanistic backing rather than just "FP wins" |

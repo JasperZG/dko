@@ -1,0 +1,397 @@
+%%% -*-BibTeX-*-
+%%% Do NOT edit. File created by BibTeX with style
+%%% ACM-Reference-Format-Journals [18-Jan-2012].
+
+\begin{thebibliography}{30}
+
+%%% ====================================================================
+%%% NOTE TO THE USER: you can override these defaults by providing
+%%% customized versions of any of these macros before the \bibliography
+%%% command.  Each of them MUST provide its own final punctuation,
+%%% except for \shownote{} and \showURL{}.  The latter two
+%%% do not use final punctuation, in order to avoid confusing it with
+%%% the Web address.
+%%%
+%%% To suppress output of a particular field, define its macro to expand
+%%% to an empty string, or better, \unskip, like this:
+%%%
+%%% \newcommand{\showURL}[1]{\unskip}   % LaTeX syntax
+%%%
+%%% \def \showURL #1{\unskip}           % plain TeX syntax
+%%%
+%%% ====================================================================
+
+\ifx \showCODEN    \undefined \def \showCODEN     #1{\unskip}     \fi
+\ifx \showISBNx    \undefined \def \showISBNx     #1{\unskip}     \fi
+\ifx \showISBNxiii \undefined \def \showISBNxiii  #1{\unskip}     \fi
+\ifx \showISSN     \undefined \def \showISSN      #1{\unskip}     \fi
+\ifx \showLCCN     \undefined \def \showLCCN      #1{\unskip}     \fi
+\ifx \shownote     \undefined \def \shownote      #1{#1}          \fi
+\ifx \showarticletitle \undefined \def \showarticletitle #1{#1}   \fi
+\ifx \showURL      \undefined \def \showURL       {\relax}        \fi
+% The following commands are used for tagged output and should be
+% invisible to TeX
+\providecommand\bibfield[2]{#2}
+\providecommand\bibinfo[2]{#2}
+\providecommand\natexlab[1]{#1}
+\providecommand\showeprint[2][]{arXiv:#2}
+
+\bibitem[Axelrod and Gomez-Bombarelli(2024)]%
+        {axelrod2024marcel}
+\bibfield{author}{\bibinfo{person}{Simon Axelrod} {and} \bibinfo{person}{Rafael
+  Gomez-Bombarelli}.} \bibinfo{year}{2024}\natexlab{}.
+\newblock \showarticletitle{MARCEL: Molecular Conformer Ensemble Learning}. In
+  \bibinfo{booktitle}{\emph{International Conference on Learning
+  Representations}}.
+\newblock
+
+
+\bibitem[Ballester and Richards(2007)]%
+        {ballester2007usr}
+\bibfield{author}{\bibinfo{person}{Pedro~J Ballester} {and}
+  \bibinfo{person}{W~Graham Richards}.} \bibinfo{year}{2007}\natexlab{}.
+\newblock \showarticletitle{Ultrafast Shape Recognition to Search Compound
+  Databases for Similar Molecular Shapes}.
+\newblock \bibinfo{journal}{\emph{Journal of Computational Chemistry}}
+  \bibinfo{volume}{28}, \bibinfo{number}{10} (\bibinfo{year}{2007}),
+  \bibinfo{pages}{1711--1723}.
+\newblock
+
+
+\bibitem[Bemis and Murcko(1996)]%
+        {bemis1996scaffolds}
+\bibfield{author}{\bibinfo{person}{Guy~W Bemis} {and} \bibinfo{person}{Mark~A
+  Murcko}.} \bibinfo{year}{1996}\natexlab{}.
+\newblock \showarticletitle{The Properties of Known Drugs. 1. Molecular
+  Frameworks}.
+\newblock \bibinfo{journal}{\emph{Journal of Medicinal Chemistry}}
+  \bibinfo{volume}{39}, \bibinfo{number}{15} (\bibinfo{year}{1996}),
+  \bibinfo{pages}{2887--2893}.
+\newblock
+
+
+\bibitem[Chen and Guestrin(2016)]%
+        {chen2016xgboost}
+\bibfield{author}{\bibinfo{person}{Tianqi Chen} {and} \bibinfo{person}{Carlos
+  Guestrin}.} \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{XGBoost: A Scalable Tree Boosting System}. In
+  \bibinfo{booktitle}{\emph{Proceedings of the 22nd ACM SIGKDD International
+  Conference on Knowledge Discovery and Data Mining}}.
+  \bibinfo{pages}{785--794}.
+\newblock
+
+
+\bibitem[Delaney(2004)]%
+        {delaney2004esol}
+\bibfield{author}{\bibinfo{person}{John~S Delaney}.}
+  \bibinfo{year}{2004}\natexlab{}.
+\newblock \showarticletitle{ESOL: Estimating Aqueous Solubility Directly from
+  Molecular Structure}.
+\newblock \bibinfo{journal}{\emph{Journal of Chemical Information and Computer
+  Sciences}} \bibinfo{volume}{44}, \bibinfo{number}{3} (\bibinfo{year}{2004}),
+  \bibinfo{pages}{1000--1005}.
+\newblock
+
+
+\bibitem[Ganea et~al\mbox{.}(2021)]%
+        {ganea2021geomol}
+\bibfield{author}{\bibinfo{person}{Octavian-Eugen Ganea},
+  \bibinfo{person}{Lagnajit Pattanaik}, \bibinfo{person}{Connor~W Coley},
+  \bibinfo{person}{Regina Barzilay}, \bibinfo{person}{Klavs~F Jensen},
+  \bibinfo{person}{William~H Green}, {and} \bibinfo{person}{Tommi~S Jaakkola}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{GeoMol: Torsional Geometric Generation of Molecular
+  3D Conformer Ensembles}. In \bibinfo{booktitle}{\emph{Advances in Neural
+  Information Processing Systems}}, Vol.~\bibinfo{volume}{34}.
+\newblock
+
+
+\bibitem[Gasteiger et~al\mbox{.}(2020a)]%
+        {gasteiger2021dimenetpp}
+\bibfield{author}{\bibinfo{person}{Johannes Gasteiger},
+  \bibinfo{person}{Florian Becker}, {and} \bibinfo{person}{Stephan
+  G{\"u}nnemann}.} \bibinfo{year}{2020}\natexlab{a}.
+\newblock \showarticletitle{Fast and Uncertainty-Aware Directional Message
+  Passing for Non-Equilibrium Molecules}. In \bibinfo{booktitle}{\emph{Machine
+  Learning for Molecules Workshop at NeurIPS}}.
+\newblock
+
+
+\bibitem[Gasteiger et~al\mbox{.}(2020b)]%
+        {gasteiger2020dimenet}
+\bibfield{author}{\bibinfo{person}{Johannes Gasteiger}, \bibinfo{person}{Janek
+  Gro{\ss}}, {and} \bibinfo{person}{Stephan G{\"u}nnemann}.}
+  \bibinfo{year}{2020}\natexlab{b}.
+\newblock \showarticletitle{Directional Message Passing for Molecular Graphs}.
+  In \bibinfo{booktitle}{\emph{International Conference on Learning
+  Representations}}.
+\newblock
+
+
+\bibitem[Gilmer et~al\mbox{.}(2017)]%
+        {gilmer2017mpnn}
+\bibfield{author}{\bibinfo{person}{Justin Gilmer}, \bibinfo{person}{Samuel~S
+  Schoenholz}, \bibinfo{person}{Patrick~F Riley}, \bibinfo{person}{Oriol
+  Vinyals}, {and} \bibinfo{person}{George~E Dahl}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Neural Message Passing for Quantum Chemistry}. In
+  \bibinfo{booktitle}{\emph{International Conference on Machine Learning}}.
+  \bibinfo{pages}{1263--1272}.
+\newblock
+
+
+\bibitem[Hawkins(2017)]%
+        {hawkins2017conformation}
+\bibfield{author}{\bibinfo{person}{Paul C~D Hawkins}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Conformation Generation: The State of the Art}.
+\newblock \bibinfo{journal}{\emph{Journal of Chemical Information and
+  Modeling}} \bibinfo{volume}{57}, \bibinfo{number}{8} (\bibinfo{year}{2017}),
+  \bibinfo{pages}{1747--1756}.
+\newblock
+
+
+\bibitem[Klicpera et~al\mbox{.}(2021)]%
+        {klicpera2020gemnet}
+\bibfield{author}{\bibinfo{person}{Johannes Klicpera}, \bibinfo{person}{Florian
+  Becker}, {and} \bibinfo{person}{Stephan G{\"u}nnemann}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{GemNet: Universal Directional Graph Neural Networks
+  for Molecules}. In \bibinfo{booktitle}{\emph{Advances in Neural Information
+  Processing Systems}}, Vol.~\bibinfo{volume}{34}.
+\newblock
+
+
+\bibitem[Kraskov et~al\mbox{.}(2004)]%
+        {kraskov2004mi}
+\bibfield{author}{\bibinfo{person}{Alexander Kraskov}, \bibinfo{person}{Harald
+  St{\"o}gbauer}, {and} \bibinfo{person}{Peter Grassberger}.}
+  \bibinfo{year}{2004}\natexlab{}.
+\newblock \showarticletitle{Estimating Mutual Information}.
+\newblock \bibinfo{journal}{\emph{Physical Review E}} \bibinfo{volume}{69},
+  \bibinfo{number}{6} (\bibinfo{year}{2004}), \bibinfo{pages}{066138}.
+\newblock
+
+
+\bibitem[Lee et~al\mbox{.}(2019)]%
+        {lee2019set}
+\bibfield{author}{\bibinfo{person}{Juho Lee}, \bibinfo{person}{Yoonho Lee},
+  \bibinfo{person}{Jungtaek Kim}, \bibinfo{person}{Adam~R Kosiorek},
+  \bibinfo{person}{Seungjin Choi}, {and} \bibinfo{person}{Yee~Whye Teh}.}
+  \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Set Transformer: A Framework for Attention-based
+  Permutation-Invariant Input}. In \bibinfo{booktitle}{\emph{International
+  Conference on Machine Learning}}.
+\newblock
+
+
+\bibitem[Liu et~al\mbox{.}(2022)]%
+        {liu2022spherical}
+\bibfield{author}{\bibinfo{person}{Yi Liu}, \bibinfo{person}{Limei Wang},
+  \bibinfo{person}{Meng Liu}, \bibinfo{person}{Yuchao Lin},
+  \bibinfo{person}{Xuan Zhang}, \bibinfo{person}{Bora Oztekin}, {and}
+  \bibinfo{person}{Shuiwang Ji}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{Spherical Message Passing for 3D Molecular Graphs}.
+  In \bibinfo{booktitle}{\emph{International Conference on Learning
+  Representations}}.
+\newblock
+
+
+\bibitem[Loshchilov and Hutter(2019)]%
+        {loshchilov2019adamw}
+\bibfield{author}{\bibinfo{person}{Ilya Loshchilov} {and}
+  \bibinfo{person}{Frank Hutter}.} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Decoupled Weight Decay Regularization}.
+\newblock \bibinfo{journal}{\emph{International Conference on Learning
+  Representations}} (\bibinfo{year}{2019}).
+\newblock
+
+
+\bibitem[Mitternacht(2016)]%
+        {freesasa2016}
+\bibfield{author}{\bibinfo{person}{Simon Mitternacht}.}
+  \bibinfo{year}{2016}\natexlab{}.
+\newblock \showarticletitle{FreeSASA: An Open Source {C} Library for Solvent
+  Accessible Surface Area Calculations}.
+\newblock \bibinfo{journal}{\emph{F1000Research}}  \bibinfo{volume}{5}
+  (\bibinfo{year}{2016}), \bibinfo{pages}{189}.
+\newblock
+
+
+\bibitem[Mobley and Guthrie(2014)]%
+        {mobley2014freesolv}
+\bibfield{author}{\bibinfo{person}{David~L Mobley} {and}
+  \bibinfo{person}{J~Peter Guthrie}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{FreeSolv: A Database of Experimental and Calculated
+  Hydration Free Energies, with Input Files}.
+\newblock \bibinfo{journal}{\emph{Journal of Computer-Aided Molecular Design}}
+  \bibinfo{volume}{28}, \bibinfo{number}{7} (\bibinfo{year}{2014}),
+  \bibinfo{pages}{711--720}.
+\newblock
+
+
+\bibitem[Ramakrishnan et~al\mbox{.}(2014)]%
+        {ramakrishnan2014qm9}
+\bibfield{author}{\bibinfo{person}{Raghunathan Ramakrishnan},
+  \bibinfo{person}{Pavlo~O Dral}, \bibinfo{person}{Matthias Rupp}, {and}
+  \bibinfo{person}{O~Anatole von Lilienfeld}.} \bibinfo{year}{2014}\natexlab{}.
+\newblock \showarticletitle{Quantum Chemistry Structures and Properties of 134
+  Kilo Molecules}.
+\newblock \bibinfo{journal}{\emph{Scientific Data}}  \bibinfo{volume}{1}
+  (\bibinfo{year}{2014}), \bibinfo{pages}{140022}.
+\newblock
+
+
+\bibitem[Riniker and Landrum(2015)]%
+        {riniker2015etkdg}
+\bibfield{author}{\bibinfo{person}{Sereina Riniker} {and}
+  \bibinfo{person}{Gregory~A Landrum}.} \bibinfo{year}{2015}\natexlab{}.
+\newblock \showarticletitle{Better Informed Distance Geometry: Using What We
+  Know To Improve Conformation Generation}.
+\newblock \bibinfo{journal}{\emph{Journal of Chemical Information and
+  Modeling}} \bibinfo{volume}{55}, \bibinfo{number}{12} (\bibinfo{year}{2015}),
+  \bibinfo{pages}{2562--2574}.
+\newblock
+
+
+\bibitem[Rogers and Hahn(2010)]%
+        {rogers2010ecfp}
+\bibfield{author}{\bibinfo{person}{David Rogers} {and} \bibinfo{person}{Mathew
+  Hahn}.} \bibinfo{year}{2010}\natexlab{}.
+\newblock \showarticletitle{Extended-Connectivity Fingerprints}.
+\newblock \bibinfo{journal}{\emph{Journal of Chemical Information and
+  Modeling}} \bibinfo{volume}{50}, \bibinfo{number}{5} (\bibinfo{year}{2010}),
+  \bibinfo{pages}{742--754}.
+\newblock
+
+
+\bibitem[Rupp et~al\mbox{.}(2012)]%
+        {rupp2012randomml}
+\bibfield{author}{\bibinfo{person}{Matthias Rupp}, \bibinfo{person}{Alexandre
+  Tkatchenko}, \bibinfo{person}{Klaus-Robert M{\"u}ller}, {and}
+  \bibinfo{person}{O~Anatole von Lilienfeld}.} \bibinfo{year}{2012}\natexlab{}.
+\newblock \showarticletitle{Fast and Accurate Modeling of Molecular Atomization
+  Energies with Machine Learning}.
+\newblock \bibinfo{journal}{\emph{Physical Review Letters}}
+  \bibinfo{volume}{108}, \bibinfo{number}{5} (\bibinfo{year}{2012}),
+  \bibinfo{pages}{058301}.
+\newblock
+
+
+\bibitem[Sch{\"u}tt et~al\mbox{.}(2017)]%
+        {schutt2017schnet}
+\bibfield{author}{\bibinfo{person}{Kristof~T Sch{\"u}tt},
+  \bibinfo{person}{Pieter-Jan Kindermans}, \bibinfo{person}{Huziel~Enoc
+  Sauceda}, \bibinfo{person}{Stefan Chmiela}, \bibinfo{person}{Alexandre
+  Tkatchenko}, {and} \bibinfo{person}{Klaus-Robert M{\"u}ller}.}
+  \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{SchNet: A Continuous-Filter Convolutional Neural
+  Network for Modeling Quantum Interactions}. In
+  \bibinfo{booktitle}{\emph{Advances in Neural Information Processing
+  Systems}}, Vol.~\bibinfo{volume}{30}.
+\newblock
+
+
+\bibitem[Sch{\"u}tt et~al\mbox{.}(2021)]%
+        {schutt2021painn}
+\bibfield{author}{\bibinfo{person}{Kristof~T Sch{\"u}tt},
+  \bibinfo{person}{Oliver~T Unke}, {and} \bibinfo{person}{Michael Gastegger}.}
+  \bibinfo{year}{2021}\natexlab{}.
+\newblock \showarticletitle{Equivariant Message Passing for the Prediction of
+  Tensorial Properties and Molecular Spectra}. In
+  \bibinfo{booktitle}{\emph{International Conference on Machine Learning}}.
+  \bibinfo{pages}{9377--9388}.
+\newblock
+
+
+\bibitem[Stark et~al\mbox{.}(2022)]%
+        {stark2022equivariant}
+\bibfield{author}{\bibinfo{person}{Hannes Stark}, \bibinfo{person}{Dominique
+  Beaini}, \bibinfo{person}{Gabriele Corso}, \bibinfo{person}{Prudencio
+  Tossou}, \bibinfo{person}{Christian Dallago}, \bibinfo{person}{Stephan
+  G{\"u}nnemann}, {and} \bibinfo{person}{Pietro Li{\`o}}.}
+  \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{3D Infomax Improves GNNs for Molecular Property
+  Prediction}. In \bibinfo{booktitle}{\emph{International Conference on Machine
+  Learning}}.
+\newblock
+
+
+\bibitem[Th{\"o}lke and De~Fabritiis(2022)]%
+        {tholke2022torchmdnet}
+\bibfield{author}{\bibinfo{person}{Philipp Th{\"o}lke} {and}
+  \bibinfo{person}{Gianni De~Fabritiis}.} \bibinfo{year}{2022}\natexlab{}.
+\newblock \showarticletitle{TorchMD-NET: Equivariant Transformers for Neural
+  Network Based Molecular Potentials}.
+\newblock \bibinfo{journal}{\emph{International Conference on Learning
+  Representations}} (\bibinfo{year}{2022}).
+\newblock
+
+
+\bibitem[Welch(1947)]%
+        {welch1947ttest}
+\bibfield{author}{\bibinfo{person}{B~L Welch}.}
+  \bibinfo{year}{1947}\natexlab{}.
+\newblock \showarticletitle{The Generalization of `Student's' Problem when
+  Several Different Population Variances are Involved}.
+\newblock \bibinfo{journal}{\emph{Biometrika}} \bibinfo{volume}{34},
+  \bibinfo{number}{1/2} (\bibinfo{year}{1947}), \bibinfo{pages}{28--35}.
+\newblock
+
+
+\bibitem[Wu et~al\mbox{.}(2018)]%
+        {wu2018moleculenet}
+\bibfield{author}{\bibinfo{person}{Zhenqin Wu}, \bibinfo{person}{Bharath
+  Ramsundar}, \bibinfo{person}{Evan~N Feinberg}, \bibinfo{person}{Joseph
+  Gomes}, \bibinfo{person}{Caleb Geniesse}, \bibinfo{person}{Aneesh~S Pappu},
+  \bibinfo{person}{Karl Leswing}, {and} \bibinfo{person}{Vijay Pande}.}
+  \bibinfo{year}{2018}\natexlab{}.
+\newblock \showarticletitle{MoleculeNet: A Benchmark for Molecular Machine
+  Learning}.
+\newblock \bibinfo{journal}{\emph{Chemical Science}} \bibinfo{volume}{9},
+  \bibinfo{number}{2} (\bibinfo{year}{2018}), \bibinfo{pages}{513--530}.
+\newblock
+
+
+\bibitem[Yang et~al\mbox{.}(2019)]%
+        {yang2019chemprop}
+\bibfield{author}{\bibinfo{person}{Kevin Yang}, \bibinfo{person}{Kyle Swanson},
+  \bibinfo{person}{Wengong Jin}, \bibinfo{person}{Connor Coley},
+  \bibinfo{person}{Philipp Eiden}, \bibinfo{person}{Hua Gao},
+  \bibinfo{person}{Angel Guzman-Perez}, \bibinfo{person}{Timothy Hopper},
+  \bibinfo{person}{Brian Kelley}, \bibinfo{person}{Miriam Mathea},
+  {et~al\mbox{.}}} \bibinfo{year}{2019}\natexlab{}.
+\newblock \showarticletitle{Analyzing Learned Molecular Representations for
+  Property Prediction}.
+\newblock \bibinfo{journal}{\emph{Journal of Chemical Information and
+  Modeling}} \bibinfo{volume}{59}, \bibinfo{number}{8} (\bibinfo{year}{2019}),
+  \bibinfo{pages}{3370--3388}.
+\newblock
+
+
+\bibitem[Zaheer et~al\mbox{.}(2017)]%
+        {zaheer2017deepsets}
+\bibfield{author}{\bibinfo{person}{Manzil Zaheer}, \bibinfo{person}{Satwik
+  Kottur}, \bibinfo{person}{Siamak Ravanbakhsh}, \bibinfo{person}{Barnabas
+  Poczos}, \bibinfo{person}{Ruslan~R Salakhutdinov}, {and}
+  \bibinfo{person}{Alexander~J Smola}.} \bibinfo{year}{2017}\natexlab{}.
+\newblock \showarticletitle{Deep Sets}. In \bibinfo{booktitle}{\emph{Advances
+  in Neural Information Processing Systems}}, Vol.~\bibinfo{volume}{30}.
+\newblock
+
+
+\bibitem[Zhou et~al\mbox{.}(2023)]%
+        {zhou2023unimol}
+\bibfield{author}{\bibinfo{person}{Gengmo Zhou}, \bibinfo{person}{Zhifeng Gao},
+  \bibinfo{person}{Qiankun Ding}, \bibinfo{person}{Hang Zheng},
+  \bibinfo{person}{Hongteng Xu}, \bibinfo{person}{Zhewei Wei},
+  \bibinfo{person}{Linfeng Zhang}, {and} \bibinfo{person}{Guolin Ke}.}
+  \bibinfo{year}{2023}\natexlab{}.
+\newblock \showarticletitle{Uni-Mol: A Universal 3D Molecular Representation
+  Learning Framework}.
+\newblock \bibinfo{journal}{\emph{International Conference on Learning
+  Representations}} (\bibinfo{year}{2023}).
+\newblock
+
+
+\end{thebibliography}

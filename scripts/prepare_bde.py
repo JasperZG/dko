@@ -30,12 +30,28 @@ VAL_FRAC = 0.1
 MAX_CONFORMERS = 20  # MARCEL default
 
 
+def compute_mmff_energy(mol):
+    """Compute MMFF94 energy for a molecule with a conformer."""
+    try:
+        from rdkit.Chem import AllChem
+        mp = AllChem.MMFFGetMoleculeProperties(mol, mmffVariant='MMFF94')
+        if mp is None:
+            return None
+        ff = AllChem.MMFFGetMoleculeForceField(mol, mp, confId=0)
+        if ff is None:
+            return None
+        return ff.CalcEnergy()
+    except Exception:
+        return None
+
+
 def extract_features_single(args):
     """Extract features for one reaction's ligand conformers."""
     reaction_name, mol_blocks, extractor_params = args
 
     extractor = GeometricFeatureExtractor(**extractor_params)
     features = []
+    energies = []
 
     for mol_block in mol_blocks[:MAX_CONFORMERS]:
         try:
@@ -44,12 +60,15 @@ def extract_features_single(args):
                 continue
             geo = extractor.extract(mol, conformer_id=0)
             features.append(geo.to_flat_vector())
+            # Extract actual MMFF94 energy for Boltzmann weighting
+            energy = compute_mmff_energy(mol)
+            energies.append(energy if energy is not None else 0.0)
         except Exception:
             continue
 
     if len(features) == 0:
         return None
-    return (reaction_name, features)
+    return (reaction_name, features, energies)
 
 
 def main():
@@ -114,6 +133,7 @@ def main():
     start = time.time()
 
     results = {}
+    energies_map = {}
     with Pool(n_workers) as pool:
         for result in tqdm(
             pool.imap_unordered(extract_features_single, tasks, chunksize=20),
@@ -121,8 +141,9 @@ def main():
             desc="Featurizing",
         ):
             if result is not None:
-                name, features = result
+                name, features, energies = result
                 results[name] = features
+                energies_map[name] = energies
 
     elapsed = time.time() - start
     print(f"Extracted features for {len(results)}/{len(valid_names)} reactions in {elapsed:.1f}s")
@@ -154,14 +175,24 @@ def main():
     labels = np.array([targets[reaction_names[i]] for i in range(n_reactions)])
 
     for split_name, split_idx in [("train", train_idx), ("val", val_idx), ("test", test_idx)]:
+        # Use actual MMFF94 energies for Boltzmann weighting
+        split_energies = []
+        for i in split_idx:
+            e = np.array(energies_map[reaction_names[i]])
+            # Convert energies to Boltzmann weights (kT ~ 0.6 kcal/mol at 300K)
+            # Lower energy conformers get higher weight
+            if np.any(e != 0):
+                e_shifted = e - e.min()  # Shift to avoid overflow
+                split_energies.append(e_shifted)
+            else:
+                # Fallback to uniform if all energies are zero (extraction failed)
+                split_energies.append(np.ones(len(e)))
+
         split_data = {
             "smiles": [smiles_map.get(reaction_names[i], "") for i in split_idx],
             "labels": labels[split_idx],
             "features": [results[reaction_names[i]] for i in split_idx],
-            # TODO: Extract actual MMFF94 energies from conformers
-            # Currently using dummy energies (all 1.0) which prevents proper Boltzmann weighting
-            # This is a known limitation - see docs/NATURE_CRITIQUE.md Critique #5
-            "energies": [np.ones(len(results[reaction_names[i]])) for i in split_idx],
+            "energies": split_energies,
             "indices": split_idx,
             "dataset_config": {
                 "task": "regression",
