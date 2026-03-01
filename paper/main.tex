@@ -75,7 +75,7 @@ Using Distribution Kernel Operators (DKOs), we extract mean and covariance featu
 Scaffold-based splitting confirms that hybrid improvement is not an artifact of data leakage: improvement on ESOL is actually \emph{larger} under scaffold splits ($+11.9\%$) than random splits ($+8.5\%$).
 Error analysis reveals the improvement concentrates on large, flexible molecules ($+18.9\%$ for heavy atom Q4, $+39.7\%$ for rotatable bond Q3 on ESOL), consistent with the physical mechanism of conformer ensemble statistics.
 Hybrid features with enhanced physicochemical 3D descriptors (PMI, SASA, USR) achieve RMSE 1.000 on ESOL, a 34\% improvement over fingerprints alone.
-We establish a performance hierarchy: end-to-end 3D GNNs (SchNet) consistently surpass fingerprint baselines on solvation tasks (21--33\%), while fingerprints outperform all neural conformer ensemble methods by 8--44\%.
+We establish a performance hierarchy: end-to-end 3D GNNs (SchNet) consistently surpass fingerprint baselines on solvation tasks (21--33\%), while fingerprints outperform all neural conformer ensemble methods by 8--80\%.
 Mechanistic analysis via mutual information and feature attribution reveals that conformer mean features carry 2--8$\times$ more information per feature than fingerprint bits, while covariance features contribute $<$2\% of total model signal.
 Among neural architectures, learned gating for mean/covariance fusion significantly outperforms attention ($p < 0.001$), and five simple covariance summary statistics outperform complex representations.
 \end{abstract}
@@ -325,7 +325,7 @@ Table~\ref{tab:datasets} summarizes all targets. The benchmark spans 7 electroni
 
 \subsection{Fingerprint Baseline}
 
-We first quantify the gap between fingerprint baselines and neural conformer methods. Table~\ref{tab:fp} compares Morgan fingerprints with XGBoost against the best neural conformer model per dataset. Fingerprints beat \emph{every} neural conformer method on \emph{every} regression dataset, with RMSE gaps ranging from $8.5\%$ (ESOL) to $44.4\%$ (QM9-Gap). This result holds across all 8 MARCEL benchmark targets as well.
+We first quantify the gap between fingerprint baselines and neural conformer methods. Table~\ref{tab:fp} compares Morgan fingerprints with XGBoost against the best neural conformer model per dataset. Fingerprints beat \emph{every} neural conformer method on \emph{every} regression dataset, with RMSE gaps ranging from $8.5\%$ (ESOL) to $79.5\%$ (QM9-Gap). This result holds across all 8 MARCEL benchmark targets as well.
 
 \begin{table}[t]
 \caption{Morgan FP + XGBoost vs.\ best neural conformer model per dataset (mean of 3 seeds; std omitted for clarity, all $<$5\% of mean). Neural Deficit: relative RMSE increase of neural model over FP baseline.}
@@ -339,9 +339,9 @@ Dataset & FP+XGB & Best Neural & Neural Deficit \\
 ESOL         & 1.507 & 1.635 & $+8.5\%$ \\
 FreeSolv     & 2.939 & 4.077 & $+38.7\%$ \\
 Lipophilicity & 0.910 & 1.131 & $+24.3\%$ \\
-QM9-Gap      & 0.020 & 0.036 & $+44.4\%$ \\
+QM9-Gap      & 0.020 & 0.036 & $+79.5\%$ \\
 QM9-HOMO     & 0.014 & 0.019 & $+35.7\%$ \\
-QM9-LUMO     & 0.019 & 0.034 & $+44.1\%$ \\
+QM9-LUMO     & 0.019 & 0.034 & $+79.5\%$ \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -647,14 +647,14 @@ Our results suggest an empirical pattern across molecular properties with respec
 
 \emph{Solvation properties} (ESOL, FreeSolv): Statistically significant hybrid improvement of $11.0$--$13.5\%$ ($p < 10^{-5}$, 10 seeds). Solubility and hydration free energy depend on the conformational ensemble's shape, surface area, and flexibility---captured by $\boldsymbol{\mu}$ statistics, with significant additional signal from $\boldsymbol{\Sigma}$ ($p = 0.007$ on ESOL, $p = 0.024$ on FreeSolv). This improvement is robust to scaffold splitting ($+11.9\%$ on ESOL, larger than random splits) and concentrates on large, flexible molecules ($+18.9\%$ for Q4 heavy atoms, $+39.7\%$ for Q3 rotatable bonds on ESOL)---consistent with the physical mechanism that conformer diversity carries meaningful signal only when molecules sample diverse conformations.
 
-\emph{Steric/Boltzmann properties} (Kraken): Attention wins all targets ($40\%+$ over mean). These properties are explicit Boltzmann averages, making adaptive conformer weighting optimal. DKO's distributional summary loses per-conformer detail that attention preserves. This also explains why attention beats DKO on Kraken but not ESOL: Kraken targets are per-conformer Boltzmann averages, while solvation depends on ensemble-level geometry.
+\emph{Steric/Boltzmann properties} (Kraken): Attention wins all targets (9--42\% over mean). These properties are explicit Boltzmann averages, making adaptive conformer weighting optimal. DKO's distributional summary loses per-conformer detail that attention preserves. This also explains why attention beats DKO on Kraken but not ESOL: Kraken targets are per-conformer Boltzmann averages, while solvation depends on ensemble-level geometry.
 
 \emph{Electronic properties} (QM9-Gap, QM9-LUMO, BDE, Drugs-75K): No hybrid improvement; fingerprints alone suffice. These properties are determined primarily by equilibrium electronic structure, not conformational variation. The BDE result ($|\bar{r}| = 0.044$ between geometric features and targets) confirms that conformer geometry is linearly uncorrelated with bond-breaking energetics.
 
 \emph{End-to-end 3D methods.} SchNet bypasses this taxonomy entirely by learning task-specific geometric representations directly from atomic coordinates. Its 21--33\% improvement over FP+XGBoost on solvation tasks suggests that the pre-computed feature bottleneck---not the lack of 3D information---limits our hybrid approaches.
 
 \textbf{Comparison with prior work.}
-The MARCEL benchmark~\cite{axelrod2024marcel} established that neural conformer methods outperform fingerprints on Kraken steric descriptors, which our results confirm (Table~\ref{tab:main}). However, MARCEL did not evaluate hybrid FP+conformer approaches or test on solvation tasks, leaving the complementarity we identify undiscovered. On MoleculeNet, Wu et al.~\cite{wu2018moleculenet} noted that classical methods often match neural networks; our work sharpens this observation into a hierarchy: end-to-end 3D GNNs (SchNet) surpass fingerprint baselines by 21--33\% on solvation tasks, enhanced physicochemical descriptors achieve comparable gains on ESOL ($-$34\%), fingerprints outperform all neural conformer methods by 8--44\%, and hybrid FP+conformer features provide selective gains. This hierarchy---SchNet $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer ensembles---was not previously established.
+The MARCEL benchmark~\cite{axelrod2024marcel} established that neural conformer methods outperform fingerprints on Kraken steric descriptors, which our results confirm (Table~\ref{tab:main}). However, MARCEL did not evaluate hybrid FP+conformer approaches or test on solvation tasks, leaving the complementarity we identify undiscovered. On MoleculeNet, Wu et al.~\cite{wu2018moleculenet} noted that classical methods often match neural networks; our work sharpens this observation into a hierarchy: end-to-end 3D GNNs (SchNet) surpass fingerprint baselines by 21--33\% on solvation tasks, enhanced physicochemical descriptors achieve comparable gains on ESOL ($-$34\%), fingerprints outperform all neural conformer methods by 8--80\%, and hybrid FP+conformer features provide selective gains. This hierarchy---SchNet $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer ensembles---was not previously established.
 
 \textbf{Limitations of the taxonomy.}
 Our property taxonomy is derived from a limited set of datasets (3 solvation, 4 steric, 7 electronic) and should be treated as a working hypothesis. Properties with mixed solvation/electronic character (e.g., membrane permeability) may not fit neatly into a single category. Learning curves (Section~\ref{sec:learning}) reveal dataset size effects: FreeSolv hybrid improvement only emerges with $>$440 training molecules, suggesting the taxonomy should be conditioned on data availability. Validation on additional property types is needed before it can serve as a reliable practitioner guide.
@@ -689,7 +689,7 @@ Our conformer features are derived from RDKit ETKDG conformers, which may not ac
 \section{Full Per-Dataset Results}
 \label{app:full}
 
-Table~\ref{tab:full_esol} presents the complete benchmark results for ESOL and FreeSolv with all Phase 1 models, including baseline architectures. Models are described in Section~3.3: \textbf{single\_conformer} uses only the lowest-energy conformer; \textbf{DeepSets}~\cite{zaheer2017deepsets} applies permutation-invariant aggregation; \textbf{dko\_separate\_nets} uses independent $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ networks without kernel fusion. Full results for all 6 regression datasets are available in the supplementary materials.
+Table~\ref{tab:full_esol} presents the complete benchmark results for ESOL and FreeSolv with all Phase 1 models, including baseline architectures. Models are described in Section~\ref{sec:variants}: \textbf{single\_conformer} uses only the lowest-energy conformer; \textbf{DeepSets}~\cite{zaheer2017deepsets} applies permutation-invariant aggregation; \textbf{dko\_separate\_nets} uses independent $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ networks without kernel fusion. Full results for all 6 regression datasets are available in the supplementary materials.
 
 \begin{table}[ht]
 \caption{Full results on ESOL and FreeSolv (RMSE $\pm$ std, 3 seeds).}
