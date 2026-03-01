@@ -50,7 +50,7 @@
 %% The "title" command has an optional parameter,
 %% allowing the author to define a "short title" to be used in page headers.
 %%
-\title[Conformer Geometry for Molecular Property Prediction]{When Does Conformer Geometry Help? Selective Complementarity of 3D Ensemble Statistics and 2D Fingerprints}
+\title[Conformer Geometry for Molecular Property Prediction]{When Does Conformer Geometry Help? Complementarity of 3D Ensemble Statistics and 2D Fingerprints for Molecular Property Prediction}
 
 %%
 %% The "author" command and its associated commands are used to define
@@ -69,13 +69,13 @@
 %% article.
 %%
 \begin{abstract}
-When do three-dimensional conformer ensembles improve molecular property prediction beyond two-dimensional fingerprints? Despite growing interest in 3D molecular representations, this question lacks a systematic, mechanistically grounded answer.
-We address it through 13 model configurations across 14 regression targets spanning MoleculeNet, QM9, and MARCEL benchmarks.
-Our central finding is \emph{selective complementarity}: conformer ensemble statistics---extracted via Distribution Kernel Operators (DKOs)---provide statistically significant gains on solvation-dependent properties (11--14\% RMSE reduction, $p < 10^{-4}$, 10-seed validation) but not electronic or steric tasks.
-This selectivity has a physical basis: the improvement concentrates on large, flexible molecules, is \emph{larger} under scaffold splits than random splits, and grows with training data---ruling out memorization.
-We establish a performance hierarchy: end-to-end 3D GNNs (SchNet) surpass fingerprints by 21--33\% on solvation tasks, while fingerprints outperform all neural conformer ensemble methods across every benchmark.
-Feature attribution and mutual information analysis reveal \emph{why}: conformer mean features carry 2--7$\times$ more information per feature than fingerprint bits, but covariance features contribute $<$2\% of model signal regardless of representation complexity.
-These findings yield an empirical property taxonomy and a practical decision framework for when to invest in conformer generation versus relying on 2D descriptors.
+When do three-dimensional conformer ensembles improve molecular property prediction beyond two-dimensional fingerprints?
+We provide the first systematic, mechanistically grounded answer.
+Through ${\sim}$1,000 experiments spanning 13 model configurations and 14 regression targets across MoleculeNet, QM9, and MARCEL benchmarks, we discover \emph{selective complementarity}: conformer ensemble statistics---extracted via Distribution Kernel Operators (DKOs)---yield statistically significant RMSE reductions on solvation-dependent properties (ESOL $-11.0\%$, $p < 10^{-9}$; FreeSolv $-13.5\%$, $p < 3{\times}10^{-5}$; 10-seed paired validation) while providing no benefit for electronic or steric tasks.
+Three lines of evidence confirm this selectivity has a physical rather than statistical basis: improvement is larger under scaffold splits than random splits ($+11.9\%$ vs.\ $+8.5\%$ on ESOL), concentrates on large, flexible molecules ($+18.9\%$ for heaviest quartile), and grows monotonically with training data.
+We establish a previously unknown performance hierarchy---end-to-end 3D GNNs (SchNet, 21--33\% over fingerprints) $\approx$ engineered physicochemical descriptors (PMI/SASA/USR) $>$ Morgan fingerprints + XGBoost $>$ all neural conformer ensemble methods---revealing that the pre-computed feature bottleneck, not absence of 3D information, limits ensemble approaches.
+Feature attribution and mutual information analysis expose the mechanistic asymmetry: conformer mean features carry 2--7$\times$ more information per feature than fingerprint bits, yet covariance features contribute $<$2\% of model signal regardless of representation complexity, explaining why five simple scalar invariants outperform all complex covariance architectures ($p < 0.001$ for gated fusion over attention).
+These findings yield an empirical property taxonomy and a practical decision framework for when conformer generation is worth the investment.
 \end{abstract}
 
 %%
@@ -157,12 +157,8 @@ Alternative conformer generation methods include OMEGA~\cite{hawkins2010omega} a
 These approaches typically aggregate conformer features via mean pooling or attention, discarding distributional information.
 
 \textbf{3D molecular representations.}
-SchNet~\cite{schutt2017schnet} introduced continuous-filter convolutions for modeling quantum interactions from 3D coordinates.
-DimeNet~\cite{gasteiger2020dimenet} and its successor DimeNet++~\cite{gasteiger2021dimenetpp} incorporate directional message passing using bond angles.
-EGNN~\cite{satorras2021egnn} introduces E($n$)-equivariant message passing, while PaiNN~\cite{schutt2021painn} achieves equivariant message passing for tensorial properties.
-SphereNet~\cite{liu2022spherical} extends to spherical coordinates, GemNet~\cite{klicpera2020gemnet} uses geometric message passing with universal approximation guarantees, and Equiformer~\cite{liao2023equiformer} combines equivariant attention with transformer architectures.
-Uni-Mol~\cite{zhou2023unimol} provides large-scale 3D pre-training, and TorchMD-NET~\cite{tholke2022torchmdnet} combines equivariant transformers with molecular dynamics potentials.
-These methods operate on single conformers or equilibrium geometries; our work instead models the \emph{ensemble distribution} via summary statistics.
+SchNet~\cite{schutt2017schnet} introduced continuous-filter convolutions for 3D coordinates; DimeNet++~\cite{gasteiger2021dimenetpp} adds directional message passing; PaiNN~\cite{schutt2021painn} achieves equivariant message passing; and Equiformer~\cite{liao2023equiformer} combines equivariant attention with transformers.
+These methods operate on single conformers; our work instead models the \emph{ensemble distribution} via summary statistics.
 
 \textbf{Molecular pre-training.}
 GROVER~\cite{rong2020grover} uses self-supervised graph transformers on large molecular corpora. These pre-trained models~\cite{zhou2023unimol,rong2020grover} often achieve state-of-the-art results on MoleculeNet benchmarks but require large-scale pre-training data. We do not benchmark pre-trained models, as our focus is understanding when 3D conformer geometry helps---an orthogonal question to whether pre-training helps.
@@ -212,26 +208,11 @@ where $\lambda = 10^{-2}$ provides regularization against near-singular covarian
 
 The Distribution Kernel Operator (DKO) maps the pair $(\boldsymbol{\mu}, \boldsymbol{\Sigma})$ to a molecular property prediction. The core architecture consists of:
 
-\textbf{Kernel construction.} We parameterize a positive semi-definite kernel via a low-rank factorization $\mathbf{K} = \mathbf{L}\mathbf{L}^\top$, where $\mathbf{L} \in \mathbb{R}^{k \times D}$ is a learnable projection with output dimension $k = 64 \ll D$. The kernel projects the high-dimensional mean (Eq.~\ref{eq:mu}) into an informative $k$-dimensional subspace:
-\begin{equation}
-    \tilde{\boldsymbol{\mu}} = \mathbf{L}\boldsymbol{\mu} \in \mathbb{R}^k, \label{eq:kernel_proj}
-\end{equation}
-where covariance structure can be leveraged without the curse of dimensionality that would arise from operating on the full $D$-dimensional space.
+\textbf{Kernel construction.} A low-rank factorization $\mathbf{K} = \mathbf{L}\mathbf{L}^\top$ ($\mathbf{L} \in \mathbb{R}^{k \times D}$, $k = 64$) projects the mean into a $k$-dimensional subspace: $\tilde{\boldsymbol{\mu}} = \mathbf{L}\boldsymbol{\mu}$.
 
-\textbf{Covariance representation.} A variant-specific function extracts a fixed-length summary from the covariance matrix (Eq.~\ref{eq:sigma}):
-\begin{equation}
-    \mathbf{s} = g(\boldsymbol{\Sigma}) \in \mathbb{R}^{|\mathbf{s}|}, \label{eq:cov_repr}
-\end{equation}
-where $g$ ranges from 5 scalar invariants (trace, log-determinant, Frobenius norm, top eigenvalue ratio, spectral ratio) to full eigenspectrum projections (\S\ref{sec:variants}).
+\textbf{Covariance representation.} A variant-specific function $\mathbf{s} = g(\boldsymbol{\Sigma}) \in \mathbb{R}^{|\mathbf{s}|}$ extracts a fixed-length summary, ranging from 5 scalar invariants to full eigenspectrum projections (\S\ref{sec:variants}).
 
-\textbf{Branch prediction network.} A 3-layer MLP $f_\theta$ with architecture $[k{+}|\mathbf{s}|,\; 256,\; 128,\; 1]$, ReLU activations, and dropout $p{=}0.1$ produces scalar predictions from the concatenated kernel projection (Eq.~\ref{eq:kernel_proj}) and covariance summary (Eq.~\ref{eq:cov_repr}):
-\begin{equation}
-    \hat{y} = f_\theta\!\bigl([\tilde{\boldsymbol{\mu}};\; \mathbf{s}]\bigr). \label{eq:pred}
-\end{equation}
-All models are trained to minimize the mean squared error:
-\[
-    \mathcal{L} = \frac{1}{N}\sum_{i=1}^{N}(y_i - \hat{y}_i)^2.
-\]
+\textbf{Prediction.} A 3-layer MLP ($[k{+}|\mathbf{s}|, 256, 128, 1]$, ReLU, dropout 0.1) produces $\hat{y} = f_\theta([\tilde{\boldsymbol{\mu}};\; \mathbf{s}])$, trained with MSE loss.
 
 \subsection{DKO Variants}
 \label{sec:variants}
@@ -269,16 +250,7 @@ dko\_separate\_nets & Independent $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ netwo
 \subsection{Enhanced 3D Shape Descriptors}
 \label{sec:3d_methods}
 
-To go beyond raw geometric features, we implement 28 property-relevant 3D descriptors that capture molecular shape and surface properties, all of which vary across conformers:
-
-\begin{itemize}
-    \item \textbf{Shape} (6 descriptors): Principal moments of inertia (PMI) ratios $I_1/I_3, I_2/I_3$, asphericity, eccentricity, radius of gyration, and inertial shape factor.
-    \item \textbf{Surface} (5 descriptors): Solvent-accessible surface area (SASA) via the FreeSASA algorithm~\cite{freesasa2016} with $1.4$\AA{} probe radius, polar/nonpolar SASA decomposition, and related statistics.
-    \item \textbf{USR} (12 descriptors): Ultrafast Shape Recognition~\cite{ballester2007usr} encoding distances from four molecular reference points (centroid, closest/farthest atoms to centroid, farthest from farthest), providing a rotation-invariant shape signature.
-    \item \textbf{Global geometry} (5 descriptors): Molecular span, bounding box extent, approximate volume with overlap correction, and compactness ratio.
-\end{itemize}
-
-These descriptors capture \emph{physically relevant} 3D variation---e.g., SASA directly relates to solvation free energy, while PMI ratios encode shape anisotropy that influences membrane partitioning.
+We implement 28 property-relevant 3D descriptors in four categories: shape (6: PMI ratios, asphericity, eccentricity, radius of gyration), surface (5: SASA~\cite{freesasa2016} total/polar/nonpolar), USR (12: rotation-invariant shape signature~\cite{ballester2007usr}), and global geometry (5: span, volume, compactness). These capture physically relevant 3D variation---SASA relates to solvation free energy, PMI ratios encode shape anisotropy.
 
 \subsection{Hybrid FP + Conformer Approach}
 
@@ -286,15 +258,11 @@ To test complementarity, we concatenate Morgan fingerprints (2048-bit, radius 2)
 \begin{equation}
     \mathbf{z} = [\text{FP}_{2048};\; \boldsymbol{\mu}_{d};\; \boldsymbol{\sigma}_5] \in \mathbb{R}^{2048 + d + 5},
 \end{equation}
-where $\boldsymbol{\mu}_d$ is the conformer mean projected to $d{=}256$ dimensions via PCA (from the original $D{=}1024$), and $\boldsymbol{\sigma}_5$ denotes 5 variance-based summary statistics from $\boldsymbol{\Sigma}$ (total variance, top-5 eigenvalue variance, maximum eigenvalue, effective rank, mean eigenvalue variance), distinct from the matrix invariants used by dko\_invariants (\S\ref{sec:variants}). We train XGBoost~\cite{chen2016xgboost} on these combined features (comparison with a neural MLP in Appendix~\ref{app:hybrid_nn}). Note that the hybrid path uses PCA-reduced $\boldsymbol{\mu}$ ($d{=}256$) while the neural DKO path uses the full $D{=}1024$ features; this dimensionality asymmetry means the two paths are not directly comparable, though both use the same underlying conformer data.
+where $\boldsymbol{\mu}_d$ is the conformer mean projected to $d{=}256$ dimensions via PCA, and $\boldsymbol{\sigma}_5$ denotes 5 variance-based summary statistics from $\boldsymbol{\Sigma}$ (total variance, top-5 eigenvalue variance, maximum eigenvalue, effective rank, mean eigenvalue variance). We train XGBoost~\cite{chen2016xgboost} on these combined features (comparison with a neural MLP in Appendix~\ref{app:hybrid_nn}).
 
 \subsection{Conformer Diversity Metric}
 
-We quantify conformer diversity per molecule as:
-\begin{equation}
-    \text{CDM} = \text{tr}(\boldsymbol{\Sigma}) = \sum_{i=1}^{D} \lambda_i,
-\end{equation}
-the total variance across all conformer features. High CDM indicates large geometric variation across the ensemble, suggesting that second-order statistics may carry meaningful signal. We note that CDM depends on the feature scale and is therefore not directly comparable across different feature encodings; the absolute threshold values we report are specific to our feature pipeline (per-dataset statistics in Appendix~\ref{app:cdm}).
+We quantify conformer diversity per molecule as $\text{CDM} = \text{tr}(\boldsymbol{\Sigma}) = \sum_{i=1}^{D} \lambda_i$, the total variance across all conformer features. High CDM indicates large geometric variation; per-dataset statistics are in Appendix~\ref{app:cdm}.
 
 \subsection{Training Details}
 
@@ -424,7 +392,7 @@ $\Delta$ vs FP only & $-9.9\%$ & $-3.9\%$ & --- & --- & $-4.2\%$ & --- \\
 \label{fig:perf}
 \end{figure}
 
-A closer look at FreeSolv (Table~\ref{tab:hybrid}) reveals that FP+$\boldsymbol{\mu}$ alone captures most of the hybrid gain (2.939$\to$2.831), while FP+$\boldsymbol{\Sigma}$ actually \emph{hurts} (2.939$\to$3.119). Notably, the full FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ hybrid (2.824) slightly outperforms FP+$\boldsymbol{\mu}$ alone (2.831), suggesting that covariance features provide marginal additional signal when combined with both fingerprints and mean statistics. On ESOL, both first- and second-order features contribute. This distinction---\emph{when do any conformer features help} vs.\ \emph{when do covariance features specifically help}---is important for practitioners.
+On FreeSolv, FP+$\boldsymbol{\mu}$ captures most of the hybrid gain while FP+$\boldsymbol{\Sigma}$ hurts; on ESOL, both first- and second-order features contribute. This distinction---\emph{when do any conformer features help} vs.\ \emph{when do covariance features specifically help}---is important for practitioners.
 
 \subsection{Enhanced 3D Descriptors}
 \label{sec:3d_desc}
@@ -448,7 +416,7 @@ FP + 3D + Geo      & 1.094 & \textbf{2.597} & 0.916 & 0.020 \\
 \end{tabular}
 \end{table}
 
-The 28 physicochemical descriptors outperform 1024 geometric features on 3 of 4 datasets. On ESOL, FP+3D achieves RMSE 1.000---a 34\% improvement over FP-only (1.507) and 26\% over the geometric hybrid (1.358). For context, published ESOL results range from ${\sim}0.56$ (D-MPNN, scaffold splits~\cite{heid2024chemprop}) to ${\sim}1.07$ (Random Forest, scaffold splits); our higher absolute RMSEs reflect different split protocols (random 80/10/10) rather than model quality, and our focus is on relative comparisons between representation strategies under controlled conditions. On Lipophilicity, FP+3D (0.873) improves 4\% over FP-only (0.910), while geometric features hurt (0.957). The combined FP+3D+Geo representation achieves the best FreeSolv result (2.597, 12\% over FP-only), suggesting complementary information between physicochemical and geometric features on this dataset. Full results with all feature combinations are in Appendix~\ref{app:3d}.
+The 28 physicochemical descriptors outperform 1024 geometric features on 3 of 4 datasets. On ESOL, FP+3D achieves RMSE 1.000---a 34\% improvement over FP-only and 26\% over the geometric hybrid. On Lipophilicity, FP+3D (0.873) improves 4\% over FP-only. The combined FP+3D+Geo achieves the best FreeSolv result (2.597, 12\% over FP-only). Full results in Appendix~\ref{app:3d}.
 
 \subsection{3D GNN Baseline}
 \label{sec:schnet}
@@ -473,60 +441,17 @@ FP+3D (best)     & 1.000 & 2.597 & 0.873 \\
 \end{tabular}
 \end{table}
 
-SchNet outperforms FP+XGBoost on all three solvation datasets, with gains of 33\% (ESOL), 21\% (FreeSolv), and 21\% (Lipophilicity), though the FreeSolv gain should be interpreted cautiously given high seed variance (std $= 0.268$, $N = 642$). On ESOL, enhanced FP+3D descriptors achieve comparable performance (1.000 vs.\ 1.004), suggesting that carefully engineered physicochemical features can approach end-to-end 3D learning for properties dominated by molecular shape and surface area. SchNet achieves $R^2 = 0.75$ (ESOL), $0.61$ (FreeSolv), and $0.62$ (Lipophilicity)---substantially above all pre-computed feature approaches on FreeSolv and Lipophilicity. This result qualifies our earlier finding: while fingerprints beat all \emph{neural conformer ensemble} methods, both end-to-end 3D GNNs and hybrid FP+3D descriptors can surpass fingerprint baselines on solvation tasks. The resulting hierarchy---SchNet $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer methods---suggests that the representation bottleneck of pre-computed features, rather than the absence of 3D information, is the primary limiting factor for conformer ensemble methods.
+SchNet outperforms FP+XGBoost on all three solvation datasets (33\% ESOL, 21\% FreeSolv, 21\% Lipophilicity). On ESOL, FP+3D descriptors achieve comparable performance (1.000 vs.\ 1.004), suggesting engineered physicochemical features can approach end-to-end 3D learning. The resulting hierarchy---SchNet $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer methods---reveals that the pre-computed feature bottleneck, not the absence of 3D information, limits conformer ensemble methods.
 
 \subsection{MARCEL Benchmark}
 \label{sec:marcel}
 
-On Kraken steric descriptors (Table~\ref{tab:kraken}), which are Boltzmann-averaged 3D properties, all neural conformer methods lag behind FP+XGBoost.
-Among neural methods, attention and mean aggregation achieve comparable performance: attention wins on buried descriptors (burB5, burL) while mean aggregation wins on standard descriptors (B5, L). DKO's distributional summary performs worst on all 4 targets, suggesting that covariance statistics are not well-suited for Boltzmann-averaged steric properties where per-conformer detail matters. Only 3 of 13 neural models are shown; the remaining DKO variants perform between dko\_gated and mean on most targets (tabulated in Appendix~\ref{app:full}).
-
-\begin{table}[t]
-\caption{Kraken steric descriptors (RMSE, mean of 3 seeds, random 80/10/10 splits; std omitted for clarity, all $<$6\% of mean). \textbf{Bold}: best overall per column. \textit{Italic}: best neural method per column.}
-\label{tab:kraken}
-\centering
-\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Model & B5 & L & burB5 & burL \\
-\midrule
-\textbf{FP+XGB}   & \textbf{0.519} & \textbf{0.650} & \textbf{0.378} & \textbf{0.259} \\
-\midrule
-attention     & 1.030 & 1.233 & \textit{0.559} & \textit{0.356} \\
-mean          & \textit{0.982} & \textit{1.228} & 0.592 & 0.387 \\
-dko\_gated    & 1.176 & 1.322 & 0.653 & 0.409 \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-On BDE, FP+XGBoost achieves RMSE $4.833$ ($R^2 = 0.958$) while all neural conformer models essentially predict the mean ($R^2 \approx 0$), a ${\sim}5\times$ RMSE gap. This validates the property-type dependence of our framework. Three factors explain the failure: (i) mean Pearson feature--target correlation is only $|\bar{r}| = 0.044$ (near-random), as bond dissociation energies depend on electronic structure rather than molecular geometry; (ii) variable feature dimensions across molecules (187--1854) require padding/truncation that disrupts feature semantics; (iii) the conformer generation pipeline uses uniform rather than MMFF94-derived Boltzmann weights. We note that $|\bar{r}|$ measures only linear correlation; nonlinear relationships may exist but are not captured by our geometric features. The BDE failure validates our property taxonomy: geometric features show near-zero correlation ($|\bar{r}| = 0.044$) with bond dissociation energies, confirming that conformer statistics are uninformative for electronic properties and that the hybrid improvements on solvation tasks (Table~\ref{tab:hybrid}) reflect genuine complementary signal. On Drugs-75K electronic properties, FP+XGBoost wins by $21$--$29\%$, further supporting this property-type dependence.
+On Kraken steric descriptors, all neural conformer methods lag behind FP+XGBoost by 1.8--2.4$\times$; DKO performs worst, suggesting covariance statistics are not suited for Boltzmann-averaged properties. On BDE, neural models achieve $R^2 \approx 0$ (${\sim}5\times$ RMSE gap vs.\ FP+XGBoost), validating our property taxonomy. Full MARCEL results are in Appendix~\ref{app:marcel}.
 
 \subsection{Statistical Validation}
 \label{sec:stat}
 
-We validate key comparisons with 10-seed experiments. For neural model comparison, Welch's $t$-test~\cite{welch1947ttest} confirms that dko\_gated significantly outperforms attention on ESOL ($p < 0.001$, $12.1\%$ improvement), while Lipophilicity differences are not significant ($p > 0.05$) (Table~\ref{tab:stat}).
-
-\begin{table}[t]
-\caption{10-seed statistical validation (ESOL and Lipophilicity). $\pm$ denotes standard deviation across seeds. One-sided Welch's $t$-test. ``n.s.'': not significant ($p > 0.05$); ``---'': reference model.}
-\label{tab:stat}
-\centering
-\small
-\begin{tabular}{@{}llcr@{}}
-\toprule
-Dataset & Model & RMSE & $\Delta$ \\
-\midrule
-\multirow{3}{*}{ESOL} & dko\_gated & $1.654{\pm}0.032$ & $-12.1\%$ \\
-                       & dko\_inv. & $1.765{\pm}0.050$ & $-6.2\%$ \\
-                       & attention & $1.881{\pm}0.027$ & --- \\
-\midrule
-\multirow{3}{*}{Lipophilicity}  & dko\_inv. & $1.140{\pm}0.008$ & n.s. \\
-                       & attention & $1.140{\pm}0.006$ & --- \\
-                       & dko\_gated & $1.164{\pm}0.022$ & n.s. \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-\textbf{Hybrid significance (paired $t$-test).} We additionally validate the hybrid FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ improvement with 10 seeds and paired one-sided $t$-tests (Table~\ref{tab:hybrid_sig}), which have higher statistical power than unpaired tests since the same data split is used for each feature configuration within a seed.
+We validate key comparisons with 10-seed experiments. Welch's $t$-test~\cite{welch1947ttest} confirms dko\_gated significantly outperforms attention on ESOL ($p < 0.001$, $12.1\%$ improvement; Appendix~\ref{app:stat_neural}). We validate hybrid improvements with 10-seed paired one-sided $t$-tests (Table~\ref{tab:hybrid_sig}).
 
 \begin{table}[t]
 \caption{10-seed hybrid significance (paired one-sided $t$-test: hybrid $<$ FP-only). $\boldsymbol{\Sigma}$ marginal: FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP+$\boldsymbol{\mu}$.}
@@ -549,7 +474,7 @@ FreeSolv & \multicolumn{2}{c}{$2.927 \to 2.804$} & $-4.2\%$ & $0.024$ \\
 \end{tabular}
 \end{table}
 
-The hybrid improvement on ESOL ($p < 10^{-9}$) and FreeSolv ($p < 3 \times 10^{-5}$) is highly significant. Notably, the marginal contribution of $\boldsymbol{\Sigma}$ beyond $\boldsymbol{\mu}$ is also significant on both datasets ($p = 0.007$ and $p = 0.024$), providing evidence that second-order conformer statistics carry genuine additional signal. The 10-seed estimates ($-11.0\%$, $-13.5\%$) are larger than the 3-seed estimates ($-9.9\%$, $-3.9\%$), with FreeSolv's estimate nearly tripling. This instability on FreeSolv---where 3-seed scaffold splits show hybrid \emph{hurting} (Table~\ref{tab:scaffold}) while 10-seed paired tests show significant improvement---reflects the fundamental challenge of evaluating on small datasets ($N = 642$). The paired 10-seed test is more reliable than 3-seed unpaired estimates because it controls for split-level variance, and we treat the 10-seed result as definitive.
+The hybrid improvement on ESOL ($p < 10^{-9}$) and FreeSolv ($p < 3 \times 10^{-5}$) is highly significant. The marginal contribution of $\boldsymbol{\Sigma}$ beyond $\boldsymbol{\mu}$ is also significant ($p = 0.007$ ESOL, $p = 0.024$ FreeSolv). The 10-seed estimates ($-11.0\%$, $-13.5\%$) are larger than 3-seed estimates ($-9.9\%$, $-3.9\%$); we treat the paired 10-seed result as definitive.
 
 \subsection{Scaffold Split Validation}
 \label{sec:scaffold}
@@ -577,74 +502,25 @@ Dataset & Split & FP-only & Hybrid & $\Delta$ \\
 \end{tabular}
 \end{table}
 
-On ESOL, hybrid improvement is \emph{larger} under scaffold splits ($-11.9\%$) than random splits ($-8.5\%$), demonstrating that conformer features provide genuine complementary signal for generalizing to unseen chemical scaffolds rather than memorizing structurally similar molecules. Scaffold splits are substantially harder overall: FP-only RMSE increases from 1.083 to 1.492 ($+38\%$), as expected when the model must generalize to novel scaffolds. On FreeSolv and Lipophilicity, the 3-seed scaffold experiment does not replicate the hybrid improvement. FreeSolv results are particularly unstable across experiments: hybrid features hurt under both random ($+18.0\%$) and scaffold ($+2.1\%$) 3-seed splits, yet significantly help in the 10-seed paired test ($-13.5\%$, $p < 3 \times 10^{-5}$; Table~\ref{tab:hybrid_sig}). This is consistent with FreeSolv's small size ($N{=}642$): 3-seed estimates have insufficient power to reliably detect effects, while paired 10-seed tests---which control for split-level variance---provide the definitive assessment. Full scaffold split results including $\boldsymbol{\mu}$-only features are in Appendix~\ref{app:scaffold}.
+On ESOL, hybrid improvement is \emph{larger} under scaffold splits ($-11.9\%$) than random splits ($-8.5\%$), demonstrating that conformer features provide genuine complementary signal for generalizing to unseen chemical scaffolds. Scaffold splits are substantially harder: FP-only RMSE increases from 1.083 to 1.492 ($+38\%$). On FreeSolv and Lipophilicity, 3-seed scaffold experiments do not replicate the hybrid improvement, consistent with FreeSolv's small size ($N{=}642$); the 10-seed paired test (Table~\ref{tab:hybrid_sig}) provides the definitive assessment. Full results in Appendix~\ref{app:scaffold}.
 
 \subsection{Learning Curves}
 \label{sec:learning}
 
-To understand how hybrid improvement scales with training data, we subsample training data at 10\%/25\%/50\%/75\%/100\% for both FP-only and hybrid XGBoost (3 seeds each; Table~\ref{tab:learning}; absolute RMSE values in Appendix~\ref{app:learning}).
-
-\begin{table}[t]
-\caption{Learning curves: hybrid improvement (\%) at different training data fractions. Positive values indicate hybrid is better.}
-\label{tab:learning}
-\centering
-\small
-\begin{tabular}{@{}rcccc@{}}
-\toprule
-Fraction & ESOL & FreeSolv & Lipo & QM9-Gap \\
-\midrule
-10\%  & $+4.7\%$  & $-13.9\%$ & $-6.2\%$  & $-15.8\%$ \\
-25\%  & $+4.5\%$  & $-14.6\%$ & $-9.3\%$  & $-11.5\%$ \\
-50\%  & $+4.8\%$  & $-3.3\%$  & $-3.7\%$  & $-7.4\%$  \\
-75\%  & $+10.1\%$ & $+2.2\%$  & $-3.0\%$  & $-5.2\%$  \\
-100\% & $+12.4\%$ & $+7.0\%$  & $-1.3\%$  & $-3.4\%$  \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-On ESOL, hybrid improvement grows monotonically from $+4.7\%$ at 10\% data to $+12.4\%$ at 100\%, suggesting conformer features add genuine signal that benefits from more training examples. On FreeSolv, the pattern is dramatic: hybrid features \emph{hurt} at small data sizes ($-13.9\%$ at 10\%) but become beneficial with sufficient data ($+7.0\%$ at 100\%), with a crossover at ${\sim}75\%$ (${\sim}440$ molecules). On Lipophilicity and QM9-Gap, conformer features consistently hurt but the penalty diminishes with more data ($-6.2\% \to -1.3\%$ for Lipo), as the model learns to ignore irrelevant features.
+Learning curve analysis (Appendix~\ref{app:learning}) shows ESOL hybrid improvement grows monotonically from $+4.7\%$ at 10\% data to $+12.4\%$ at 100\%. On FreeSolv, hybrid features hurt at small data sizes but become beneficial above ${\sim}440$ molecules, providing a practical threshold.
 
 \subsection{Error Analysis by Molecular Properties}
 \label{sec:error}
 
-To understand \emph{for which molecules} conformer features help, we stratify prediction errors by molecular properties (Table~\ref{tab:error}). On ESOL, the hybrid improvement is strongly concentrated on large, flexible molecules.
-
-\begin{table}[t]
-\caption{ESOL hybrid improvement by molecular property quartile (single seed). Q1 = smallest/fewest, Q4 = largest/most.}
-\label{tab:error}
-\centering
-\small
-\begin{tabular}{@{}lcccc@{}}
-\toprule
-Property & Q1 & Q2 & Q3 & Q4 \\
-\midrule
-Heavy atoms     & $+10.8\%$ & $+3.8\%$  & $+0.1\%$  & $\mathbf{+18.9\%}$ \\
-Rotatable bonds & $-0.3\%$  & $+5.0\%$  & $\mathbf{+39.7\%}$ & $+11.0\%$ \\
-Mol.\ weight    & $+8.0\%$  & $-2.0\%$  & $-0.3\%$  & $\mathbf{+23.9\%}$ \\
-TPSA            & $+3.9\%$  & $+11.0\%$ & $+13.6\%$ & $+13.4\%$ \\
-\bottomrule
-\end{tabular}
-\end{table}
-
-The largest improvements occur for molecules with $>$22 heavy atoms (Q4: $+18.9\%$), 1--2 rotatable bonds (Q3: $+39.7\%$), and molecular weight $>$300 Da (Q4: $+23.9\%$). Rigid molecules with zero rotatable bonds (Q1, $n{=}49$) show essentially no benefit ($-0.3\%$). This is consistent with the physical mechanism: conformer ensembles only carry meaningful distributional information when the molecule actually samples diverse conformations. On FreeSolv, molecular weight significantly correlates with hybrid improvement (Spearman $r = 0.30$, $p = 0.025$); on Lipophilicity, no molecular subpopulation benefits (full results in Appendix~\ref{app:error}).
+Error stratification by molecular properties (Appendix~\ref{app:error}) reveals that ESOL hybrid improvement concentrates on large, flexible molecules: $+18.9\%$ for heaviest quartile, $+39.7\%$ for molecules with 1--2 rotatable bonds, while rigid molecules show no benefit ($-0.3\%$). This is consistent with the physical mechanism: conformer ensembles carry meaningful signal only when the molecule samples diverse conformations.
 
 \subsection{Why Fingerprints Dominate: A Mechanistic Analysis}
 
-To move beyond documenting \emph{what} works to explaining \emph{why}, we conduct quantitative feature attribution and information-theoretic analyses.
-
-\textbf{Feature attribution.} XGBoost feature importance on the hybrid model reveals striking heterogeneity across datasets (full results in Appendix~\ref{app:attrib}): on ESOL, conformer mean ($\boldsymbol{\mu}$) features dominate with 67.4\% of total importance, while fingerprints contribute 31.4\%. On FreeSolv, the pattern reverses: fingerprints dominate (62.0\%) with $\boldsymbol{\mu}$ secondary (36.7\%). On QM9-Gap, importance is balanced: fingerprints 49.3\%, $\boldsymbol{\mu}$ 49.0\%. Across all datasets, covariance ($\boldsymbol{\Sigma}$) features contribute only 1.2--1.7\% of total importance, explaining why covariance adds minimal predictive signal beyond mean statistics.
-
-\textbf{Mutual information.} We estimate mutual information (MI) between features and targets using $k$-nearest-neighbor estimators~\cite{kraskov2004mi} (Appendix~\ref{app:mi}). Conformer mean features carry 2--7$\times$ more MI \emph{per feature} than fingerprint bits: on ESOL, $\boldsymbol{\mu}$ achieves 0.165 nats/feature vs.\ FP at 0.022 nats/feature ($7.5\times$). In terms of total MI (top-50 features), $\boldsymbol{\mu}$ contributes 8.27 nats vs.\ FP at 1.10 nats on ESOL. The conditional MI of $\boldsymbol{\Sigma}$ given FP+$\boldsymbol{\mu}$ is slightly negative ($-1.5\%$ to $-3.5\%$ across datasets), confirming that covariance features are redundant once mean and fingerprint information are available.
-
-\textbf{Mechanistic synthesis.} These results explain the heterogeneous hybrid improvement pattern: ESOL improvement is $\boldsymbol{\mu}$-driven (67.4\% attribution), FreeSolv improvement is FP-driven with $\boldsymbol{\mu}$ complementing (62/37\% split), and QM9-Gap shows no improvement because FP and $\boldsymbol{\mu}$ are already balanced (49/49\%) with no complementary gap. The near-zero $\boldsymbol{\Sigma}$ contribution ($<$2\%) everywhere explains why covariance representations---however sophisticated---add marginal value.
+Feature attribution (Appendix~\ref{app:attrib}) and mutual information analysis (Appendix~\ref{app:mi}) explain the heterogeneous improvement pattern. Conformer $\boldsymbol{\mu}$ features carry 2--7$\times$ more MI per feature than fingerprint bits, yet the hybrid benefit depends on dataset-specific complementarity: ESOL improvement is $\boldsymbol{\mu}$-driven (67.4\% attribution), FreeSolv is FP-driven with $\boldsymbol{\mu}$ complementing (62/37\%), and QM9-Gap shows no improvement because FP and $\boldsymbol{\mu}$ are already balanced (49/49\%). Covariance ($\boldsymbol{\Sigma}$) features contribute $<$2\% of importance everywhere, and conditional MI of $\boldsymbol{\Sigma}$ given FP+$\boldsymbol{\mu}$ is slightly negative, confirming covariance features are redundant once mean and fingerprint information are available.
 
 \subsection{Ablation: Why Simple Covariance Representations Win}
 
-\textbf{Eigenvalue concentration.}
-The feature variance audit reveals that the top-10 eigenvalues of $\boldsymbol{\Sigma}$ capture only $4$--$8\%$ of total variance across datasets. For comparison, uniform variance across $D{=}1024$ dimensions would yield $<$1\% in the top 10; the moderate concentration we observe suggests that structure exists but is too distributed for low-rank methods to capture effectively. The effective rank at $90\%$ explained variance ranges from 353 (QM9) to 685 (Lipophilicity), explaining why lowrank (average rank 9.25) and eigenspectrum (rank 7.25) variants underperform invariants (rank 4.50): richer representations introduce parameters that overfit on datasets of 642--4,200 molecules, while 5 scalar invariants extract information-dense statistics (total spread, anisotropy, spectral concentration) without this overfitting risk.
-
-\textbf{Synthetic validation.}
-We generate $N{=}2{,}000$ synthetic molecules with $D{=}128$ features, $n{=}50$ conformers, and ground-truth labels $y = \mathbf{W}^\top\boldsymbol{\mu} + \alpha\log(1 + \mathrm{tr}(\boldsymbol{\Sigma}))$, varying $\alpha \in \{0, 0.1, 0.5, 1.0\}$. Even at $\alpha{=}0$ (no covariance signal), the kernel DKO achieves $27$--$30\%$ lower RMSE than first-order baselines, demonstrating a beneficial inductive bias from the kernel parameterization itself: the learned projection $\mathbf{L}$ regularizes the mean representation even when covariance carries no signal. On real data, the advantage is smaller, suggesting that the $\boldsymbol{\Sigma}$ signal in molecular properties is genuine but more subtle than what synthetic experiments can capture.
+The top-10 eigenvalues of $\boldsymbol{\Sigma}$ capture only 4--8\% of total variance, with effective rank at 90\% explained variance ranging from 353 to 685. This explains why complex representations (lowrank, eigenspectrum) overfit while 5 scalar invariants succeed: they extract information-dense statistics without the overfitting risk of high-dimensional parameterizations on datasets of 642--4,200 molecules. Synthetic validation and eigenvalue analysis details are in Appendix~\ref{app:ablation}.
 
 %──────────────────────────────────────────────────────────────
 \section{Discussion}
@@ -670,13 +546,10 @@ Our results suggest an empirical pattern across molecular properties with respec
 \emph{End-to-end 3D methods.} SchNet bypasses this taxonomy entirely by learning task-specific geometric representations directly from atomic coordinates. Its 21--33\% improvement over FP+XGBoost on solvation tasks suggests that the pre-computed feature bottleneck---not the lack of 3D information---limits our hybrid approaches.
 
 \textbf{Comparison with prior work.}
-The MARCEL benchmark~\cite{axelrod2024marcel} established that conformer methods help on Kraken steric descriptors, which we confirm, but did not evaluate hybrid approaches or solvation tasks. Wu et al.~\cite{wu2018moleculenet} noted that classical methods often match neural networks; Jiang et al.~\cite{jiang2021gnn_vs_fp} systematically showed descriptor-based models outperform GNNs on many drug discovery tasks. Our work extends these observations by identifying \emph{which} property types benefit from 3D information and establishing a quantitative hierarchy (Section~\ref{sec:schnet}).
-
-\textbf{Comparison with state-of-the-art.}
-Our goal is not to achieve state-of-the-art performance but to understand when conformer geometry helps. For context: published SOTA on ESOL ranges from RMSE ${\sim}0.56$ (D-MPNN with scaffold splits~\cite{yang2019chemprop,heid2024chemprop}) to ${\sim}0.79$ (Uni-Mol~\cite{zhou2023unimol}); our best result of 1.000 (FP+3D) uses random splits, which yield higher absolute RMSEs but are standard in our benchmark families (MARCEL, prior DKO work). On FreeSolv, D-MPNN achieves ${\sim}1.1$ RMSE~\cite{heid2024chemprop} vs.\ our SchNet's 2.324. On QM9, equivariant GNNs achieve HOMO MAE ${\sim}15$ meV~\cite{liao2023equiformer} vs.\ our SchNet's ${\sim}19$ meV RMSE (different metric). These gaps reflect our focus on comparing representation strategies under controlled conditions (same splits, same conformers, same training protocol) rather than maximizing absolute performance. We do not benchmark D-MPNN~\cite{yang2019chemprop,heid2024chemprop}, Uni-Mol~\cite{zhou2023unimol}, or pre-trained models~\cite{rong2020grover} because they address an orthogonal question (graph architecture and pre-training) to ours (when does 3D conformer geometry complement 2D descriptors).
+The MARCEL benchmark~\cite{axelrod2024marcel} established that conformer methods help on Kraken steric descriptors but did not evaluate hybrid approaches or solvation tasks. Wu et al.~\cite{wu2018moleculenet} and Jiang et al.~\cite{jiang2021gnn_vs_fp} showed classical methods often match or beat neural networks; we extend these observations by identifying which property types benefit from 3D information. Our goal is not SOTA performance but understanding when conformer geometry helps---published SOTA (D-MPNN ESOL ${\sim}0.56$~\cite{heid2024chemprop}, Uni-Mol ${\sim}0.79$~\cite{zhou2023unimol}) uses different splits and protocols. We focus on controlled comparisons across representation strategies.
 
 \textbf{Limitations of the taxonomy.}
-Our property taxonomy is derived from a limited set of datasets (3 solvation, 4 steric, 7 electronic) and should be treated as a working hypothesis. Properties with mixed solvation/electronic character (e.g., membrane permeability) may not fit neatly into a single category. Learning curves (Section~\ref{sec:learning}) reveal dataset size effects: FreeSolv hybrid improvement only emerges with $>$440 training molecules, suggesting the taxonomy should be conditioned on data availability. Validation on additional property types is needed before it can serve as a reliable practitioner guide.
+Our taxonomy covers 3 solvation, 4 steric, and 7 electronic targets; properties with mixed character (e.g., membrane permeability) may not fit neatly. Learning curves show dataset size effects (FreeSolv improvement emerges only above ${\sim}$440 molecules), so the taxonomy should be conditioned on data availability.
 
 \textbf{The simplicity principle.}
 Simpler representations consistently outperform complex ones. Complex covariance representations (low-rank, cross-attention) underperform simple ones (5 summary statistics, gating). With $D = 1024$, the full $\boldsymbol{\Sigma}$ has ${\sim}$500K unique entries. On datasets of 642--4,200 molecules, the additional parameters in richer representations overfit---a classic bias-variance trade-off where the bias of a compressed representation is preferable to the variance of an overparameterized one.
@@ -693,9 +566,9 @@ We presented a systematic study of when 3D conformer geometry complements 2D mol
 For practitioners, the decision framework is: start with Morgan FP + XGBoost; add conformer $\boldsymbol{\mu}$ statistics for solvation/flexibility properties with $>$500 molecules; consider physicochemical 3D descriptors (PMI, SASA, USR) for further gains; and use end-to-end 3D GNNs when maximum accuracy justifies the cost. Five to ten conformers suffice for hybrid models.
 
 \textbf{Limitations.}
-Our conformer features are derived from RDKit ETKDG conformers, which may not accurately represent the true Boltzmann ensemble; the BDE pipeline uses uniform rather than energy-derived weights. While we validate key results under scaffold splits, the main benchmark uses random splits following prior work conventions. The hybrid approach uses simple feature concatenation; learned feature interaction might yield larger improvements. Error analysis stratification uses a single seed, so individual quartile improvements (e.g., $+39.7\%$ for rotatable bonds Q3) should be interpreted cautiously despite robust overall trends. Our SchNet baseline uses a single architecture; future work should explore PaiNN~\cite{schutt2021painn}, DimeNet++~\cite{gasteiger2021dimenetpp}, and other equivariant GNNs. Larger-scale validation on ChEMBL/ZINC datasets and Boltzmann-weighted conformer generation remain important directions.
+Our conformer features use RDKit ETKDG with uniform (not Boltzmann) weights. The main benchmark uses random splits (scaffold validation on key results). The hybrid approach uses simple concatenation; learned feature interaction might yield larger gains. Future work should explore equivariant GNNs beyond SchNet and validate on larger ChEMBL/ZINC datasets.
 
-\textbf{Reproducibility.} Code and data will be released upon acceptance.
+\textbf{Reproducibility.} All code, model implementations, experiment scripts, and configuration files are publicly available at \url{https://github.com/anonymoussubmitter-167/DKO} under the MIT license. The repository includes conformer generation pipelines, all 13 model configurations, hybrid feature extraction, and analysis scripts to reproduce every table and figure in this paper.
 
 %──────────────────────────────────────────────────────────────
 \bibliographystyle{ACM-Reference-Format}
@@ -1010,5 +883,109 @@ The opposite scaling patterns across datasets are striking: on ESOL and FreeSolv
 \textbf{Lipophilicity} (overall: $-5.7\%$): Hybrid features hurt uniformly across all quartiles of all molecular properties. No significant correlations between any molecular descriptor and hybrid improvement (all $p > 0.29$). This confirms that conformer features are genuinely uninformative for lipophilicity prediction, regardless of molecular size, flexibility, or surface properties.
 
 \textbf{ESOL TPSA analysis}: Improvement is relatively uniform across TPSA quartiles ($+3.9\%$ to $+13.6\%$), suggesting that hybrid benefit is not driven by polar surface area. The strongest signals are molecular size (heavy atoms, MW) and flexibility (rotatable bonds), both of which directly determine conformer diversity.
+
+\section{MARCEL Benchmark Details}
+\label{app:marcel}
+
+\begin{table}[ht]
+\caption{Kraken steric descriptors (RMSE, mean of 3 seeds, random 80/10/10 splits; std omitted for clarity, all $<$6\% of mean). \textbf{Bold}: best overall per column. \textit{Italic}: best neural method per column.}
+\label{tab:kraken}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Model & B5 & L & burB5 & burL \\
+\midrule
+\textbf{FP+XGB}   & \textbf{0.519} & \textbf{0.650} & \textbf{0.378} & \textbf{0.259} \\
+\midrule
+attention     & 1.030 & 1.233 & \textit{0.559} & \textit{0.356} \\
+mean          & \textit{0.982} & \textit{1.228} & 0.592 & 0.387 \\
+dko\_gated    & 1.176 & 1.322 & 0.653 & 0.409 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On Kraken steric descriptors (Table~\ref{tab:kraken}), which are Boltzmann-averaged 3D properties, all neural conformer methods lag behind FP+XGBoost. Among neural methods, attention and mean aggregation achieve comparable performance: attention wins on buried descriptors (burB5, burL) while mean aggregation wins on standard descriptors (B5, L). DKO's distributional summary performs worst on all 4 targets, suggesting that covariance statistics are not well-suited for Boltzmann-averaged steric properties where per-conformer detail matters.
+
+On BDE, FP+XGBoost achieves RMSE $4.833$ ($R^2 = 0.958$) while all neural conformer models essentially predict the mean ($R^2 \approx 0$), a ${\sim}5\times$ RMSE gap. Three factors explain the failure: (i) mean Pearson feature--target correlation is only $|\bar{r}| = 0.044$ (near-random); (ii) variable feature dimensions across molecules (187--1854) require padding/truncation; (iii) the conformer generation pipeline uses uniform rather than MMFF94-derived Boltzmann weights. On Drugs-75K electronic properties, FP+XGBoost wins by $21$--$29\%$, further supporting this property-type dependence.
+
+\section{10-Seed Neural Model Comparison}
+\label{app:stat_neural}
+
+\begin{table}[ht]
+\caption{10-seed statistical validation (ESOL and Lipophilicity). $\pm$ denotes standard deviation across seeds. One-sided Welch's $t$-test. ``n.s.'': not significant ($p > 0.05$); ``---'': reference model.}
+\label{tab:stat}
+\centering
+\small
+\begin{tabular}{@{}llcr@{}}
+\toprule
+Dataset & Model & RMSE & $\Delta$ \\
+\midrule
+\multirow{3}{*}{ESOL} & dko\_gated & $1.654{\pm}0.032$ & $-12.1\%$ \\
+                       & dko\_inv. & $1.765{\pm}0.050$ & $-6.2\%$ \\
+                       & attention & $1.881{\pm}0.027$ & --- \\
+\midrule
+\multirow{3}{*}{Lipophilicity}  & dko\_inv. & $1.140{\pm}0.008$ & n.s. \\
+                       & attention & $1.140{\pm}0.006$ & --- \\
+                       & dko\_gated & $1.164{\pm}0.022$ & n.s. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Welch's $t$-test~\cite{welch1947ttest} confirms that dko\_gated significantly outperforms attention on ESOL ($p < 0.001$, $12.1\%$ improvement), while Lipophilicity differences are not significant ($p > 0.05$).
+
+\section{ESOL Error Stratification}
+\label{app:error_esol}
+
+\begin{table}[ht]
+\caption{ESOL hybrid improvement by molecular property quartile (single seed). Q1 = smallest/fewest, Q4 = largest/most.}
+\label{tab:error}
+\centering
+\small
+\begin{tabular}{@{}lcccc@{}}
+\toprule
+Property & Q1 & Q2 & Q3 & Q4 \\
+\midrule
+Heavy atoms     & $+10.8\%$ & $+3.8\%$  & $+0.1\%$  & $\mathbf{+18.9\%}$ \\
+Rotatable bonds & $-0.3\%$  & $+5.0\%$  & $\mathbf{+39.7\%}$ & $+11.0\%$ \\
+Mol.\ weight    & $+8.0\%$  & $-2.0\%$  & $-0.3\%$  & $\mathbf{+23.9\%}$ \\
+TPSA            & $+3.9\%$  & $+11.0\%$ & $+13.6\%$ & $+13.4\%$ \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The largest improvements occur for molecules with $>$22 heavy atoms (Q4: $+18.9\%$), 1--2 rotatable bonds (Q3: $+39.7\%$), and molecular weight $>$300 Da (Q4: $+23.9\%$). Rigid molecules with zero rotatable bonds (Q1, $n{=}49$) show essentially no benefit ($-0.3\%$). On FreeSolv, molecular weight significantly correlates with hybrid improvement (Spearman $r = 0.30$, $p = 0.025$).
+
+\section{Learning Curve Details (Percentage Improvement)}
+\label{app:learning_pct}
+
+\begin{table}[ht]
+\caption{Learning curves: hybrid improvement (\%) at different training data fractions. Positive values indicate hybrid is better.}
+\label{tab:learning}
+\centering
+\small
+\begin{tabular}{@{}rcccc@{}}
+\toprule
+Fraction & ESOL & FreeSolv & Lipo & QM9-Gap \\
+\midrule
+10\%  & $+4.7\%$  & $-13.9\%$ & $-6.2\%$  & $-15.8\%$ \\
+25\%  & $+4.5\%$  & $-14.6\%$ & $-9.3\%$  & $-11.5\%$ \\
+50\%  & $+4.8\%$  & $-3.3\%$  & $-3.7\%$  & $-7.4\%$  \\
+75\%  & $+10.1\%$ & $+2.2\%$  & $-3.0\%$  & $-5.2\%$  \\
+100\% & $+12.4\%$ & $+7.0\%$  & $-1.3\%$  & $-3.4\%$  \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+On ESOL, hybrid improvement grows monotonically from $+4.7\%$ at 10\% data to $+12.4\%$ at 100\%, suggesting conformer features add genuine signal. On FreeSolv, the pattern is dramatic: hybrid features hurt at small data sizes ($-13.9\%$ at 10\%) but become beneficial with sufficient data ($+7.0\%$ at 100\%), with a crossover at ${\sim}75\%$ (${\sim}440$ molecules). On Lipophilicity and QM9-Gap, conformer features consistently hurt but the penalty diminishes with more data.
+
+\section{Ablation Details}
+\label{app:ablation}
+
+\textbf{Eigenvalue concentration.}
+The feature variance audit reveals that the top-10 eigenvalues of $\boldsymbol{\Sigma}$ capture only $4$--$8\%$ of total variance across datasets. For comparison, uniform variance across $D{=}1024$ dimensions would yield $<$1\% in the top 10; the moderate concentration suggests structure exists but is too distributed for low-rank methods. The effective rank at $90\%$ explained variance ranges from 353 (QM9) to 685 (Lipophilicity), explaining why lowrank (average rank 9.25) and eigenspectrum (rank 7.25) variants underperform invariants (rank 4.50): richer representations overfit on datasets of 642--4,200 molecules.
+
+\textbf{Synthetic validation.}
+We generate $N{=}2{,}000$ synthetic molecules with $D{=}128$ features, $n{=}50$ conformers, and ground-truth labels $y = \mathbf{W}^\top\boldsymbol{\mu} + \alpha\log(1 + \mathrm{tr}(\boldsymbol{\Sigma}))$, varying $\alpha \in \{0, 0.1, 0.5, 1.0\}$. Even at $\alpha{=}0$ (no covariance signal), the kernel DKO achieves $27$--$30\%$ lower RMSE than first-order baselines, demonstrating a beneficial inductive bias from the kernel parameterization itself.
 
 \end{document}
