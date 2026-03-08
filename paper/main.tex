@@ -223,26 +223,26 @@ We evaluate 9 covariance representation strategies (Table~\ref{tab:variants}), a
 \caption{DKO variants and baselines. $|\mathbf{s}|$: covariance summary dimension. Ablation variants marked with $\dagger$.}
 \label{tab:variants}
 \centering
-\footnotesize
+\scriptsize
 \begin{tabular}{@{}llr@{}}
 \toprule
 Model & Covariance representation & $|\mathbf{s}|$ \\
 \midrule
-dko\_gated & Learned sigmoid gate fusing $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ streams & 64 \\
-dko\_invariants & 5 scalar statistics (tr, log-det, $\|\cdot\|_F$, $\lambda_1/\lambda_k$, spectral) & 5 \\
+dko\_gated & Learned gate fusing $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ & 64 \\
+dko\_invariants & 5 scalars (tr, log-det, $\|\cdot\|_F$, $\lambda_1/\lambda_k$, spectral) & 5 \\
 dko\_eigenspectrum & Top-$k$ eigenvalues & 64 \\
-dko\_lowrank & Top-$k$ eigenvalues + eigenvector projection & 128 \\
-dko\_residual & $\boldsymbol{\mu}$ prediction + learned $\boldsymbol{\Sigma}$ correction & 64 \\
-dko\_crossattn & Cross-attention ($\boldsymbol{\mu}$ queries, $\boldsymbol{\Sigma}$ keys/values) & 64 \\
+dko\_lowrank & Top-$k$ eigenvalues + eigenvector proj. & 128 \\
+dko\_residual & $\boldsymbol{\mu}$ pred.\ + learned $\boldsymbol{\Sigma}$ correction & 64 \\
+dko\_crossattn & Cross-attn ($\boldsymbol{\mu}$ queries, $\boldsymbol{\Sigma}$ keys) & 64 \\
 dko\_router & Diversity-based MoE routing & 64 \\
 dko\_first\_order$^\dagger$ & $\boldsymbol{\mu}$-only (no covariance) & 0 \\
 dko\_diagonal$^\dagger$ & Per-feature variances only & 1024 \\
 \midrule
-attention & Set Transformer~\cite{lee2019set} conformer aggregation & --- \\
+attention & Set Transformer~\cite{lee2019set} aggregation & --- \\
 mean\_ensemble & Mean pooling over conformers & --- \\
 single\_conformer & Lowest-energy conformer only & --- \\
-DeepSets & Permutation-invariant aggregation~\cite{zaheer2017deepsets} & --- \\
-dko\_separate\_nets & Independent $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ networks (no fusion) & --- \\
+DeepSets & Permutation-invariant~\cite{zaheer2017deepsets} & --- \\
+dko\_separate\_nets & Indep.\ $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ nets (no fusion) & --- \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -457,17 +457,17 @@ We validate key comparisons with 10-seed experiments. Welch's $t$-test~\cite{wel
 \caption{10-seed hybrid significance (paired one-sided $t$-test: hybrid $<$ FP-only). $\boldsymbol{\Sigma}$ marginal: FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP+$\boldsymbol{\mu}$.}
 \label{tab:hybrid_sig}
 \centering
-\small
+\scriptsize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Dataset & FP RMSE & Hybrid RMSE & $\Delta$ & $p$-value \\
 \midrule
-ESOL & $1.500{\pm}0.032$ & $1.335{\pm}0.034$ & $-11.0\%$ & $5.0 \times 10^{-10}$ \\
-FreeSolv & $3.240{\pm}0.164$ & $2.804{\pm}0.137$ & $-13.5\%$ & $2.9 \times 10^{-5}$ \\
-Lipo & $0.918{\pm}0.008$ & $0.940{\pm}0.008$ & $+2.4\%$ & n.s. \\
-QM9-Gap & $0.0201{\pm}0.0001$ & $0.0209{\pm}0.0002$ & $+4.0\%$ & n.s. \\
+ESOL & $1.500{\pm}.032$ & $1.335{\pm}.034$ & $-11.0\%$ & $5.0{\times}10^{-10}$ \\
+FreeSolv & $3.240{\pm}.164$ & $2.804{\pm}.137$ & $-13.5\%$ & $2.9{\times}10^{-5}$ \\
+Lipo & $0.918{\pm}.008$ & $0.940{\pm}.008$ & $+2.4\%$ & n.s. \\
+QM9-Gap & $.0201{\pm}.0001$ & $.0209{\pm}.0002$ & $+4.0\%$ & n.s. \\
 \midrule
-\multicolumn{5}{@{}l@{}}{\textit{Marginal $\boldsymbol{\Sigma}$ contribution (FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP+$\boldsymbol{\mu}$):}} \\
+\multicolumn{5}{@{}l@{}}{\textit{Marginal $\boldsymbol{\Sigma}$ (FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP+$\boldsymbol{\mu}$):}} \\
 ESOL & \multicolumn{2}{c}{$1.383 \to 1.335$} & $-3.4\%$ & $0.007$ \\
 FreeSolv & \multicolumn{2}{c}{$2.927 \to 2.804$} & $-4.2\%$ & $0.024$ \\
 \bottomrule
@@ -730,13 +730,13 @@ We compare a neural MLP (2309$\to$512$\to$256$\to$128$\to$1, ReLU activations, d
 \caption{Hybrid MLP vs.\ XGBoost (RMSE / $R^2$, mean of 3 seeds).}
 \label{tab:hybrid_nn}
 \centering
-\small
+\scriptsize
 \begin{tabular}{@{}lcccc@{}}
 \toprule
 Method & ESOL & FreeSolv & Lipo & QM9-Gap \\
 \midrule
-MLP    & 1.218 / 0.637 & 3.809 / $-$0.044 & 0.906 / 0.394 & 0.023 / 0.787 \\
-XGBoost & 1.358 / 0.548 & 2.824 / 0.423 & 0.957 / 0.325 & 0.021 / 0.821 \\
+MLP    & 1.218\,/\,.637 & 3.809\,/\,$-$.044 & 0.906\,/\,.394 & .023\,/\,.787 \\
+XGBoost & 1.358\,/\,.548 & 2.824\,/\,.423 & 0.957\,/\,.325 & .021\,/\,.821 \\
 \bottomrule
 \end{tabular}
 \end{table}
@@ -859,7 +859,7 @@ Table~\ref{tab:learning_full} presents the full learning curve results with abso
 \caption{Learning curves: absolute RMSE (mean of 3 seeds) at each training fraction.}
 \label{tab:learning_full}
 \centering
-\small
+\resizebox{\columnwidth}{!}{%
 \begin{tabular}{@{}rcccccccc@{}}
 \toprule
  & \multicolumn{2}{c}{ESOL} & \multicolumn{2}{c}{FreeSolv} & \multicolumn{2}{c}{Lipo} & \multicolumn{2}{c}{QM9-Gap} \\
@@ -871,7 +871,8 @@ Frac & FP & Hyb & FP & Hyb & FP & Hyb & FP & Hyb \\
 75\%  & 1.578 & 1.419 & 3.056 & 2.988 & 0.928 & 0.956 & .0205 & .0215 \\
 100\% & 1.533 & 1.343 & 3.077 & 2.862 & 0.920 & 0.932 & .0201 & .0208 \\
 \bottomrule
-\end{tabular}
+\end{tabular}%
+}
 \end{table}
 
 The opposite scaling patterns across datasets are striking: on ESOL and FreeSolv, hybrid features become increasingly valuable with more data (suggesting genuine signal), while on Lipophilicity and QM9-Gap, the penalty diminishes (suggesting XGBoost learns to downweight irrelevant features). The FreeSolv crossover at ${\sim}75\%$ (${\sim}440$ molecules) provides a practical threshold for when conformer features become beneficial on small solvation datasets.
