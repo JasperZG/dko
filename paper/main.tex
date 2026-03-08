@@ -36,6 +36,7 @@
 \usepackage{nicefrac}
 \usepackage{subcaption}
 \usepackage{multirow}
+\usepackage{placeins}
 
 %% Improve line-breaking for long inline math and URLs.
 \tolerance=1000
@@ -399,7 +400,7 @@ On FreeSolv, FP+$\boldsymbol{\mu}$ captures most of the hybrid gain while FP+$\b
 
 Replacing the 1024-dimensional raw geometric features with 28 physicochemical 3D descriptors (PMI, SASA, USR; Section~\ref{sec:3d_methods}) substantially improves hybrid performance (Table~\ref{tab:3d}).
 
-\begin{table}[t]
+\begin{table}[!htb]
 \caption{Enhanced 3D descriptors vs.\ geometric features (XGBoost, RMSE, mean of 3 seeds; std omitted for clarity, all $<$5\% of mean). \textbf{Bold}: best per dataset. ``3D'' = 28 physicochemical descriptors; ``Geo'' = 1024-dim geometric features. ``Lipo'' = Lipophilicity.}
 \label{tab:3d}
 \centering
@@ -418,12 +419,13 @@ FP + 3D + Geo      & 1.094 & \textbf{2.597} & 0.916 & 0.020 \\
 
 The 28 physicochemical descriptors outperform 1024 geometric features on 3 of 4 datasets. On ESOL, FP+3D achieves RMSE 1.000---a 34\% improvement over FP-only and 26\% over the geometric hybrid. On Lipophilicity, FP+3D (0.873) improves 4\% over FP-only. The combined FP+3D+Geo achieves the best FreeSolv result (2.597, 12\% over FP-only). Full results in Appendix~\ref{app:3d}.
 
+\FloatBarrier
 \subsection{3D GNN Baseline}
 \label{sec:schnet}
 
 To establish an upper bound for end-to-end 3D learning, we train SchNet~\cite{schutt2017schnet} on up to 10 lowest-energy conformers with prediction averaging (architecture details in Appendix~\ref{app:schnet}).
 
-\begin{table}[t]
+\begin{table}[!htb]
 \caption{SchNet vs.\ pre-computed feature methods (RMSE $\pm$ std, 3 seeds). SchNet and FP+3D both beat FP+XGBoost on solvation tasks.}
 \label{tab:schnet}
 \centering
@@ -448,12 +450,13 @@ SchNet outperforms FP+XGBoost on all three solvation datasets (33\% ESOL, 21\% F
 
 On Kraken steric descriptors, all neural conformer methods lag behind FP+XGBoost by 1.4--2.3$\times$; DKO performs worst, suggesting covariance statistics are not suited for Boltzmann-averaged properties. On BDE, neural models achieve $R^2 \approx 0$ (${\sim}5\times$ RMSE gap vs.\ FP+XGBoost), validating our property taxonomy. Full MARCEL results are in Appendix~\ref{app:marcel}.
 
+\FloatBarrier
 \subsection{Statistical Validation}
 \label{sec:stat}
 
 We validate key comparisons with 10-seed experiments. Welch's $t$-test~\cite{welch1947ttest} confirms dko\_gated significantly outperforms attention on ESOL ($p < 0.001$, $12.1\%$ improvement; Appendix~\ref{app:stat_neural}). We validate hybrid improvements with 10-seed paired one-sided $t$-tests (Table~\ref{tab:hybrid_sig}).
 
-\begin{table}[t]
+\begin{table}[!htb]
 \caption{10-seed hybrid significance (paired one-sided $t$-test: hybrid $<$ FP-only). $\boldsymbol{\Sigma}$ marginal: FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP+$\boldsymbol{\mu}$.}
 \label{tab:hybrid_sig}
 \centering
@@ -476,6 +479,7 @@ FreeSolv & \multicolumn{2}{c}{$2.927 \to 2.804$} & $-4.2\%$ & $0.024$ \\
 
 The hybrid improvement on ESOL ($p < 10^{-9}$) and FreeSolv ($p < 3 \times 10^{-5}$) is highly significant. The marginal contribution of $\boldsymbol{\Sigma}$ beyond $\boldsymbol{\mu}$ is also significant ($p = 0.007$ ESOL, $p = 0.024$ FreeSolv). The 10-seed estimates ($-11.0\%$, $-13.5\%$) are larger than 3-seed estimates ($-9.9\%$, $-3.9\%$); we treat the paired 10-seed result as definitive.
 
+\FloatBarrier
 \subsection{Scaffold Split Validation}
 \label{sec:scaffold}
 
