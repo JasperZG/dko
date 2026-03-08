@@ -210,7 +210,7 @@ The Distribution Kernel Operator (DKO) maps the pair $(\boldsymbol{\mu}, \boldsy
 
 \textbf{Kernel construction.} A low-rank factorization $\mathbf{K} = \mathbf{L}\mathbf{L}^\top$ ($\mathbf{L} \in \mathbb{R}^{k \times D}$, $k = 64$) projects the mean into a $k$-dimensional subspace: $\tilde{\boldsymbol{\mu}} = \mathbf{L}\boldsymbol{\mu}$.
 
-\textbf{Covariance representation.} A variant-specific function $\mathbf{s} = g(\boldsymbol{\Sigma}) \in \mathbb{R}^{|\mathbf{s}|}$ extracts a fixed-length summary, ranging from 5 scalar invariants to full eigenspectrum projections (\S\ref{sec:variants}).
+\textbf{Covariance representation.} A variant-specific function $\mathbf{s} = g(\boldsymbol{\Sigma}) \in \mathbb{R}^{|\mathbf{s}|}$ extracts a fixed-length summary, ranging from 5 scalar invariants to full eigenspectrum projections (Section~\ref{sec:variants}).
 
 \textbf{Prediction.} A 3-layer MLP ($[k{+}|\mathbf{s}|, 256, 128, 1]$, ReLU, dropout 0.1) produces $\hat{y} = f_\theta([\tilde{\boldsymbol{\mu}};\; \mathbf{s}])$, trained with MSE loss.
 
@@ -223,7 +223,7 @@ We evaluate 9 covariance representation strategies (Table~\ref{tab:variants}), a
 \caption{DKO variants and baselines. $|\mathbf{s}|$: covariance summary dimension. Ablation variants marked with $\dagger$.}
 \label{tab:variants}
 \centering
-\small
+\footnotesize
 \begin{tabular}{@{}llr@{}}
 \toprule
 Model & Covariance representation & $|\mathbf{s}|$ \\
@@ -250,7 +250,7 @@ dko\_separate\_nets & Independent $\boldsymbol{\mu}$/$\boldsymbol{\Sigma}$ netwo
 \subsection{Enhanced 3D Shape Descriptors}
 \label{sec:3d_methods}
 
-We implement 28 property-relevant 3D descriptors in four categories: shape (6: PMI ratios, asphericity, eccentricity, radius of gyration), surface (5: SASA~\cite{freesasa2016} total/polar/nonpolar), USR (12: rotation-invariant shape signature~\cite{ballester2007usr}), and global geometry (5: span, volume, compactness). These capture physically relevant 3D variation---SASA relates to solvation free energy, PMI ratios encode shape anisotropy.
+We implement 28 property-relevant 3D descriptors in four categories: shape (9: 2 PMI ratios, 3 raw principal moments, asphericity, eccentricity, radius of gyration, inertial shape factor), surface (1: total SASA~\cite{freesasa2016}), USR (12: rotation-invariant shape signature~\cite{ballester2007usr}), and global geometry (6: span, molecular volume, compactness, 3 bounding box extents). These capture physically relevant 3D variation---SASA relates to solvation free energy, PMI ratios encode shape anisotropy.
 
 \subsection{Hybrid FP + Conformer Approach}
 
@@ -266,7 +266,7 @@ We quantify conformer diversity per molecule as $\text{CDM} = \text{tr}(\boldsym
 
 \subsection{Training Details}
 
-All DKO and baseline neural models are trained with AdamW~\cite{loshchilov2019adamw} (learning rate $10^{-4}$, weight decay $10^{-5}$), 300 epochs with early stopping (patience 30), and feature normalization along the conformer dimension only ($\text{dim}=1$). Mixed precision is disabled for DKO variants due to numerical sensitivity of covariance arithmetic (Appendix~\ref{app:impl}). We use 3 seeds for the main benchmark and 10 seeds for statistical validation; 10 seeds provide sufficient power to detect effect sizes of ${\sim}5\%$ at $\alpha = 0.05$ given the observed variance across architectures. All datasets use random 80/10/10 train/validation/test splits following the protocol of prior work. We additionally validate key results under Murcko scaffold splits~\cite{bemis1996scaffolds} to test generalization to unseen chemical scaffolds (Section~\ref{sec:scaffold}).
+All DKO and baseline neural models are trained with AdamW~\cite{loshchilov2019adamw} (learning rate $10^{-4}$, weight decay $10^{-5}$), 300 epochs with early stopping (patience 30), and feature normalization along the conformer dimension only ($\text{dim}=1$). Mixed precision is disabled for DKO variants due to numerical sensitivity of covariance arithmetic (Appendix~\ref{app:impl}). We use 3 seeds for the main benchmark and 10 seeds for statistical validation; 10 seeds provide sufficient power to detect effect sizes of ${\sim}5\%$ at $\alpha = 0.05$ given the observed variance across architectures. All datasets use Murcko scaffold-based 80/10/10 train/validation/test splits~\cite{bemis1996scaffolds}, where molecules sharing the same core scaffold are kept in the same split. We additionally compare scaffold vs.\ random splits to quantify generalization to unseen chemical scaffolds (Section~\ref{sec:scaffold}).
 
 %──────────────────────────────────────────────────────────────
 \section{Experiments}
@@ -479,7 +479,7 @@ The hybrid improvement on ESOL ($p < 10^{-9}$) and FreeSolv ($p < 3 \times 10^{-
 \subsection{Scaffold Split Validation}
 \label{sec:scaffold}
 
-Random train/test splits may leak information through structurally similar molecules, inflating performance estimates. We validate key results under Murcko scaffold-based splitting~\cite{bemis1996scaffolds}, where molecules sharing the same core scaffold are kept in the same split (Table~\ref{tab:scaffold}).
+Although the main benchmark already uses scaffold-based splits, we explicitly compare scaffold vs.\ random splitting to quantify the generalization gap. Random splits may leak information through structurally similar molecules, inflating performance estimates. Table~\ref{tab:scaffold} compares both regimes with freshly generated splits.
 
 \begin{table}[t]
 \caption{Scaffold vs.\ random split comparison (RMSE, mean of 3 seeds). $\Delta$: hybrid improvement (FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ vs.\ FP-only).}
@@ -502,7 +502,7 @@ Dataset & Split & FP-only & Hybrid & $\Delta$ \\
 \end{tabular}
 \end{table}
 
-On ESOL, hybrid improvement is \emph{larger} under scaffold splits ($-11.9\%$) than random splits ($-8.5\%$), demonstrating that conformer features provide genuine complementary signal for generalizing to unseen chemical scaffolds. Scaffold splits are substantially harder: FP-only RMSE increases from 1.083 to 1.492 ($+38\%$). On FreeSolv and Lipophilicity, 3-seed scaffold experiments do not replicate the hybrid improvement, consistent with FreeSolv's small size ($N{=}642$); the 10-seed paired test (Table~\ref{tab:hybrid_sig}) provides the definitive assessment. Full results in Appendix~\ref{app:scaffold}.
+On ESOL, hybrid improvement is \emph{larger} under scaffold splits ($-11.9\%$) than random splits ($-8.5\%$), demonstrating that conformer features provide genuine complementary signal for generalizing to unseen chemical scaffolds. Scaffold splits are substantially harder: FP-only RMSE increases from 1.083 to 1.492 ($+38\%$). On FreeSolv, the hybrid actually hurts under random splits ($+18.0\%$), though the 10-seed paired test (Table~\ref{tab:hybrid_sig}) on the full pipeline shows significant improvement ($-13.5\%$, $p < 3 \times 10^{-5}$), indicating sensitivity to seed/split variation at small sample sizes ($N{=}642$). On Lipophilicity, hybrid features provide no benefit under either split type. Full results in Appendix~\ref{app:scaffold}.
 
 \subsection{Learning Curves}
 \label{sec:learning}
@@ -516,7 +516,7 @@ Error stratification by molecular properties (Appendix~\ref{app:error}) reveals 
 
 \subsection{Why Fingerprints Dominate: A Mechanistic Analysis}
 
-Feature attribution (Appendix~\ref{app:attrib}) and mutual information analysis (Appendix~\ref{app:mi}) explain the heterogeneous improvement pattern. Conformer $\boldsymbol{\mu}$ features carry 2--7$\times$ more MI per feature than fingerprint bits, yet the hybrid benefit depends on dataset-specific complementarity: ESOL improvement is $\boldsymbol{\mu}$-driven (67.4\% attribution), FreeSolv is FP-driven with $\boldsymbol{\mu}$ complementing (62/37\%), and QM9-Gap shows no improvement because FP and $\boldsymbol{\mu}$ are already balanced (49/49\%). Covariance ($\boldsymbol{\Sigma}$) features contribute $<$2\% of importance everywhere, and conditional MI of $\boldsymbol{\Sigma}$ given FP+$\boldsymbol{\mu}$ is slightly negative, confirming covariance features are redundant once mean and fingerprint information are available.
+Feature attribution (Appendix~\ref{app:attrib}) and mutual information analysis (Appendix~\ref{app:mi}) explain the heterogeneous improvement pattern. Conformer $\boldsymbol{\mu}$ features carry 2--7$\times$ more MI per feature than fingerprint bits, yet the hybrid benefit depends on dataset-specific complementarity: ESOL improvement is $\boldsymbol{\mu}$-driven (67.4\% attribution), FreeSolv is FP-driven with $\boldsymbol{\mu}$ complementing (62/37\%), and QM9-Gap shows no improvement because FP and $\boldsymbol{\mu}$ are already balanced (49/49\%). Covariance ($\boldsymbol{\Sigma}$) features contribute $<$2\% of importance everywhere, and conditional MI of $\boldsymbol{\Sigma}$ given $\boldsymbol{\mu}$ is slightly negative (Table~\ref{tab:cmi}), suggesting covariance features are largely redundant in information-theoretic terms once mean features are available, though they still provide a statistically significant marginal RMSE improvement on solvation tasks (Table~\ref{tab:hybrid_sig}).
 
 \subsection{Ablation: Why Simple Covariance Representations Win}
 
@@ -530,7 +530,7 @@ The top-10 eigenvalues of $\boldsymbol{\Sigma}$ capture only 4--8\% of total var
 \centering
 \includegraphics[width=\columnwidth]{figures/fig_taxonomy.pdf}
 \Description{Horizontal bar chart showing hybrid RMSE improvement percentage for six datasets grouped by property type. Solvation group: ESOL 9.9 percent, FreeSolv 3.9 percent, Lipophilicity 0 percent. Electronic group: QM9-HOMO 4.2 percent, QM9-Gap 0 percent, QM9-LUMO 0 percent.}
-\caption{Empirical property taxonomy for conformer utility. Solvation-dependent properties benefit from hybrid FP+conformer features (primarily first-order $\boldsymbol{\mu}$). Steric/Boltzmann properties benefit from attention-based conformer weighting on orientation-dependent descriptors. Electronic properties show no improvement from conformer geometry. End-to-end 3D methods (SchNet) bypass this taxonomy. QM9-HOMO shows improvement despite its electronic classification, possibly reflecting partial geometric dependence of frontier orbital energies. Taxonomy derived from 7 dataset sources across 3 benchmark families (MoleculeNet, QM9, MARCEL); validation on additional property types is needed (Section~5).}
+\caption{Empirical property taxonomy for conformer utility. Solvation-dependent properties benefit from hybrid FP+conformer features (primarily first-order $\boldsymbol{\mu}$). Steric/Boltzmann properties benefit from attention-based conformer weighting on orientation-dependent descriptors. Electronic properties show no improvement from conformer geometry. End-to-end 3D methods (SchNet) bypass this taxonomy. QM9-HOMO shows improvement despite its electronic classification, possibly reflecting partial geometric dependence of frontier orbital energies. Taxonomy derived from 7 dataset sources across 3 benchmark families (MoleculeNet, QM9, MARCEL); validation on additional property types is needed (Section~\ref{sec:conclusion}).}
 \label{fig:taxonomy}
 \end{figure}
 
@@ -559,6 +559,7 @@ For practitioners, our results suggest: (1) always start with Morgan FP + XGBoos
 
 %──────────────────────────────────────────────────────────────
 \section{Conclusion}
+\label{sec:conclusion}
 %──────────────────────────────────────────────────────────────
 
 We presented a systematic study of when 3D conformer geometry complements 2D molecular fingerprints, yielding three main contributions: (1) an empirical property taxonomy showing that conformer statistics selectively help solvation-dependent properties but not electronic or steric tasks, validated across 14 regression targets with 10-seed significance testing and scaffold splits; (2) a performance hierarchy---SchNet $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer ensembles---revealing that the pre-computed feature bottleneck, not the absence of 3D information, limits conformer ensemble methods; and (3) mechanistic understanding of why fingerprints dominate (breadth of chemical information) and when conformer statistics help (solvation properties of large, flexible molecules).
@@ -566,7 +567,7 @@ We presented a systematic study of when 3D conformer geometry complements 2D mol
 For practitioners, the decision framework is: start with Morgan FP + XGBoost; add conformer $\boldsymbol{\mu}$ statistics for solvation/flexibility properties with $>$500 molecules; consider physicochemical 3D descriptors (PMI, SASA, USR) for further gains; and use end-to-end 3D GNNs when maximum accuracy justifies the cost. Five to ten conformers suffice for hybrid models.
 
 \textbf{Limitations.}
-Our conformer features use RDKit ETKDG with uniform (not Boltzmann) weights. The main benchmark uses random splits (scaffold validation on key results). The hybrid approach uses simple concatenation; learned feature interaction might yield larger gains. Future work should explore equivariant GNNs beyond SchNet and validate on larger ChEMBL/ZINC datasets.
+Our conformer features use RDKit ETKDG with uniform (not Boltzmann) weights. The main benchmark uses Murcko scaffold splits; auxiliary experiments (hybrid, learning curves) re-split data independently, so FP-only baselines vary slightly across tables (${\sim}2\%$). The hybrid approach uses simple concatenation; learned feature interaction might yield larger gains. Future work should explore equivariant GNNs beyond SchNet and validate on larger ChEMBL/ZINC datasets.
 
 \textbf{Reproducibility.} All code, model implementations, experiment scripts, and configuration files are publicly available at \url{https://github.com/anonymoussubmitter-167/DKO} under the MIT license. The repository includes conformer generation pipelines, all 13 model configurations, hybrid feature extraction, and analysis scripts to reproduce every table and figure in this paper.
 
@@ -646,7 +647,7 @@ Lipophilicity has $3\times$ higher median CDM than QM9, consistent with dko\_inv
 \section{Enhanced 3D Descriptors Benchmark}
 \label{app:3d}
 
-Table~\ref{tab:3d_full} presents the full benchmark of enhanced 3D descriptors across all feature combinations and datasets (mean $\pm$ std, 3 seeds). The 28 descriptors span four categories: \textbf{Shape} (6): PMI ratios, asphericity, eccentricity, radius of gyration, inertial shape factor; \textbf{Surface} (5): SASA total, polar, nonpolar, and ratios; \textbf{USR} (12): distances from centroid, closest/farthest atom references; \textbf{Global} (5): span, bounding box, volume, compactness.
+Table~\ref{tab:3d_full} presents the full benchmark of enhanced 3D descriptors across all feature combinations and datasets (mean $\pm$ std, 3 seeds). The 28 descriptors span four categories: \textbf{Shape} (9): 2 PMI ratios, 3 raw principal moments, asphericity, eccentricity, radius of gyration, inertial shape factor; \textbf{Surface} (1): total SASA; \textbf{USR} (12): distances from centroid, closest/farthest atom references; \textbf{Global} (6): span, molecular volume, compactness, 3 bounding box extents.
 
 \begin{table}[ht]
 \caption{Full 3D descriptor benchmark (RMSE, mean of 3 seeds). ``3D'' = 28 physicochemical descriptors; ``Geo'' = geometric $\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ features.}
@@ -775,16 +776,16 @@ Dataset & Group & Total MI & Per-feat. \\
 \end{tabular}
 \end{table}
 
-Key findings: (i) $\boldsymbol{\mu}$ features carry 2--8$\times$ more MI per feature than FP bits across all datasets; (ii) despite higher per-feature informativeness, $\boldsymbol{\mu}$'s advantage depends on dataset---ESOL shows $7.5\times$ ratio while FreeSolv shows only $1.9\times$; (iii) $\boldsymbol{\Sigma}$ features have moderate per-feature MI (0.006--0.108 nats) but contribute minimal \emph{conditional} MI given FP+$\boldsymbol{\mu}$ ($-1.5\%$ to $-3.5\%$, Table~\ref{tab:cmi}).
+Key findings: (i) $\boldsymbol{\mu}$ features carry 2--8$\times$ more MI per feature than FP bits across all datasets; (ii) despite higher per-feature informativeness, $\boldsymbol{\mu}$'s advantage depends on dataset---ESOL shows $7.5\times$ ratio while FreeSolv shows only $1.9\times$; (iii) $\boldsymbol{\Sigma}$ features have moderate per-feature MI (0.006--0.108 nats) but contribute minimal \emph{conditional} MI given $\boldsymbol{\mu}$ ($-1.5\%$ to $-3.5\%$, Table~\ref{tab:cmi}).
 
 \begin{table}[ht]
-\caption{Conditional MI of $\boldsymbol{\Sigma}$ given FP+$\boldsymbol{\mu}$ (nats). Negative values indicate $\boldsymbol{\Sigma}$ is redundant.}
+\caption{Conditional MI of $\boldsymbol{\Sigma}$ given $\boldsymbol{\mu}$ (nats). Negative values indicate $\boldsymbol{\Sigma}$ is redundant given $\boldsymbol{\mu}$.}
 \label{tab:cmi}
 \centering
 \small
 \begin{tabular}{@{}lrrr@{}}
 \toprule
-Dataset & MI(FP+$\mu$) & MI(FP+$\mu$+$\Sigma$) & $\Delta$\% \\
+Dataset & MI($\mu$) & MI($\mu$+$\Sigma$) & $\Delta$\% \\
 \midrule
 ESOL     & 8.27 & 7.98 & $-3.5\%$ \\
 FreeSolv & 4.39 & 4.32 & $-1.5\%$ \\
@@ -794,7 +795,7 @@ QM9-Gap  & 9.70 & 9.39 & $-3.2\%$ \\
 \end{tabular}
 \end{table}
 
-Limitations: KSG MI estimation is sensitive to $k$ and dimensionality. The top-50 feature selection introduces bias toward groups with more features ($\boldsymbol{\mu}$: 256 candidates, FP: 2048 candidates, $\boldsymbol{\Sigma}$: 5 candidates). Conditional MI estimates may be noisy for high-dimensional feature spaces.
+Limitations: KSG MI estimation is sensitive to $k$ and dimensionality. The variance-based top-50 feature selection favors continuous features ($\boldsymbol{\mu}$) over binary FP bits, so joint MI estimates for combined feature sets effectively measure $\boldsymbol{\mu}$ MI only; the conditional MI in Table~\ref{tab:cmi} therefore conditions on $\boldsymbol{\mu}$ alone rather than FP+$\boldsymbol{\mu}$. Future work should use MI-ranked or per-group proportional feature selection to properly estimate joint MI across heterogeneous feature types.
 
 \section{Feature Attribution}
 \label{app:attrib}
