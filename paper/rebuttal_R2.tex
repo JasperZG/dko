@@ -21,69 +21,70 @@ We thank Reviewer tcvY for the detailed and rigorous critique. Below we address 
 
 \point{R2.1: Insufficient 3D GNN baselines---only SchNet is used; need DimeNet++, PaiNN, Equiformer.}
 
-\response We have added PaiNN~[Sch\"utt et al., 2021] as a second 3D GNN baseline (Section~5.4, Table~5 at \lines{441}, Appendix~L at \lines{1081--1103}). PaiNN uses equivariant message passing with separate scalar/vector channels---a fundamentally different inductive bias from SchNet's continuous-filter convolutions. Results confirm the hierarchy: PaiNN achieves 28\% (ESOL), 42\% (FreeSolv), and 30\% (Lipophilicity) gains over FP+XGBoost from a \emph{single} conformer, while SchNet uses 10.
+\response We have added PaiNN~[Sch\"utt et al., 2021] as a second 3D GNN baseline (Section~5.4, Table~5 at \lines{433}, Appendix~L at \lines{1066--1087}). PaiNN uses equivariant message passing with separate scalar/vector channels---a fundamentally different inductive bias from SchNet's continuous-filter convolutions. Results confirm the hierarchy: PaiNN achieves 28\% (ESOL), 42\% (FreeSolv), and 30\% (Lipophilicity) gains over FP+XGBoost from a \emph{single} conformer, while SchNet uses 10.
 
-The convergence of 21--42\% gains across these two architecturally diverse GNNs provides strong evidence that the hierarchy reflects a genuine property of the representation, not an artifact of SchNet specifically. We explain in the new paragraph at \lines{460} why DimeNet++ (intermediate between SchNet and PaiNN in design) and Equiformer (primarily beneficial in large-scale pre-training settings orthogonal to our study) are not included: two architectures spanning the continuous-filter and equivariant paradigms are sufficient to establish robustness.
+The convergence of 21--42\% gains across these two architecturally diverse GNNs provides strong evidence that the hierarchy reflects a genuine property of the representation, not an artifact of SchNet specifically. We explain in the new paragraph at \lines{453} why DimeNet++ (intermediate between SchNet and PaiNN in design) and Equiformer (primarily beneficial in large-scale pre-training settings orthogonal to our study) are not included: two architectures spanning the continuous-filter and equivariant paradigms are sufficient to establish robustness.
 
-Regarding the reviewer's concern that SchNet could be trivially extended with ensemble pooling: this is precisely what our DKO mean ensemble baseline does (mean pooling over conformers through a neural architecture, \lines{354}). The fact that even this approach underperforms FP+XGBoost strengthens, rather than undermines, the claim that the pre-computed feature bottleneck is the limiting factor.
+Regarding the reviewer's concern that SchNet could be trivially extended with ensemble pooling: this is precisely what our DKO mean ensemble baseline does (mean pooling over conformers through a neural architecture, \lines{347}). The fact that even this approach underperforms FP+XGBoost strengthens, rather than undermines, the claim that the pre-computed feature bottleneck is the limiting factor.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
-    \item PaiNN added as second 3D GNN baseline: \lines{434--460}
-    \item GNN comparison table (Table~5) updated: \lines{439--456}
-    \item Justification for GNN baseline selection: \lines{460}
-    \item PaiNN architecture details in Appendix~L: \lines{1081--1103}
-    \item PaiNN per-seed results (Table~14): \lines{1086--1102}
+    \item PaiNN added as second 3D GNN baseline: \lines{427--453}
+    \item GNN comparison table (Table~5) updated: \lines{432--449}
+    \item PaiNN data row in Table~5: \lines{446}
+    \item Justification for GNN baseline selection: \lines{453}
+    \item PaiNN architecture details in Appendix~L: \lines{1066--1087}
+    \item PaiNN per-seed results table: \lines{1071--1086}
     \item Abstract updated with PaiNN: \lines{82}
     \item Contribution 3 updated: \lines{157}
 \end{itemize}
 
 \point{R2.2: FreeSolv results are directionally inconsistent ($-13.5\%$ to $+18.0\%$).}
 
-\response We have substantially clarified this in the revised scaffold split discussion at \lines{573}. The $+18.0\%$ degradation comes from a 3-seed random-split auxiliary experiment on $N{=}642$ molecules---a regime where a single unfavorable split can dominate the mean. The definitive result is the 10-seed paired one-sided $t$-test on the main scaffold-split pipeline: $-13.5\%$ improvement, $p < 3 \times 10^{-5}$ (Table~4, \lines{525}). The learning curve analysis (Section~5.7, \lines{575--578}) further clarifies: hybrid features hurt at small data fractions but become beneficial above ${\sim}440$ molecules, explaining the sensitivity to split and seed variation at FreeSolv's small sample size. The 10-seed result, not the 3-seed auxiliary, should be taken as definitive.
+\response We have substantially clarified this in the revised scaffold split discussion at \lines{566}. The $+18.0\%$ degradation comes from a 3-seed random-split auxiliary experiment on $N{=}642$ molecules---a regime where a single unfavorable split can dominate the mean. The definitive result is the 10-seed paired one-sided $t$-test on the main scaffold-split pipeline: $-13.5\%$ improvement, $p < 3 \times 10^{-5}$ (Table~4, \lines{518}). The learning curve analysis (Section~5.7, \lines{569--571}) further clarifies: hybrid features hurt at small data fractions but become beneficial above ${\sim}440$ molecules, explaining the sensitivity to split and seed variation at FreeSolv's small sample size. The 10-seed result, not the 3-seed auxiliary, should be taken as definitive.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
-    \item FreeSolv inconsistency explanation: \lines{573}
-    \item Learning curve threshold noted: \lines{575--578}
-    \item 10-seed definitive result highlighted: \lines{544}
-    \item Scaffold vs.\ random split comparison table: \lines{552--571}
+    \item FreeSolv inconsistency explanation: \lines{566}
+    \item Learning curve threshold noted: \lines{569--571}
+    \item 10-seed definitive result highlighted: \lines{537}
+    \item Scaffold vs.\ random split comparison table: \lines{545--564}
 \end{itemize}
 
 \point{R2.3: Feature extraction pipeline (zero-padding/truncation to fixed $D$) may be the primary bottleneck.}
 
-\response We have added a new discussion paragraph at \lines{515} addressing this concern directly. The feature dimension ablation (Table~6, \lines{496--511}) demonstrates that RMSE \emph{monotonically degrades} from $D{=}256$ to $D{=}2{,}048$. If truncation were the bottleneck, we would expect larger $D$ to help---instead, it hurts. This shows the limitation is the curse of dimensionality (noise dimensions that shallow models cannot exploit), not information loss from truncation. We acknowledge that BDE's variable dimensions (187--1,854) are a genuine concern and note adaptive-length encoding as future work at \lines{515}, while emphasizing that this would not address the fundamental finding that pre-computed summary statistics discard the relational structure preserved by end-to-end GNNs.
+\response We have added a new discussion paragraph at \lines{508} addressing this concern directly. The feature dimension ablation (Table~6, \lines{489--504}) demonstrates that RMSE \emph{monotonically degrades} from $D{=}256$ to $D{=}2{,}048$. If truncation were the bottleneck, we would expect larger $D$ to help---instead, it hurts. This shows the limitation is the curse of dimensionality (noise dimensions that shallow models cannot exploit), not information loss from truncation. We acknowledge that BDE's variable dimensions (187--1,854) are a genuine concern and note adaptive-length encoding as future work at \lines{508}, while emphasizing that this would not address the fundamental finding that pre-computed summary statistics discard the relational structure preserved by end-to-end GNNs.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
-    \item Truncation/zero-padding concern addressed: \lines{515}
-    \item Feature dimension ablation section: \lines{491--515}
-    \item Feature dimension ablation table (Table~6): \lines{496--511}
-    \item Adaptive-length encoding noted as future work: \lines{515}
+    \item Truncation/zero-padding concern addressed: \lines{508}
+    \item Feature dimension ablation section: \lines{484--508}
+    \item Feature dimension ablation table (Table~6): \lines{489--504}
+    \item Adaptive-length encoding noted as future work: \lines{508}
 \end{itemize}
 
 \point{R2.4: Excluding pre-trained models limits generalizability of the taxonomy.}
 
-\response We agree that pre-trained 3D models (e.g., Uni-Mol) may alter the taxonomy boundaries. We have expanded the Related Work (Section~2, \lines{176}) and Limitations (Section~7, \lines{633}) to explicitly scope the taxonomy to the non-pre-trained setting and acknowledge this limitation. The new text at \lines{176} states: ``This scoping decision means our property taxonomy is validated in the non-pre-trained setting; pre-trained 3D models such as Uni-Mol may extract useful 3D signals even for electronic properties through learned representations trained on millions of conformers, which could alter the taxonomy boundaries.'' Importantly, our DKO conformer statistics are \emph{complementary} to pre-trained representations---they could be concatenated with Uni-Mol embeddings just as they are concatenated with fingerprints here. Testing this combination is an important direction for future work, but is orthogonal to our central question of when 3D conformer geometry \emph{per se} adds predictive value beyond 2D fingerprints.
+\response We agree that pre-trained 3D models (e.g., Uni-Mol) may alter the taxonomy boundaries. We have expanded the Related Work (Section~2, \lines{173}) and Limitations (Section~7, \lines{620}) to explicitly scope the taxonomy to the non-pre-trained setting and acknowledge this limitation. The new text at \lines{173} states: ``This scoping decision means our property taxonomy is validated in the non-pre-trained setting; pre-trained 3D models such as Uni-Mol may extract useful 3D signals even for electronic properties through learned representations trained on millions of conformers, which could alter the taxonomy boundaries.'' Importantly, our DKO conformer statistics are \emph{complementary} to pre-trained representations---they could be concatenated with Uni-Mol embeddings just as they are concatenated with fingerprints here. Testing this combination is an important direction for future work, but is orthogonal to our central question of when 3D conformer geometry \emph{per se} adds predictive value beyond 2D fingerprints.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
-    \item Pre-training scoping in Related Work: \lines{176}
-    \item Pre-training limitation in Conclusion: \lines{633}
-    \item Prior work discussion: \lines{621}
+    \item Pre-training scoping in Related Work: \lines{173}
+    \item Pre-training limitation in Conclusion: \lines{620}
+    \item Prior work discussion: \lines{609}
 \end{itemize}
 
 \point{R2.5: Restriction to regression tasks limits the framework's claimed generality.}
 
-\response We have addressed this with new classification experiments on BACE and BBBP (Section~5.5, \lines{468--488}; Table~7, \lines{473--486}). Conformer features hurt BACE ($-4.4\%$ AUROC) and show no benefit on BBBP ($+0.1\%$), consistent with the taxonomy (binding and permeability are not solvation-dependent). We have updated the scope statement in the Introduction (\lines{151}) and abstract (\lines{78, 80}) to explicitly include classification targets. We note that neural DKO variants require architectural adaptation for classification (different loss function, output activation) and are evaluated only on regression; the hybrid FP+conformer approach is evaluated on both.
+\response We have addressed this with new classification experiments on BACE and BBBP (Section~5.5, \lines{461--481}; Table~7, \lines{466--479}). Conformer features hurt BACE ($-4.4\%$ AUROC) and show no benefit on BBBP ($+0.1\%$), consistent with the taxonomy (binding and permeability are not solvation-dependent). We have updated the scope statement in the Introduction (\lines{151}) and abstract (\lines{80}) to explicitly include classification targets. We note that neural DKO variants require architectural adaptation for classification (different loss function, output activation) and are evaluated only on regression; the hybrid FP+conformer approach is evaluated on both.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
-    \item Classification benchmark section: \lines{468--488}
-    \item Classification results table (Table~7): \lines{473--486}
+    \item Classification benchmark section: \lines{461--481}
+    \item Classification results table (Table~7): \lines{466--479}
     \item Scope statement in Introduction: \lines{151}
-    \item Abstract updated: \lines{78, 80}
-    \item Per-seed classification results in Appendix~K: \lines{1056--1079}
+    \item Abstract updated: \lines{80}
+    \item Per-seed classification results in Appendix~K: \lines{1041--1064}
 \end{itemize}
 
 \vspace{1em}
@@ -92,12 +93,12 @@ Regarding the reviewer's concern that SchNet could be trivially extended with en
 
 \noindent\textbf{Summary of changes relevant to Reviewer tcvY:}
 \begin{itemize}[itemsep=2pt]
-    \item Added PaiNN as second 3D GNN baseline \lines{434--460}, Appendix~L \lines{1081--1103}
-    \item Added classification benchmark on BACE and BBBP \lines{468--488}, Appendix~K \lines{1056--1079}
-    \item Added feature dimension ablation $D \in \{256, 512, 1024, 2048\}$ \lines{491--515}
-    \item Clarified FreeSolv directional inconsistency \lines{573}
-    \item Addressed featurization bottleneck concern \lines{515}
-    \item Expanded pre-training scoping and limitations \lines{176}, \lines{633}
+    \item Added PaiNN as second 3D GNN baseline \lines{427--453}, Appendix~L \lines{1066--1087}
+    \item Added classification benchmark on BACE and BBBP \lines{461--481}, Appendix~K \lines{1041--1064}
+    \item Added feature dimension ablation $D \in \{256, 512, 1024, 2048\}$ \lines{484--508}
+    \item Clarified FreeSolv directional inconsistency \lines{566}
+    \item Addressed featurization bottleneck concern \lines{508}
+    \item Expanded pre-training scoping and limitations \lines{173}, \lines{620}
     \item All changes marked in \textcolor{blue}{blue text}
 \end{itemize}
 
