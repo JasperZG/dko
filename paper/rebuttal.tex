@@ -26,7 +26,7 @@ We thank all three reviewers for their thoughtful and constructive feedback. Bel
 
 \point{R1.1: Supplement empirical findings with a theoretical discussion explaining why simple covariance invariants outperform more complex representations (bias-variance trade-off, parameterization complexity, dataset size).}
 
-\response We have substantially expanded the ``simplicity principle'' discussion in Section~6 \lines{615--618}. The revised text \lines{618} now provides an explicit parameter-count analysis: the 5 scalar invariants operate at ${\sim}180$ samples per covariance parameter on ESOL ($N_\text{train} \approx 900$), whereas the lowrank variant ($k{=}128$) operates at ${\sim}7$---well below the threshold for reliable estimation. We connect this to classical model selection theory, showing that the bias-variance tradeoff penalizes higher-dimensional representations at the sample sizes typical of molecular property datasets (642--4,200 molecules). The new feature dimension ablation (Table~6, Section~5.6, \lines{491--515}) provides independent confirmation: even for the mean $\boldsymbol{\mu}$, RMSE monotonically degrades from $D{=}256$ to $D{=}2{,}048$, demonstrating that this is a fundamental statistical constraint rather than an engineering limitation.
+\response We have substantially expanded the ``simplicity principle'' discussion in Section~6 \lines{615--617}. The revised text \lines{617} now provides an explicit parameter-count analysis: the 5 scalar invariants operate at ${\sim}180$ samples per covariance parameter on ESOL ($N_\text{train} \approx 900$), whereas the lowrank variant ($k{=}128$) operates at ${\sim}7$---well below the threshold for reliable estimation. We connect this to classical model selection theory, showing that the bias-variance tradeoff penalizes higher-dimensional representations at the sample sizes typical of molecular property datasets (642--4,200 molecules). The new feature dimension ablation (Table~6, Section~5.6, \lines{491--515}) provides independent confirmation: even for the mean $\boldsymbol{\mu}$, RMSE monotonically degrades from $D{=}256$ to $D{=}2{,}048$, demonstrating that this is a fundamental statistical constraint rather than an engineering limitation.
 
 \point{R1.2: Conduct supplementary experiments on classification benchmarks.}
 
@@ -34,7 +34,7 @@ We thank all three reviewers for their thoughtful and constructive feedback. Bel
 
 \point{R1.3: Validate key findings on larger or industrially sourced datasets.}
 
-\response We acknowledge this as an important limitation in the revised Conclusion \lines{635--636}. Our benchmarks span 642 to 133K molecules across academic datasets (MoleculeNet, QM9, MARCEL); validation on larger industrially sourced datasets (ChEMBL, ZINC, proprietary ADMET panels) would strengthen the taxonomy's generalizability. We note this as a priority for future work and have added explicit language to this effect in Section~7 (Limitations, \lines{636}).
+\response We acknowledge this as an important limitation in the revised Conclusion \lines{635--636}. Our benchmarks span 642 to 133K molecules across academic datasets (MoleculeNet, QM9, MARCEL); validation on larger industrially sourced datasets (ChEMBL, ZINC, proprietary ADMET panels) would strengthen the taxonomy's generalizability. We note this as a priority for future work and have added explicit language to this effect in Section~7 (Limitations, \lines{633}).
 
 \point{R1.4: Increase figure resolution, standardize metrics, correct typographical errors.}
 
@@ -66,7 +66,7 @@ Regarding the reviewer's concern that SchNet could be trivially extended with en
 
 \point{R2.4: Excluding pre-trained models limits generalizability of the taxonomy.}
 
-\response We agree that pre-trained 3D models (e.g., Uni-Mol) may alter the taxonomy boundaries. We have expanded the Related Work (Section~2, \lines{176}) and Limitations (Section~7, \lines{636}) to explicitly scope the taxonomy to the non-pre-trained setting and acknowledge this limitation. The new text at \lines{176} states: ``This scoping decision means our property taxonomy is validated in the non-pre-trained setting; pre-trained 3D models such as Uni-Mol may extract useful 3D signals even for electronic properties through learned representations trained on millions of conformers, which could alter the taxonomy boundaries.'' Importantly, our DKO conformer statistics are \emph{complementary} to pre-trained representations---they could be concatenated with Uni-Mol embeddings just as they are concatenated with fingerprints here. Testing this combination is an important direction for future work, but is orthogonal to our central question of when 3D conformer geometry \emph{per se} adds predictive value beyond 2D fingerprints.
+\response We agree that pre-trained 3D models (e.g., Uni-Mol) may alter the taxonomy boundaries. We have expanded the Related Work (Section~2, \lines{176}) and Limitations (Section~7, \lines{633}) to explicitly scope the taxonomy to the non-pre-trained setting and acknowledge this limitation. The new text at \lines{176} states: ``This scoping decision means our property taxonomy is validated in the non-pre-trained setting; pre-trained 3D models such as Uni-Mol may extract useful 3D signals even for electronic properties through learned representations trained on millions of conformers, which could alter the taxonomy boundaries.'' Importantly, our DKO conformer statistics are \emph{complementary} to pre-trained representations---they could be concatenated with Uni-Mol embeddings just as they are concatenated with fingerprints here. Testing this combination is an important direction for future work, but is orthogonal to our central question of when 3D conformer geometry \emph{per se} adds predictive value beyond 2D fingerprints.
 
 \point{R2.5: Restriction to regression tasks limits the framework's claimed generality.}
 
@@ -78,7 +78,7 @@ Regarding the reviewer's concern that SchNet could be trivially extended with en
 
 \point{R3.1: Manuscript feels too fragmented due to titled paragraphs.}
 
-\response We have revised the Discussion (Section~6, \lines{594--624}) to reduce fragmentation. Bold titled paragraphs (``An empirical property taxonomy,'' ``Relationship to prior work,'' ``Practical implications'') have been converted to flowing prose with topic sentences that integrate the content more naturally. Specifically: the taxonomy opening at \lines{605} now uses a topic sentence rather than a bold header; the prior work transition at \lines{622} flows naturally from the preceding text; and the practical implications at \lines{624} open with a transitional phrase. The section now reads as a cohesive narrative rather than a series of independent blocks.
+\response We have revised the Discussion (Section~6, \lines{594--623}) to reduce fragmentation. Bold titled paragraphs (``An empirical property taxonomy,'' ``Relationship to prior work,'' ``Practical implications'') have been converted to flowing prose with topic sentences that integrate the content more naturally. Specifically: the taxonomy opening at \lines{605} now uses a topic sentence rather than a bold header; the prior work transition at \lines{621} flows naturally from the preceding text; and the practical implications at \lines{623} open with a transitional phrase. The section now reads as a cohesive narrative rather than a series of independent blocks.
 
 \point{R3.2: Research questions formulated as actual questions feels too informal.}
 
@@ -90,7 +90,7 @@ Regarding the reviewer's concern that SchNet could be trivially extended with en
 
 \point{R3.4: Some text too direct; expand into more technical discourse.}
 
-\response We have expanded terse statements throughout the manuscript into more technical language. Key locations: the abstract performance hierarchy (\lines{78}), the Discussion bias-variance analysis (\lines{618}), the hierarchy explanation (\lines{613}), the practical decision framework (\lines{624}), and the Conclusion (\lines{627--636}). These changes are all marked in blue.
+\response We have expanded terse statements throughout the manuscript into more technical language. Key locations: the abstract performance hierarchy (\lines{78}), the Discussion bias-variance analysis (\lines{617}), the hierarchy explanation (\lines{613}), the practical decision framework (\lines{623}), and the Conclusion (\lines{625--635}). These changes are all marked in blue.
 
 \vspace{1em}
 \noindent\rule{\textwidth}{0.4pt}
@@ -101,14 +101,14 @@ Regarding the reviewer's concern that SchNet could be trivially extended with en
     \item Added PaiNN as second 3D GNN baseline \lines{434--460}, Table~5 \lines{441}, Appendix~L \lines{1081--1103}
     \item Added classification benchmark on BACE and BBBP \lines{468--483}, Table~7 \lines{475}, Appendix~K \lines{1056--1079}
     \item Added feature dimension ablation $D \in \{256, 512, 1024, 2048\}$ \lines{491--515}, Table~6 \lines{498}
-    \item Expanded bias-variance theoretical analysis \lines{615--618}
+    \item Expanded bias-variance theoretical analysis \lines{615--617}
     \item Clarified FreeSolv directional inconsistency \lines{573}
     \item Addressed featurization bottleneck concern \lines{515}
-    \item Expanded pre-training scoping and limitations \lines{176}, \lines{636}
-    \item Rewrote Discussion for clarity and flow \lines{605}, \lines{613}, \lines{622}, \lines{624}
+    \item Expanded pre-training scoping and limitations \lines{176}, \lines{633}
+    \item Rewrote Discussion for clarity and flow \lines{605}, \lines{613}, \lines{621}, \lines{623}
     \item Rephrased research questions as declarative objectives \lines{147--149}
     \item Clarified scaffold split procedure and replicate counts \lines{281}
-    \item Added larger-dataset limitation acknowledgment \lines{636}
+    \item Added larger-dataset limitation acknowledgment \lines{633}
     \item All changes marked in \textcolor{blue}{blue text}
 \end{itemize}
 
