@@ -77,9 +77,9 @@
 \begin{abstract}
 When do three-dimensional conformer ensembles improve molecular property prediction beyond two-dimensional fingerprints?
 We provide the first systematic, mechanistically grounded answer.
-Through ${\sim}$1,000 experiments spanning 13 model configurations, 14 regression targets, and 2 classification targets across MoleculeNet, QM9, and MARCEL benchmarks, we discover \emph{selective complementarity}: conformer ensemble statistics---extracted via Distribution Kernel Operators (DKOs)---yield statistically significant RMSE reductions on solvation-dependent properties (ESOL $-11.0\%$, $p < 10^{-9}$; FreeSolv $-13.5\%$, $p < 3{\times}10^{-5}$; 10-seed paired validation) while providing no benefit for electronic or steric tasks.
+Through ${\sim}$1,000 experiments spanning 13 model configurations, 14 regression targets, and \rev{2 classification targets} across MoleculeNet, QM9, and MARCEL benchmarks, we discover \emph{selective complementarity}: conformer ensemble statistics---extracted via Distribution Kernel Operators (DKOs)---yield statistically significant RMSE reductions on solvation-dependent properties (ESOL $-11.0\%$, $p < 10^{-9}$; FreeSolv $-13.5\%$, $p < 3{\times}10^{-5}$; 10-seed paired validation) while providing no benefit for electronic or steric tasks.
 Three lines of evidence confirm this selectivity has a physical rather than statistical basis: improvement is larger under scaffold splits than random splits ($+11.9\%$ vs.\ $+8.5\%$ on ESOL), concentrates on large, flexible molecules ($+18.9\%$ for heaviest quartile), and grows monotonically with training data.
-We establish a previously unknown four-tier performance hierarchy---end-to-end 3D GNNs (SchNet, PaiNN; 21--42\% over fingerprints) $\approx$ engineered physicochemical descriptors (PMI/SASA/USR) $>$ Morgan fingerprints + XGBoost $>$ all neural conformer ensemble methods---confirmed by two architecturally diverse GNNs (continuous-filter and equivariant message passing) and revealing that the pre-computed feature bottleneck, not absence of 3D information, limits ensemble approaches.
+\rev{We establish a previously unknown four-tier performance hierarchy---end-to-end 3D GNNs (SchNet, PaiNN; 21--42\% over fingerprints) $\approx$ engineered physicochemical descriptors (PMI/SASA/USR) $>$ Morgan fingerprints + XGBoost $>$ all neural conformer ensemble methods---confirmed by two architecturally diverse GNNs (continuous-filter and equivariant message passing) and revealing that the pre-computed feature bottleneck, not absence of 3D information, limits ensemble approaches.}
 Feature attribution and mutual information analysis expose the mechanistic asymmetry: conformer mean features carry 2--8$\times$ more information per feature than fingerprint bits, yet covariance features contribute $<$2\% of model signal regardless of representation complexity, explaining why five simple scalar invariants outperform all complex covariance architectures ($p < 0.001$ for gated fusion over attention).
 These findings yield an empirical property taxonomy and a practical decision framework for when conformer generation is worth the investment.
 \end{abstract}
@@ -141,20 +141,20 @@ Accurate prediction of solvation properties is particularly critical for ADMET (
 
 This has motivated a growing body of work on conformer ensemble methods~\cite{axelrod2024marcel,ganea2021geomol,stark2022equivariant} and 3D-aware GNNs~\cite{schutt2017schnet,gasteiger2020dimenet,schutt2021painn}, which incorporate 3D geometry for property prediction. However, a fundamental question remains unanswered: \emph{when does explicit 3D conformer geometry provide signal beyond what 2D molecular descriptors already capture, and why?} Prior work has shown that classical descriptors often match neural methods~\cite{wu2018moleculenet} and that conformer ensembles help on steric tasks~\cite{axelrod2024marcel}, but no study has systematically characterized \emph{which property types} benefit from 3D conformer information, with mechanistic explanation and rigorous statistical validation.
 
-We address this gap through 13 model configurations across 14 regression targets spanning three benchmark families (MoleculeNet, QM9, MARCEL). Using Distribution Kernel Operators (DKOs), we extract first-order (mean $\boldsymbol{\mu}$) and second-order (covariance $\boldsymbol{\Sigma}$) statistics from conformer ensembles and evaluate multiple fusion architectures, alongside end-to-end 3D GNN baselines (SchNet, PaiNN).
+We address this gap through 13 model configurations across 14 regression targets spanning three benchmark families (MoleculeNet, QM9, MARCEL). Using Distribution Kernel Operators (DKOs), we extract first-order (mean $\boldsymbol{\mu}$) and second-order (covariance $\boldsymbol{\Sigma}$) statistics from conformer ensembles and evaluate multiple fusion architectures, alongside end-to-end 3D GNN baselines \rev{(SchNet, PaiNN)}.
 We investigate three concrete research questions:
 \begin{enumerate}[label=\textbf{RQ\arabic*.}, leftmargin=*, itemsep=0pt]
     \item \rev{\textbf{Property taxonomy}: We characterize which molecular property types benefit from 3D conformer geometry and provide a mechanistic basis for the observed selectivity.}
     \item \rev{\textbf{Representation hierarchy}: We establish how pre-computed conformer ensemble methods compare to 2D fingerprints and end-to-end 3D GNNs (SchNet, PaiNN) across task types.}
     \item \rev{\textbf{Representation complexity}: We test whether complex covariance representations outperform simple summary statistics, grounded in a bias-variance analysis of parameterization complexity versus dataset size.}
 \end{enumerate}
-\textbf{Scope:} This study evaluates hybrid FP+conformer methods on both regression (14 targets) and classification (BACE, BBBP) tasks; end-to-end neural DKO variants are evaluated on regression only, as classification requires architectural adaptation (Section~\ref{sec:classification}).
+\rev{\textbf{Scope:} This study evaluates hybrid FP+conformer methods on both regression (14 targets) and classification (BACE, BBBP) tasks; end-to-end neural DKO variants are evaluated on regression only, as classification requires architectural adaptation (Section~\ref{sec:classification}).}
 Our key contributions are:
 
 \begin{enumerate}
     \item \textbf{Empirical property taxonomy} (Figure~\ref{fig:taxonomy}): An evidence-based framework for when conformer geometry adds value, grounded in feature attribution, mutual information analysis, and error stratification. Solvation-dependent properties benefit from hybrid features; steric/Boltzmann properties benefit from attention-based conformer weighting; electronic properties show no improvement. This provides practitioners a decision framework for when to invest in conformer generation.
     \item \textbf{Selective complementarity with mechanistic explanation}: Hybrid FP+conformer features yield statistically significant improvements on solvation tasks (ESOL $-11.0\%$, $p < 10^{-9}$; FreeSolv $-13.5\%$, $p < 3 \times 10^{-5}$; 10-seed paired $t$-tests). Critically, ESOL improvement is \emph{larger} under scaffold splits ($+11.9\%$) than random splits ($+8.5\%$), ruling out data leakage. The benefit concentrates on large, flexible molecules, consistent with the physical mechanism.
-    \item \textbf{Performance hierarchy}: End-to-end 3D GNNs (SchNet, PaiNN) surpass fingerprints by 21--42\% on solvation tasks, while fingerprints outperform all neural conformer ensemble methods across every benchmark. Enhanced physicochemical 3D descriptors (PMI, SASA, USR) achieve comparable gains to SchNet on ESOL. Two architecturally diverse GNNs (continuous-filter and equivariant) confirm this hierarchy---not previously established---revealing that the pre-computed feature bottleneck, not the absence of 3D information, limits conformer ensemble methods.
+    \item \rev{\textbf{Performance hierarchy}: End-to-end 3D GNNs (SchNet, PaiNN) surpass fingerprints by 21--42\% on solvation tasks, while fingerprints outperform all neural conformer ensemble methods across every benchmark. Enhanced physicochemical 3D descriptors (PMI, SASA, USR) achieve comparable gains to SchNet on ESOL. Two architecturally diverse GNNs (continuous-filter and equivariant) confirm this hierarchy---not previously established---revealing that the pre-computed feature bottleneck, not the absence of 3D information, limits conformer ensemble methods.}
     \item \textbf{DKO framework}: A Distribution Kernel Operator architecture with 7 covariance representation variants, 28 enhanced 3D descriptors, and a gated fusion mechanism that significantly outperforms attention ($p < 0.001$). Five simple covariance summary statistics outperform all complex representations.
 \end{enumerate}
 
@@ -434,10 +434,10 @@ The 28 physicochemical descriptors outperform 1024 geometric features on 3 of 4 
 \subsection{3D GNN Baselines}
 \label{sec:schnet}
 
-To establish an upper bound for end-to-end 3D learning, we train two architecturally diverse 3D GNNs: SchNet~\cite{schutt2017schnet} (continuous-filter convolutions, equivariant under translations/rotations) and PaiNN~\cite{schutt2021painn} (equivariant message passing with separate scalar/vector channels). SchNet uses up to 10 lowest-energy conformers with prediction averaging; PaiNN uses a single ETKDG-generated conformer. Architecture details are in Appendices~\ref{app:schnet} and~\ref{app:dimenet_painn}.
+To establish an upper bound for end-to-end 3D learning, we train \rev{two architecturally diverse} 3D GNNs: SchNet~\cite{schutt2017schnet} (continuous-filter convolutions, equivariant under translations/rotations) \rev{and PaiNN~\cite{schutt2021painn} (equivariant message passing with separate scalar/vector channels)}. SchNet uses up to 10 lowest-energy conformers with prediction averaging; \rev{PaiNN uses a single ETKDG-generated conformer}. Architecture details are in Appendices~\ref{app:schnet} and~\ref{app:dimenet_painn}.
 
 \begin{table}[!htb]
-\caption{3D GNN baselines vs.\ pre-computed feature methods (RMSE $\pm$ std, 3 seeds). Both GNNs surpass FP+XGBoost on solvation tasks; PaiNN uses a single conformer yet exceeds SchNet (10 conformers) on FreeSolv.}
+\caption{3D GNN baselines vs.\ pre-computed feature methods (RMSE $\pm$ std, 3 seeds). \rev{Both GNNs surpass FP+XGBoost on solvation tasks; PaiNN uses a single conformer yet exceeds SchNet (10 conformers) on FreeSolv.}}
 \label{tab:schnet}
 \centering
 \small
@@ -450,12 +450,12 @@ Best DKO Neural  & 1.635 & 4.077 & 1.131 \\
 FP+3D (best)     & 1.000 & 2.597 & 0.873 \\
 \midrule
 SchNet~\cite{schutt2017schnet}   & 1.004$\pm$0.057 & 2.324$\pm$0.268 & 0.716$\pm$0.005 \\
-PaiNN~\cite{schutt2021painn}     & 1.090$\pm$0.038 & 1.717$\pm$0.189 & 0.640$\pm$0.013 \\
+\rev{PaiNN~\cite{schutt2021painn}}     & \rev{1.090$\pm$0.038} & \rev{1.717$\pm$0.189} & \rev{0.640$\pm$0.013} \\
 \bottomrule
 \end{tabular}
 \end{table}
 
-Both GNNs surpass FP+XGBoost on all three datasets. SchNet achieves 33\% gain on ESOL, 21\% on FreeSolv, and 21\% on Lipophilicity; PaiNN achieves 28\% on ESOL, 42\% on FreeSolv, and 30\% on Lipophilicity (single conformer). Notably, PaiNN (single conformer) outperforms SchNet (10 conformers) on FreeSolv and Lipophilicity, suggesting that PaiNN's equivariant architecture better captures the geometry-property relationship for solvation-related tasks. The convergence of gains (21--42\%) across two fundamentally different architectures confirms that the hierarchy is robust to model choice. On ESOL, FP+3D descriptors match SchNet (1.000 vs.\ 1.004), suggesting engineered physicochemical features can approach end-to-end 3D learning at a fraction of the computational cost. The four-tier hierarchy is: end-to-end 3D GNNs $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer methods.
+\rev{Both GNNs surpass FP+XGBoost on all three datasets. SchNet achieves 33\% gain on ESOL, 21\% on FreeSolv, and 21\% on Lipophilicity; PaiNN achieves 28\% on ESOL, 42\% on FreeSolv, and 30\% on Lipophilicity (single conformer). Notably, PaiNN (single conformer) outperforms SchNet (10 conformers) on FreeSolv and Lipophilicity, suggesting that PaiNN's equivariant architecture better captures the geometry-property relationship for solvation-related tasks. The convergence of gains (21--42\%) across two fundamentally different architectures confirms that the hierarchy is robust to model choice.} On ESOL, FP+3D descriptors match SchNet (1.000 vs.\ 1.004), suggesting engineered physicochemical features can approach end-to-end 3D learning at a fraction of the computational cost. The four-tier hierarchy is: end-to-end 3D GNNs $\approx$ FP+3D $>$ FP+XGBoost $>$ neural conformer methods.
 
 \rev{We selected SchNet and PaiNN as 3D GNN baselines because they represent the two principal paradigms in geometric deep learning for molecules: SchNet uses continuous-filter convolutions that are invariant to rotation and translation, while PaiNN employs equivariant message passing with separate scalar and vector channels. DimeNet++~\cite{gasteiger2021dimenetpp} occupies an intermediate position (adding directional message passing to SchNet's radial basis), and Equiformer~\cite{liao2023equiformer} extends the equivariant paradigm with transformer attention---primarily benefiting large-scale pre-training settings orthogonal to our study (Section~\ref{sec:conclusion}). The convergence of 21--42\% gains across two architecturally diverse GNNs with fundamentally different inductive biases (continuous-filter vs.\ equivariant) provides strong evidence that the observed hierarchy reflects a genuine property of the representation, not an artifact of a single architecture.}
 
@@ -465,13 +465,13 @@ Both GNNs surpass FP+XGBoost on all three datasets. SchNet achieves 33\% gain on
 On Kraken steric descriptors, all neural conformer methods lag behind FP+XGBoost by 1.4--2.3$\times$; DKO performs worst, suggesting covariance statistics are not suited for Boltzmann-averaged properties. On BDE, neural models achieve $R^2 \approx 0$ (${\sim}5\times$ RMSE gap vs.\ FP+XGBoost), validating our property taxonomy. Full MARCEL results are in Appendix~\ref{app:marcel}.
 
 \FloatBarrier
-\subsection{Hybrid Taxonomy on Classification Tasks}
+\subsection{\rev{Hybrid Taxonomy on Classification Tasks}}
 \label{sec:classification}
 
-To assess whether the regression taxonomy extends to classification, we evaluate FP-only, FP+$\boldsymbol{\mu}$, and FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ hybrid features with XGBoost on BACE (1,513 molecules, inhibition of $\beta$-secretase 1) and BBBP (2,038 molecules, blood-brain barrier permeability). These are canonical MoleculeNet binary classification benchmarks. We use stratified random 80/10/10 splits (rather than scaffold splits) since the Murcko scaffold splits for these imbalanced datasets ($\sim$75\% positive class in BBBP) yield one-class test sets, making AUROC undefined; stratified random splits ensure both classes are represented in evaluation.
+\rev{To assess whether the regression taxonomy extends to classification, we evaluate FP-only, FP+$\boldsymbol{\mu}$, and FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ hybrid features with XGBoost on BACE (1,513 molecules, inhibition of $\beta$-secretase 1) and BBBP (2,038 molecules, blood-brain barrier permeability). These are canonical MoleculeNet binary classification benchmarks. We use stratified random 80/10/10 splits (rather than scaffold splits) since the Murcko scaffold splits for these imbalanced datasets ($\sim$75\% positive class in BBBP) yield one-class test sets, making AUROC undefined; stratified random splits ensure both classes are represented in evaluation.}
 
 \begin{table}[!htb]
-\caption{Classification benchmark: hybrid FP+conformer features on BACE and BBBP (AUROC, mean of 3 seeds). $\Delta$: relative change vs.\ FP-only.}
+\caption{\rev{Classification benchmark: hybrid FP+conformer features on BACE and BBBP (AUROC, mean of 3 seeds). $\Delta$: relative change vs.\ FP-only.}}
 \label{tab:classification}
 \centering
 \small
@@ -485,16 +485,16 @@ BBBP & $0.907{\pm}.018$ & $0.902{\pm}.022$ & $0.908{\pm}.023$ & $+0.1\%$ \\
 \end{tabular}
 \end{table}
 
-Table~\ref{tab:classification} shows that conformer features do not help on either classification task. On BACE ($\beta$-secretase inhibition), FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ \emph{hurts} by $4.4\%$ AUROC relative to FP-only (0.832 vs.\ 0.870), with FP-only clearly best. On BBBP (blood-brain barrier), all three feature sets are indistinguishable ($+0.1\%$ difference, well within noise). This is consistent with the taxonomy: $\beta$-secretase binding is an electronic property driven by active-site complementarity (where conformational sampling adds noise rather than signal), and BBB permeability is primarily governed by topological features (functional groups, molecular weight, lipophilicity) rather than 3D geometry. The results confirm that the regression taxonomy extends to classification: conformer features provide no consistent benefit beyond 2D fingerprints on binding/permeability tasks. Full per-seed classification results are in Appendix~\ref{app:classification}.
+\rev{Table~\ref{tab:classification} shows that conformer features do not help on either classification task. On BACE ($\beta$-secretase inhibition), FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ \emph{hurts} by $4.4\%$ AUROC relative to FP-only (0.832 vs.\ 0.870), with FP-only clearly best. On BBBP (blood-brain barrier), all three feature sets are indistinguishable ($+0.1\%$ difference, well within noise). This is consistent with the taxonomy: $\beta$-secretase binding is an electronic property driven by active-site complementarity (where conformational sampling adds noise rather than signal), and BBB permeability is primarily governed by topological features (functional groups, molecular weight, lipophilicity) rather than 3D geometry. The results confirm that the regression taxonomy extends to classification: conformer features provide no consistent benefit beyond 2D fingerprints on binding/permeability tasks. Full per-seed classification results are in Appendix~\ref{app:classification}.}
 
 \FloatBarrier
-\subsection{Feature Dimension Sensitivity}
+\subsection{\rev{Feature Dimension Sensitivity}}
 \label{sec:featdim}
 
-To validate the choice of $D = 256$ for $\boldsymbol{\mu}$ in the XGBoost hybrid, we sweep $D \in \{256, 512, 1024, 2048\}$ on ESOL (Table~\ref{tab:featdim}).
+\rev{To validate the choice of $D = 256$ for $\boldsymbol{\mu}$ in the XGBoost hybrid, we sweep $D \in \{256, 512, 1024, 2048\}$ on ESOL (Table~\ref{tab:featdim}).}
 
 \begin{table}[!htb]
-\caption{Feature dimension ablation on ESOL (mean of 3 seeds): RMSE and $R^2$ for FP+$\boldsymbol{\mu}$(D)+$\boldsymbol{\Sigma}$+XGBoost. $D = 256$ is optimal; larger $D$ adds noise dimensions that hurt XGBoost.}
+\caption{\rev{Feature dimension ablation on ESOL (mean of 3 seeds): RMSE and $R^2$ for FP+$\boldsymbol{\mu}$(D)+$\boldsymbol{\Sigma}$+XGBoost. $D = 256$ is optimal; larger $D$ adds noise dimensions that hurt XGBoost.}}
 \label{tab:featdim}
 \centering
 \small
@@ -510,7 +510,7 @@ $D$ & RMSE & $R^2$ & \# Features \\
 \end{tabular}
 \end{table}
 
-$D = 256$ achieves the lowest RMSE (Table~\ref{tab:featdim}); performance degrades monotonically with larger $D$. This reflects the bias-variance tradeoff: with only $n{=}100$ trees, XGBoost cannot distinguish informative from noisy geometric dimensions, so adding features beyond the first 256 hurts generalization. This validates using $D = 256$ for the hybrid and confirms that the main results (Table~\ref{tab:hybrid}) are not sensitive to this choice: it is the \emph{optimal} choice, not an arbitrary one.
+\rev{$D = 256$ achieves the lowest RMSE (Table~\ref{tab:featdim}); performance degrades monotonically with larger $D$. This reflects the bias-variance tradeoff: with only $n{=}100$ trees, XGBoost cannot distinguish informative from noisy geometric dimensions, so adding features beyond the first 256 hurts generalization. This validates using $D = 256$ for the hybrid and confirms that the main results (Table~\ref{tab:hybrid}) are not sensitive to this choice: it is the \emph{optimal} choice, not an arbitrary one.}
 
 \rev{A potential concern is that the zero-padding or truncation of variable-length geometric features to a fixed $D$ is inherently lossy---particularly for datasets like BDE where raw feature dimensions range from 187 to 1,854 across molecules. However, the monotonic degradation with increasing $D$ demonstrates that the bottleneck is not information loss from truncation but rather the curse of dimensionality: additional geometric dimensions add noise that shallow models cannot exploit. Adaptive-length encoding (e.g., per-molecule padding with masking) could mitigate this for neural architectures, though it would not address the fundamental finding that pre-computed summary statistics discard the relational structure that end-to-end GNNs preserve.}
 
@@ -618,16 +618,16 @@ Simpler covariance representations consistently outperform complex ones. The ful
 
 The taxonomy covers 3 solvation, 4 steric, and 7 electronic regression targets plus 2 classification targets; properties with mixed character (e.g., membrane permeability) may not fit neatly, and the taxonomy should be conditioned on data availability (FreeSolv improvement emerges only above ${\sim}$440 molecules).
 
-\rev{Our findings extend several lines of prior work.} MARCEL~\cite{axelrod2024marcel} showed conformer methods help on Kraken steric descriptors but did not evaluate hybrid approaches or solvation tasks; we extend Wu et al.~\cite{wu2018moleculenet} and Jiang et al.~\cite{jiang2021gnn_vs_fp} by identifying which property types benefit from 3D information with mechanistic grounding. Our goal is understanding \emph{when} conformer geometry helps, not SOTA performance (published SOTA uses different splits and protocols~\cite{heid2024chemprop,zhou2023unimol}). Large pre-trained models~\cite{zhou2023unimol,rong2020grover} address an orthogonal question; DKO conformer statistics could augment pre-trained embeddings to compound improvements on solvation tasks.
+\rev{Our findings extend several lines of prior work. MARCEL~\cite{axelrod2024marcel} showed conformer methods help on Kraken steric descriptors but did not evaluate hybrid approaches or solvation tasks; we extend Wu et al.~\cite{wu2018moleculenet} and Jiang et al.~\cite{jiang2021gnn_vs_fp} by identifying which property types benefit from 3D information with mechanistic grounding. Our goal is understanding \emph{when} conformer geometry helps, not SOTA performance (published SOTA uses different splits and protocols~\cite{heid2024chemprop,zhou2023unimol}). Large pre-trained models~\cite{zhou2023unimol,rong2020grover} address an orthogonal question; DKO conformer statistics could augment pre-trained embeddings to compound improvements on solvation tasks.}
 
-\rev{From a practical standpoint,} our results suggest: (1) always start with Morgan FP + XGBoost as a baseline, (2) if the property involves solvation or flexibility and the dataset contains $>$500 molecules, add conformer $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}$ invariants---expect the largest gains for large, flexible molecules with multiple rotatable bonds, (3) consider enhanced physicochemical 3D descriptors (PMI, SASA, USR) which can outperform raw geometric features, and (4) for maximum accuracy, end-to-end 3D GNNs (SchNet, PaiNN) provide the strongest results. The scaffold split validation ensures these recommendations generalize to novel chemical scaffolds, not just structurally similar compounds.
+\rev{From a practical standpoint, our results suggest: (1) always start with Morgan FP + XGBoost as a baseline, (2) if the property involves solvation or flexibility and the dataset contains $>$500 molecules, add conformer $\boldsymbol{\mu}$ and $\boldsymbol{\Sigma}$ invariants---expect the largest gains for large, flexible molecules with multiple rotatable bonds, (3) consider enhanced physicochemical 3D descriptors (PMI, SASA, USR) which can outperform raw geometric features, and (4) for maximum accuracy, end-to-end 3D GNNs (SchNet, PaiNN) provide the strongest results. The scaffold split validation ensures these recommendations generalize to novel chemical scaffolds, not just structurally similar compounds.}
 
 %──────────────────────────────────────────────────────────────
 \section{Conclusion}
 \label{sec:conclusion}
 %──────────────────────────────────────────────────────────────
 
-We presented a systematic study of when 3D conformer geometry complements 2D molecular fingerprints across 14 regression and 2 classification targets. Our main findings are: (1) an empirical property taxonomy---conformer statistics selectively help solvation-dependent properties ($p < 10^{-4}$, scaffold-split validated) but not electronic or steric tasks; (2) a four-tier performance hierarchy confirmed by two architecturally diverse GNNs, revealing that the pre-computed feature bottleneck limits conformer ensemble methods; (3) mechanistic understanding grounded in feature attribution and mutual information; and (4) a bias-variance analysis explaining why 5 scalar invariants outperform complex covariance representations. For practitioners: start with Morgan FP + XGBoost; add conformer $\boldsymbol{\mu}$ for solvation properties with $>$500 molecules; consider PMI/SASA/USR descriptors; use 3D GNNs when accuracy justifies cost. Five to ten conformers suffice.
+\rev{We presented a systematic study of when 3D conformer geometry complements 2D molecular fingerprints across 14 regression and 2 classification targets. Our main findings are: (1) an empirical property taxonomy---conformer statistics selectively help solvation-dependent properties ($p < 10^{-4}$, scaffold-split validated) but not electronic or steric tasks; (2) a four-tier performance hierarchy confirmed by two architecturally diverse GNNs, revealing that the pre-computed feature bottleneck limits conformer ensemble methods; (3) mechanistic understanding grounded in feature attribution and mutual information; and (4) a bias-variance analysis explaining why 5 scalar invariants outperform complex covariance representations. For practitioners: start with Morgan FP + XGBoost; add conformer $\boldsymbol{\mu}$ for solvation properties with $>$500 molecules; consider PMI/SASA/USR descriptors; use 3D GNNs when accuracy justifies cost. Five to ten conformers suffice.}
 
 \textbf{Limitations.}
 Our conformer features use RDKit ETKDG with uniform (not Boltzmann) weights. Auxiliary experiments re-split data independently, so FP-only baselines vary slightly across tables (up to ${\sim}6\%$). The hybrid uses simple concatenation; learned feature interaction might yield larger gains. \rev{Our evaluation spans academic benchmarks (642--133K molecules); validation on larger industrial datasets (ChEMBL, ZINC) would strengthen generalizability. The taxonomy is validated in the non-pre-trained setting; pre-trained 3D models (Uni-Mol, GROVER) may shift its boundaries.} Future work should combine DKO statistics with pre-trained representations and validate at larger scale.
@@ -1053,13 +1053,13 @@ The feature variance audit reveals that the top-10 eigenvalues of $\boldsymbol{\
 \textbf{Synthetic validation.}
 We generate $N{=}2{,}000$ synthetic molecules with $D{=}128$ features, $n{=}50$ conformers, and ground-truth labels $y = \mathbf{W}^\top\boldsymbol{\mu} + \alpha\log(1 + \mathrm{tr}(\boldsymbol{\Sigma}))$, varying $\alpha \in \{0, 0.1, 0.5, 1.0\}$. Even at $\alpha{=}0$ (no covariance signal), the kernel DKO achieves $27$--$30\%$ lower RMSE than first-order baselines, demonstrating a beneficial inductive bias from the kernel parameterization itself.
 
-\section{Classification Benchmark Details}
+\section{\rev{Classification Benchmark Details}}
 \label{app:classification}
 
-Table~\ref{tab:class_full} presents per-seed AUROC for the classification benchmark on BACE and BBBP. XGBoost with FP-only, FP+$\boldsymbol{\mu}$, and FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ feature sets are evaluated with 3 seeds (stratified 80/10/10 random splits).
+\rev{Table~\ref{tab:class_full} presents per-seed AUROC for the classification benchmark on BACE and BBBP. XGBoost with FP-only, FP+$\boldsymbol{\mu}$, and FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ feature sets are evaluated with 3 seeds (stratified 80/10/10 random splits).}
 
 \begin{table}[ht]
-\caption{Per-seed AUROC (3 seeds). Stratified 80/10/10 random splits.}
+\caption{\rev{Per-seed AUROC (3 seeds). Stratified 80/10/10 random splits.}}
 \label{tab:class_full}
 \centering
 \small
@@ -1078,13 +1078,13 @@ Dataset & Model & Seed 42 & Seed 123 & Seed 456 \\
 \end{tabular}
 \end{table}
 
-\section{PaiNN Architecture Details}
+\section{\rev{PaiNN Architecture Details}}
 \label{app:dimenet_painn}
 
-\textbf{PaiNN}~\cite{schutt2021painn} uses equivariant message passing with separate scalar and vector feature channels, enabling equivariant representation of molecular geometry. We use 128-dimensional scalar features, 3 interaction layers, and radial basis cutoff 5.0\AA. A single ETKDG-generated (lowest-energy) conformer is used per molecule. Training uses Adam (lr $= 5 \times 10^{-4}$), batch size 32, early stopping patience 50, max 200 epochs. We implement PaiNN using a custom \texttt{radius\_graph} that avoids the \texttt{torch-cluster} dependency, enabling deployment on systems without GLIBC $\geq 2.32$. Per-seed results are shown in Table~\ref{tab:gnn_seeds}.
+\rev{\textbf{PaiNN}~\cite{schutt2021painn} uses equivariant message passing with separate scalar and vector feature channels, enabling equivariant representation of molecular geometry. We use 128-dimensional scalar features, 3 interaction layers, and radial basis cutoff 5.0\AA. A single ETKDG-generated (lowest-energy) conformer is used per molecule. Training uses Adam (lr $= 5 \times 10^{-4}$), batch size 32, early stopping patience 50, max 200 epochs. We implement PaiNN using a custom \texttt{radius\_graph} that avoids the \texttt{torch-cluster} dependency, enabling deployment on systems without GLIBC $\geq 2.32$. Per-seed results are shown in Table~\ref{tab:gnn_seeds}.}
 
 \begin{table}[h!]
-\caption{PaiNN per-seed results (RMSE / $R^2$, 3 seeds).}
+\caption{\rev{PaiNN per-seed results (RMSE / $R^2$, 3 seeds).}}
 \label{tab:gnn_seeds}
 \centering
 \small
