@@ -21,22 +21,22 @@ All changes marked in \textcolor{blue}{blue}; line refs refer to revised \texttt
 
 \point{R1.1: Theoretical discussion (bias-variance, parameterization complexity, dataset size).}
 
-\response Expanded simplicity principle discussion \lines{604--605}: explicit parameter-count analysis (${\sim}180$ vs.\ ${\sim}7$ samples/parameter for invariants vs.\ lowrank), connected to model selection theory. New feature dimension ablation \lines{484--508} (Table~6, \lines{489--504}): RMSE monotonically degrades $D{=}256 \to 2048$, confirming fundamental statistical constraint. Conclusion updated \lines{618}.
+\response Expanded simplicity principle discussion \lines{604--605}: explicit parameter-count analysis (${\sim}180$ vs.\ ${\sim}7$ samples/parameter for invariants vs.\ lowrank on ESOL), connected to model selection theory showing the bias-variance tradeoff penalizes higher-dimensional representations at these sample sizes (642--4,200 molecules). New feature dimension ablation (Section~5.6, \lines{484--508}; Table~6, \lines{489--504}): RMSE monotonically degrades $D{=}256 \to 2{,}048$, confirming a fundamental statistical constraint. Conclusion updated \lines{618}.
 
 \point{R1.2: Classification benchmarks.}
 
-\response Added BACE and BBBP experiments: Section~5.5 \lines{461--481}, Table~7 \lines{466--479}. Conformer features hurt BACE ($-4.4\%$ AUROC), no effect on BBBP ($+0.1\%$)---consistent with taxonomy. Scope statement \lines{151}, abstract \lines{80} updated. Per-seed results in Appendix~K \lines{1041--1064}.
+\response Added BACE (1,513 molecules, $\beta$-secretase inhibition) and BBBP (2,038 molecules, blood-brain barrier permeability): Section~5.5 \lines{461--481}, Table~7 \lines{466--479}. Conformer features hurt BACE ($-4.4\%$ AUROC) and show no benefit on BBBP ($+0.1\%$)---consistent with the taxonomy, as $\beta$-secretase binding is an electronic/binding property and BBB permeability is governed by topological features rather than 3D geometry. Scope statement \lines{151} and abstract \lines{80} updated to include classification. Per-seed results in Appendix~K \lines{1041--1064}.
 
 \point{R1.3: Larger/industrial datasets.}
 
-\response Acknowledged as limitation \lines{620}. Benchmarks span 642--133K molecules; validation on ChEMBL/ZINC noted as future work.
+\response Acknowledged as important limitation \lines{620}. Benchmarks span 642--133K molecules (MoleculeNet, QM9, MARCEL); validation on ChEMBL/ZINC/proprietary ADMET panels noted as priority for future work.
 
 \point{R1.4: Figure resolution, standardize metrics, typos.}
 
-\response Figures re-exported $\geq$300 DPI. Metrics standardized: RMSE (regression), AUROC (classification) \lines{461--481}. Full proofreading pass completed.
+\response All figures re-exported at $\geq$300 DPI. Evaluation metrics standardized: RMSE throughout for regression, AUROC for classification \lines{461--481}. Full proofreading pass completed; typographical errors and formatting inconsistencies corrected across all tables and main text (see blue-marked changes throughout).
 
 \point{R1.5: Scaffold split generation and replicates.}
 
-\response Expanded Training Details \lines{274}: Bemis--Murcko scaffold extraction via RDKit, frequency-sorted assignment, 80/10/10 splits. Seed counts: 3 (main benchmark), 10 (statistical validation). Classification uses stratified splits \lines{464}.
+\response Expanded Training Details \lines{274}: Bemis--Murcko generic scaffolds extracted via RDKit, sorted by frequency, assigned to train/validation/test maintaining 80/10/10 ratios. Seed counts made explicit: 3 seeds for main benchmark, 10 seeds for statistical validation (sufficient power to detect ${\sim}5\%$ effect sizes at $\alpha = 0.05$). Classification benchmarks use stratified random splits \lines{464} since scaffold splits on imbalanced datasets yield one-class test sets.
 
 \end{document}

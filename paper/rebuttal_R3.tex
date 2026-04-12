@@ -34,18 +34,18 @@ All changes marked in \textcolor{blue}{blue}; line refs refer to revised \texttt
 
 \point{R3.3: Performance hierarchy confused.}
 
-\response Substantially rewritten at \lines{602} with mechanistic explanation of four tiers in terms of preserved 3D structure: ``DKO discards it into summary statistics, engineered descriptors preserve selected physical invariants, and GNNs retain the full atomic graph.'' FP+3D matching SchNet on ESOL (1.000 vs.\ 1.004) highlighted. Abstract \lines{82}, Contribution~3 \lines{157}, Conclusion \lines{618} updated.
+\response Substantially rewritten at \lines{602} with mechanistic explanation of four tiers in terms of preserved 3D relational structure: ``DKO discards it into summary statistics, engineered descriptors preserve selected physical invariants, and GNNs retain the full atomic graph.'' The progression from tier 4 to tier 1 is now explicit rather than presented as an unexplained ranking. The key result---FP+3D descriptors matching SchNet on ESOL (1.000 vs.\ 1.004)---highlighted as evidence that engineered features can approach end-to-end learning. Abstract \lines{82}, Contribution~3 \lines{157}, Conclusion \lines{618} updated.
 
 \point{R3.4: Text too direct; expand into technical discourse.}
 
-\response Expanded throughout:
+\response Expanded terse statements into technical language at multiple locations:
 \begin{itemize}[itemsep=1pt, topsep=2pt]
-    \item Abstract: ``continuous-filter and equivariant message passing,'' ``pre-computed feature bottleneck'' \lines{82}
-    \item Bias-variance: parameter-count analysis (${\sim}180$ vs.\ ${\sim}7$ samples/param) \lines{605}
-    \item GNN justification: continuous-filter vs.\ equivariant paradigms \lines{453}
-    \item Truncation: curse of dimensionality argument \lines{508}
-    \item Practical framework: specific thresholds \lines{611}
-    \item Conclusion: precise claims and recommendations \lines{618--620}
+    \item Abstract: now specifies ``continuous-filter and equivariant message passing'' and ``pre-computed feature bottleneck'' \lines{82}
+    \item Bias-variance: explicit parameter-count calculation (${\sim}180$ vs.\ ${\sim}7$ samples/param), connection to model selection theory \lines{605}
+    \item GNN justification: technical comparison of continuous-filter vs.\ equivariant paradigms, why two architectures suffice \lines{453}
+    \item Truncation: curse of dimensionality vs.\ information loss argument with empirical evidence \lines{508}
+    \item Practical framework: specific thresholds ($>$500 molecules, solvation properties) and four-step decision rules \lines{611}
+    \item Conclusion: precise statistical claims ($p < 10^{-4}$) and explicit practitioner recommendations \lines{618--620}
 \end{itemize}
 
 \end{document}
