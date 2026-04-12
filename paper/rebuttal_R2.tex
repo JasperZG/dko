@@ -25,7 +25,7 @@ We thank Reviewer tcvY for the detailed and rigorous critique. Below we address 
 
 The convergence of 21--42\% gains across these two architecturally diverse GNNs provides strong evidence that the hierarchy reflects a genuine property of the representation, not an artifact of SchNet specifically. We explain in the new paragraph at \lines{453} why DimeNet++ (intermediate between SchNet and PaiNN in design) and Equiformer (primarily beneficial in large-scale pre-training settings orthogonal to our study) are not included: two architectures spanning the continuous-filter and equivariant paradigms are sufficient to establish robustness.
 
-Regarding the reviewer's concern that SchNet could be trivially extended with ensemble pooling: this is precisely what our DKO mean ensemble baseline does (mean pooling over conformers through a neural architecture, \lines{347}). The fact that even this approach underperforms FP+XGBoost strengthens, rather than undermines, the claim that the pre-computed feature bottleneck is the limiting factor.
+Regarding the reviewer's concern that SchNet could be trivially extended with ensemble pooling: this is precisely what our DKO mean ensemble baseline does (mean pooling over conformers through a neural architecture, \lines{351}). The fact that even this approach underperforms FP+XGBoost strengthens, rather than undermines, the claim that the pre-computed feature bottleneck is the limiting factor.
 
 \textbf{Specific changes:}
 \begin{itemize}[itemsep=2pt]
