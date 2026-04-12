@@ -3,91 +3,40 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{hyperref}
-\usepackage{booktabs}
 \usepackage{amsmath}
 
 \newcommand{\point}[1]{\paragraph{#1}}
 \newcommand{\response}{\textcolor{blue}{\textbf{Response:}}~}
 \newcommand{\lines}[1]{\texttt{[L#1]}}
 
-\title{Author Response to Reviewer 1P2E\\(Rating: 4, Borderline Accept)}
-\author{Anonymous Authors}
+\title{Author Response to Reviewer 1P2E}
+\author{}
 \date{}
 
 \begin{document}
 \maketitle
+\vspace{-2em}
 
-We thank Reviewer 1P2E for the thoughtful and constructive feedback. Below we address each point in detail. All changes in the revised manuscript are marked in \textcolor{blue}{blue text}; line references (e.g., \lines{42--44}) refer to the revised \texttt{main.tex}.
+All changes marked in \textcolor{blue}{blue}; line refs refer to revised \texttt{main.tex}.
 
-\point{R1.1: Supplement empirical findings with a theoretical discussion explaining why simple covariance invariants outperform more complex representations (bias-variance trade-off, parameterization complexity, dataset size).}
+\point{R1.1: Theoretical discussion (bias-variance, parameterization complexity, dataset size).}
 
-\response We have substantially expanded the ``simplicity principle'' discussion in Section~6 \lines{604--605}. The revised text \lines{605} now provides an explicit parameter-count analysis: the 5 scalar invariants operate at ${\sim}180$ samples per covariance parameter on ESOL ($N_\text{train} \approx 900$), whereas the lowrank variant ($k{=}128$) operates at ${\sim}7$---well below the threshold for reliable estimation. We connect this to classical model selection theory, showing that the bias-variance tradeoff penalizes higher-dimensional representations at the sample sizes typical of molecular property datasets (642--4,200 molecules). The new feature dimension ablation (Table~6, Section~5.6, \lines{484--508}) provides independent confirmation: even for the mean $\boldsymbol{\mu}$, RMSE monotonically degrades from $D{=}256$ to $D{=}2{,}048$, demonstrating that this is a fundamental statistical constraint rather than an engineering limitation.
+\response Expanded simplicity principle discussion \lines{604--605}: explicit parameter-count analysis (${\sim}180$ vs.\ ${\sim}7$ samples/parameter for invariants vs.\ lowrank), connected to model selection theory. New feature dimension ablation \lines{484--508} (Table~6, \lines{489--504}): RMSE monotonically degrades $D{=}256 \to 2048$, confirming fundamental statistical constraint. Conclusion updated \lines{618}.
 
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Bias-variance theoretical analysis expanded: \lines{605}
-    \item Feature dimension ablation section added: \lines{484--508}
-    \item Feature dimension ablation table (Table~6): \lines{489--504}
-    \item Conclusion updated with bias-variance finding: \lines{618}
-\end{itemize}
+\point{R1.2: Classification benchmarks.}
 
-\point{R1.2: Conduct supplementary experiments on classification benchmarks.}
+\response Added BACE and BBBP experiments: Section~5.5 \lines{461--481}, Table~7 \lines{466--479}. Conformer features hurt BACE ($-4.4\%$ AUROC), no effect on BBBP ($+0.1\%$)---consistent with taxonomy. Scope statement \lines{151}, abstract \lines{80} updated. Per-seed results in Appendix~K \lines{1041--1064}.
 
-\response We have added classification experiments on BACE (1,513 molecules, $\beta$-secretase inhibition) and BBBP (2,038 molecules, blood-brain barrier permeability) in a new Section~5.5 \lines{461--481}. Results (Table~7, \lines{466--479}) confirm the property taxonomy extends to classification: conformer features hurt BACE by $-4.4\%$ AUROC and show no benefit on BBBP ($+0.1\%$). This is consistent with the taxonomy---$\beta$-secretase binding is an electronic/binding property, and BBB permeability is governed primarily by topological features. Per-seed results are provided in Appendix~K \lines{1041--1064}.
+\point{R1.3: Larger/industrial datasets.}
 
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item New classification benchmark section: \lines{461--481}
-    \item Classification results table (Table~7): \lines{466--479}
-    \item Scope statement updated in Introduction: \lines{151}
-    \item Abstract updated to include classification: \lines{80}
-    \item Per-seed classification appendix: \lines{1041--1064}
-\end{itemize}
+\response Acknowledged as limitation \lines{620}. Benchmarks span 642--133K molecules; validation on ChEMBL/ZINC noted as future work.
 
-\point{R1.3: Validate key findings on larger or industrially sourced datasets.}
+\point{R1.4: Figure resolution, standardize metrics, typos.}
 
-\response We acknowledge this as an important limitation in the revised Conclusion \lines{620}. Our benchmarks span 642 to 133K molecules across academic datasets (MoleculeNet, QM9, MARCEL); validation on larger industrially sourced datasets (ChEMBL, ZINC, proprietary ADMET panels) would strengthen the taxonomy's generalizability. We note this as a priority for future work and have added explicit language to this effect.
+\response Figures re-exported $\geq$300 DPI. Metrics standardized: RMSE (regression), AUROC (classification) \lines{461--481}. Full proofreading pass completed.
 
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Limitations paragraph updated: \lines{620}
-\end{itemize}
+\point{R1.5: Scaffold split generation and replicates.}
 
-\point{R1.4: Increase figure resolution, standardize metrics, correct typographical errors.}
-
-\response We have conducted a full proofreading pass. All figures are exported at $\geq$300 DPI. Evaluation metrics are standardized (RMSE throughout for regression, AUROC for classification, \lines{461--481}). Typographical errors and formatting inconsistencies have been corrected across tables and main text (see blue-marked changes throughout).
-
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Figures re-exported at $\geq$300 DPI: all \texttt{figures/*.pdf} files
-    \item Metrics standardized: RMSE for regression, AUROC for classification \lines{461--481}
-    \item Typographical corrections throughout (see blue-marked text)
-\end{itemize}
-
-\point{R1.5: Provide clearer descriptions of scaffold split generation and number of replicates.}
-
-\response We have expanded Section~3.7 (Training Details, \lines{274}) with explicit descriptions of the Murcko scaffold split procedure (Bemis--Murcko generic scaffolds extracted via RDKit, sorted by frequency, assigned to splits maintaining 80/10/10 ratios) and seed counts (3 seeds for the main benchmark, 10 seeds for statistical validation experiments).
-
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Scaffold split procedure details: \lines{274}
-    \item Replicate counts explicitly stated: \lines{274}
-    \item Stratified splits for classification explained: \lines{464}
-\end{itemize}
-
-\vspace{1em}
-\noindent\rule{\textwidth}{0.4pt}
-\vspace{0.5em}
-
-\noindent\textbf{Summary of changes relevant to Reviewer 1P2E:}
-\begin{itemize}[itemsep=2pt]
-    \item Added classification benchmark on BACE and BBBP \lines{461--481}, Appendix~K \lines{1041--1064}
-    \item Added feature dimension ablation $D \in \{256, 512, 1024, 2048\}$ \lines{484--508}
-    \item Expanded bias-variance theoretical analysis \lines{604--605}
-    \item Clarified scaffold split procedure and replicate counts \lines{274}
-    \item Added larger-dataset limitation acknowledgment \lines{620}
-    \item All figures at $\geq$300 DPI; metrics standardized; typos corrected
-    \item All changes marked in \textcolor{blue}{blue text}
-\end{itemize}
+\response Expanded Training Details \lines{274}: Bemis--Murcko scaffold extraction via RDKit, frequency-sorted assignment, 80/10/10 splits. Seed counts: 3 (main benchmark), 10 (statistical validation). Classification uses stratified splits \lines{464}.
 
 \end{document}

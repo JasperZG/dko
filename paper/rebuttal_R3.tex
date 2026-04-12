@@ -3,93 +3,49 @@
 \usepackage{xcolor}
 \usepackage{enumitem}
 \usepackage{hyperref}
-\usepackage{booktabs}
 \usepackage{amsmath}
 
 \newcommand{\point}[1]{\paragraph{#1}}
 \newcommand{\response}{\textcolor{blue}{\textbf{Response:}}~}
 \newcommand{\lines}[1]{\texttt{[L#1]}}
 
-\title{Author Response to Reviewer u34v\\(Rating: 4, Borderline Accept)}
-\author{Anonymous Authors}
+\title{Author Response to Reviewer u34v}
+\author{}
 \date{}
 
 \begin{document}
 \maketitle
+\vspace{-2em}
 
-We thank Reviewer u34v for the detailed and constructive suggestions on presentation and clarity. Below we address each point in detail. All changes in the revised manuscript are marked in \textcolor{blue}{blue text}; line references (e.g., \lines{42--44}) refer to the revised \texttt{main.tex}.
+All changes marked in \textcolor{blue}{blue}; line refs refer to revised \texttt{main.tex}.
 
-\point{R3.1: Manuscript feels too fragmented due to titled paragraphs.}
+\point{R3.1: Too fragmented due to titled paragraphs.}
 
-\response We have revised the Discussion (Section~6, \lines{587--611}) to reduce fragmentation. Bold titled paragraphs (``An empirical property taxonomy,'' ``The simplicity principle,'' ``Relationship to prior work,'' ``Practical implications'') have been converted to flowing prose with topic sentences that integrate the content more naturally. Specifically: the taxonomy opening at \lines{598} now uses a topic sentence rather than a bold header; the property categories at \lines{600} flow as continuous prose rather than a bulleted list with italic headers; the prior work transition at \lines{609} flows naturally from the preceding text; and the practical implications at \lines{611} open with a transitional phrase. The Related Work section (Section~2, \lines{164--189}) has similarly been converted from bold-titled blocks to flowing prose with transitional phrases. The section now reads as a cohesive narrative rather than a series of independent blocks.
-
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Taxonomy opening rewritten as flowing prose: \lines{598}
-    \item Property categories (solvation, steric, electronic) as flowing text: \lines{600}
-    \item Performance hierarchy rewritten with flowing transition: \lines{602}
-    \item Simplicity principle converted to flowing prose: \lines{604}
-    \item Prior work transition to flowing prose: \lines{609}
-    \item Practical implications transition: \lines{611}
-    \item Related Work bold titles removed, transitional phrases added: \lines{164--189}
-    \item Limitations and Reproducibility headers converted to prose: \lines{620, 622}
-    \item Appendix bold titles converted to prose: \lines{1035--1039}
+\response Removed all bold/italic titled paragraphs and converted to flowing prose with topic sentences throughout:
+\begin{itemize}[itemsep=1pt, topsep=2pt]
+    \item Related Work: 6 bold titles replaced with transitions \lines{170, 173, 175, 179, 182}
+    \item Discussion: taxonomy \lines{598}, property categories \lines{600}, hierarchy \lines{602}, simplicity \lines{604}, prior work \lines{609}, practical implications \lines{611}
+    \item Limitations \lines{620}, Reproducibility \lines{622}, Appendix \lines{1037, 1039}
 \end{itemize}
 
-\point{R3.2: Research questions formulated as actual questions feels too informal.}
+\point{R3.2: Research questions as actual questions feels informal.}
 
-\response We have rephrased RQ1--RQ3 in the Introduction (\lines{147--149}) as declarative objectives rather than interrogative questions:
-\begin{itemize}[itemsep=2pt]
-    \item RQ1 \lines{147}: ``\textbf{Property taxonomy}: We characterize which molecular property types benefit from 3D conformer geometry and provide a mechanistic basis for the observed selectivity.''
-    \item RQ2 \lines{148}: ``\textbf{Representation hierarchy}: We establish how pre-computed conformer ensemble methods compare to 2D fingerprints and end-to-end 3D GNNs (SchNet, PaiNN) across task types.''
-    \item RQ3 \lines{149}: ``\textbf{Representation complexity}: We test whether complex covariance representations outperform simple summary statistics, grounded in a bias-variance analysis of parameterization complexity versus dataset size.''
-\end{itemize}
+\response Rephrased RQ1--3 as declarative objectives \lines{147--149}. E.g., RQ1: ``We characterize which molecular property types benefit from 3D conformer geometry and provide a mechanistic basis for the observed selectivity.''
 
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item RQ1 rephrased as declarative objective: \lines{147}
-    \item RQ2 rephrased as declarative objective: \lines{148}
-    \item RQ3 rephrased as declarative objective: \lines{149}
-\end{itemize}
+\point{R3.3: Performance hierarchy confused.}
 
-\point{R3.3: Performance hierarchy is confused and could benefit from clearer presentation.}
+\response Substantially rewritten at \lines{602} with mechanistic explanation of four tiers in terms of preserved 3D structure: ``DKO discards it into summary statistics, engineered descriptors preserve selected physical invariants, and GNNs retain the full atomic graph.'' FP+3D matching SchNet on ESOL (1.000 vs.\ 1.004) highlighted. Abstract \lines{82}, Contribution~3 \lines{157}, Conclusion \lines{618} updated.
 
-\response We have substantially rewritten the performance hierarchy presentation in Section~6 at \lines{602}. The revised text walks through each of the four tiers with explicit evidence and, crucially, explains the progression from tier 4 to tier 1 in terms of how much 3D relational structure is preserved: ``DKO discards it into summary statistics, engineered descriptors preserve selected physical invariants, and GNNs retain the full atomic graph.'' This mechanistic framing---absent from the original---makes the logic of the hierarchy explicit rather than presenting it as an empirical ranking without explanation. The key result---that FP+3D descriptors match SchNet on ESOL (1.000 vs.\ 1.004)---is highlighted as evidence that carefully engineered features can approach end-to-end learning.
+\point{R3.4: Text too direct; expand into technical discourse.}
 
-\textbf{Specific changes:}
-\begin{itemize}[itemsep=2pt]
-    \item Four-tier hierarchy rewritten with mechanistic explanation: \lines{602}
-    \item Tier progression explained (summary statistics $\to$ physical invariants $\to$ full atomic graph): \lines{602}
-    \item Key FP+3D vs.\ SchNet comparison highlighted: \lines{602}
-    \item Abstract hierarchy description updated: \lines{82}
-    \item Contribution 3 hierarchy description updated: \lines{157}
-    \item Conclusion hierarchy summary: \lines{618}
-\end{itemize}
-
-\point{R3.4: Some text too direct; expand into more technical discourse.}
-
-\response We have expanded terse statements throughout the manuscript into more technical language. Key locations:
-\begin{itemize}[itemsep=2pt]
-    \item Abstract performance hierarchy: \lines{82}---now specifies ``continuous-filter and equivariant message passing'' and ``pre-computed feature bottleneck''
-    \item Discussion bias-variance analysis: \lines{605}---explicit parameter-count calculation (${\sim}180$ vs.\ ${\sim}7$ samples per parameter), connection to model selection theory
-    \item Hierarchy explanation: \lines{602}---mechanistic framing of tier progression with evidence citations
-    \item Practical decision framework: \lines{611}---expanded with specific thresholds and conditions
-    \item Conclusion: \lines{618--620}---tightened with precise statistical claims and explicit practical recommendations
-    \item GNN baseline justification: \lines{453}---technical comparison of continuous-filter vs.\ equivariant paradigms
-    \item Truncation concern: \lines{508}---technical argument about curse of dimensionality vs.\ information loss
-\end{itemize}
-
-\vspace{1em}
-\noindent\rule{\textwidth}{0.4pt}
-\vspace{0.5em}
-
-\noindent\textbf{Summary of changes relevant to Reviewer u34v:}
-\begin{itemize}[itemsep=2pt]
-    \item Removed all bold/italic titled paragraphs; converted to flowing prose throughout \lines{164--189}, \lines{598--611}, \lines{620--622}, \lines{1035--1039}
-    \item Rephrased research questions as declarative objectives \lines{147--149}
-    \item Expanded performance hierarchy with mechanistic explanation \lines{602}
-    \item Expanded technical discourse throughout \lines{82}, \lines{453}, \lines{508}, \lines{605}
-    \item All changes marked in \textcolor{blue}{blue text}
+\response Expanded throughout:
+\begin{itemize}[itemsep=1pt, topsep=2pt]
+    \item Abstract: ``continuous-filter and equivariant message passing,'' ``pre-computed feature bottleneck'' \lines{82}
+    \item Bias-variance: parameter-count analysis (${\sim}180$ vs.\ ${\sim}7$ samples/param) \lines{605}
+    \item GNN justification: continuous-filter vs.\ equivariant paradigms \lines{453}
+    \item Truncation: curse of dimensionality argument \lines{508}
+    \item Practical framework: specific thresholds \lines{611}
+    \item Conclusion: precise claims and recommendations \lines{618--620}
 \end{itemize}
 
 \end{document}
