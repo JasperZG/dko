@@ -338,7 +338,7 @@ QM9-LUMO     & 0.0187 & 0.0335 (M) & $+79.0\%$ \\
 
 Given the strong fingerprint baseline, we examine whether neural conformer methods can close this gap. Table~\ref{tab:main} presents the full benchmark across 13 model configurations and 4 representative datasets. The original DKO with PCA-compressed covariance ranks 12th, motivating our eigendecomposition variants: all 7 new variants improve on average over it. Among neural methods, attention achieves the best average rank (3.25), followed by mean ensemble (4.25). The new DKO variants---particularly dko\_invariants (rank 3, best on Lipophilicity) and dko\_gated (rank 4, best on ESOL)---are competitive. We note that with only 3 seeds, rank differences between closely-performing models (e.g., dko\_gated at $1.635{\pm}0.023$ vs.\ dko\_router at $1.670{\pm}0.023$ on ESOL) may not be statistically significant; the 10-seed validation in Section~\ref{sec:stat} addresses this.
 
-\begin{table*}[t]
+\begin{table*}[!tb]
 \caption{Test RMSE ($\downarrow$) for 13 model configurations across 4 representative datasets (mean $\pm$ std, 3 seeds; full results in Appendix~\ref{app:full}). \textbf{Bold}: best neural model per dataset. All 7 variants improve on average over the original DKO.}
 \label{tab:main}
 \centering
@@ -368,7 +368,7 @@ dko\_separate\_nets  & 2.249$\pm$0.031 & 0.046$\pm$0.000 & 0.045$\pm$0.000 & 1.1
 
 Although neural conformer methods alone lose to fingerprints, conformer statistics may still provide \emph{complementary} signal when combined with FP features. Table~\ref{tab:hybrid} tests this hypothesis. The hybrid FP+$\boldsymbol{\mu}$+$\boldsymbol{\Sigma}$ representation improves over FP alone on 3 of 6 datasets, with the largest gains on solvation-related properties (Figure~\ref{fig:perf}).
 
-\begin{table*}[t]
+\begin{table*}[!tb]
 \caption{Hybrid FP + conformer features (XGBoost, RMSE, mean of 3 seeds; std omitted for clarity, all $<$5\% of mean). \textbf{Bold}: best feature set per dataset. --- indicates no improvement ($\Delta \leq 0$). QM9 values shown to 4 decimal places for precision.}
 \label{tab:hybrid}
 \centering
@@ -423,7 +423,6 @@ FP + 3D + Geo      & 1.094 & \textbf{2.597} & 0.916 & 0.020 \\
 
 The 28 physicochemical descriptors outperform 1024 geometric features on 3 of 4 datasets. On ESOL, FP+3D achieves RMSE 1.000---a 34\% improvement over FP-only and 26\% over the geometric hybrid. On Lipophilicity, FP+3D (0.873) improves 4\% over FP-only. The combined FP+3D+Geo achieves the best FreeSolv result (2.597, 12\% over FP-only). Full results in Appendix~\ref{app:3d}.
 
-\FloatBarrier
 \subsection{3D GNN Baselines}
 \label{sec:schnet}
 
