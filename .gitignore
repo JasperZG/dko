@@ -181,6 +181,12 @@ paper/main.pdf
 # Data files (large) - only at root level
 /data/raw/
 /data/logs/
+/data/conformers/
+/data/bace/cache/
+/data/marcel/
+
+# Experiment outputs (regeneratable via scripts/run_experiment.py)
+/results/
 *.sdf
 *.mol2
 *.pdb

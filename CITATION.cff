@@ -1,0 +1,36 @@
+cff-version: 1.2.0
+message: "If you use this software, please cite the ACM-BCB 2026 paper."
+title: "Distribution Kernel Operators (DKO) for Molecular Property Prediction"
+url: "https://github.com/JasperZG/dko"
+license: MIT
+authors:
+  - family-names: Cheng
+    given-names: Bryan
+    email: bcbc7264@gmail.com
+    affiliation: Great Neck South High School
+  - family-names: Jin
+    given-names: Austin
+    email: ahanchijin@gmail.com
+    affiliation: Great Neck South High School
+  - family-names: Zhang
+    given-names: Jasper
+    email: jasperzhang1001@gmail.com
+    affiliation: Great Neck South High School
+preferred-citation:
+  type: conference-paper
+  title: "When Does Conformer Geometry Help? Complementarity of 3D Ensemble Statistics and 2D Fingerprints for Molecular Property Prediction"
+  authors:
+    - family-names: Cheng
+      given-names: Bryan
+    - family-names: Jin
+      given-names: Austin
+    - family-names: Zhang
+      given-names: Jasper
+  collection-title: "Proceedings of the 17th ACM Conference on Bioinformatics, Computational Biology, and Health Informatics (ACM-BCB '26)"
+  conference:
+    name: "ACM-BCB '26"
+    city: Calabria
+    country: IT
+  year: 2026
+  publisher:
+    name: ACM
