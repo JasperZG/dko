@@ -1,9 +1,8 @@
 %%
 %% This is file `main.tex',
-%% Submission to ACM-BCB 2026 (sigconf format, double-blind review).
-%% For camera-ready: remove anonymous and review options.
+%% Camera-ready submission to ACM-BCB 2026 (sigconf format).
 %%
-\documentclass[sigconf, anonymous, review]{acmart}
+\documentclass[sigconf]{acmart}
 
 %%
 %% \BibTeX command to typeset BibTeX logo in the docs
@@ -39,9 +38,9 @@
 \usepackage{placeins}
 \usepackage{enumitem}
 
-%% Revision markup: wrap changed text in \rev{} for blue highlighting.
-%% Remove this command (and all \rev{} wrappers) for the camera-ready version.
-\newcommand{\rev}[1]{\textcolor{blue}{#1}}
+%% Revision markup: \rev{} previously highlighted changes in blue during review;
+%% for the camera-ready version it is a no-op (text renders in default black).
+\newcommand{\rev}[1]{#1}
 
 %% Improve line-breaking for long inline math and URLs.
 \tolerance=1000
@@ -60,14 +59,37 @@
 
 %%
 %% The "author" command and its associated commands are used to define
-%% the authors and their affiliations.
-%% Author information is hidden by the anonymous option for review.
+%% the authors and their affiliations. All three authors contributed equally
+%% (marked with a footnote on each name via \authornote / \authornotemark).
 %%
-\author{Anonymous Authors}
+\author{Bryan Cheng}
+\authornote{All authors contributed equally.}
+\email{bcbc7264@gmail.com}
 \affiliation{%
-  \institution{Under Review}
-  \city{}
-  \country{}
+  \institution{Great Neck South High School}
+  \city{Great Neck}
+  \state{NY}
+  \country{USA}
+}
+
+\author{Austin Jin}
+\authornotemark[1]
+\email{ahanchijin@gmail.com}
+\affiliation{%
+  \institution{Great Neck South High School}
+  \city{Great Neck}
+  \state{NY}
+  \country{USA}
+}
+
+\author{Jasper Zhang}
+\authornotemark[1]
+\email{jasperzhang1001@gmail.com}
+\affiliation{%
+  \institution{Great Neck South High School}
+  \city{Great Neck}
+  \state{NY}
+  \country{USA}
 }
 
 %%
@@ -618,7 +640,7 @@ The taxonomy covers 3 solvation, 4 steric, and 7 electronic regression targets p
 
 \rev{Several limitations should be noted.} Our conformer features use RDKit ETKDG with uniform (not Boltzmann) weights. Auxiliary experiments re-split data independently, so FP-only baselines vary slightly across tables (up to ${\sim}6\%$). The hybrid uses simple concatenation; learned feature interaction might yield larger gains. \rev{Our evaluation spans academic benchmarks (642--133K molecules); validation on larger industrial datasets (ChEMBL, ZINC) would strengthen generalizability. The taxonomy is validated in the non-pre-trained setting; pre-trained 3D models (Uni-Mol, GROVER) may shift its boundaries.} Future work should combine DKO statistics with pre-trained representations and validate at larger scale.
 
-All code, model implementations, experiment scripts, and configuration files are publicly available at \url{https://github.com/anonymoussubmitter-167/DKO} under the MIT license. The repository includes conformer generation pipelines, all 13 model configurations, hybrid feature extraction, and analysis scripts to reproduce every table and figure in this paper.
+All code, model implementations, experiment scripts, and configuration files are publicly available at \url{https://github.com/JasperZG/dko} under the MIT license. The repository includes conformer generation pipelines, all 13 model configurations, hybrid feature extraction, and analysis scripts to reproduce every table and figure in this paper.
 
 %──────────────────────────────────────────────────────────────
 \bibliographystyle{ACM-Reference-Format}
@@ -626,6 +648,7 @@ All code, model implementations, experiment scripts, and configuration files are
 
 %──────────────────────────────────────────────────────────────
 
+\clearpage
 %──────────────────────────────────────────────────────────────
 \appendix
 \section{Full Per-Dataset Results}
