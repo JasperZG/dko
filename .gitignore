@@ -240,6 +240,7 @@ notebooks/*.ipynb
 *.tgz
 *.rar
 *.7z
+!dko_arxiv.tar.gz
 
 # RDKit cache
 *.mol
