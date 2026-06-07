@@ -1,5 +1,9 @@
 # Distribution Kernel Operators (DKO) for Molecular Property Prediction
 
+**Bryan Cheng, Austin Jin, Jasper Zhang**
+
+> Accepted at **ACM-BCB 2026** (17th ACM International Conference on Bioinformatics, Computational Biology, and Health Informatics) and **ICLR 2026 Workshops**.
+
 A comprehensive research framework for learning molecular properties from conformer ensemble distributions using Distribution Kernel Operators.
 
 ## Overview
@@ -141,8 +145,7 @@ dko-research/
 │   └── models/              # Per-model configs
 ├── scripts/                 # Entry point scripts
 ├── tests/                   # Unit tests
-├── paper/                   # ACM-BCB 2026 LaTeX source
-└── docs/                    # Supplementary documentation
+└── scripts/                 # Entry point scripts (continued)
 ```
 
 ## Models
@@ -227,12 +230,6 @@ pytest tests/
 # Run with coverage
 pytest tests/ --cov=dko --cov-report=html
 ```
-
-## Documentation
-
-- [Results summary](docs/RESULTS.md) - Headline numbers from the paper
-- The published paper (LaTeX source in `paper/`) is the primary reference for
-  methodology, ablations, and statistical validation.
 
 ## Citation
 
