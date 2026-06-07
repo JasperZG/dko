@@ -2,7 +2,7 @@
 
 **Bryan Cheng, Austin Jin, Jasper Zhang**
 
-> Accepted at **ACM-BCB 2026** (17th ACM International Conference on Bioinformatics, Computational Biology, and Health Informatics) and **ICLR 2026 Workshops**.
+> Accepted at **ACM-BCB 2026** (17th ACM International Conference on Bioinformatics, Computational Biology, and Health Informatics).
 
 A comprehensive research framework for learning molecular properties from conformer ensemble distributions using Distribution Kernel Operators.
 
