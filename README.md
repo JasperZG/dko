@@ -66,7 +66,7 @@ python scripts/prepare_datasets.py --datasets bace pdbbind freesolv
 
 ```bash
 # Run main benchmark on all datasets
-python scripts/run_experiment.py --experiment main_benchmark
+python scripts/run_experiment.py --experiment benchmark
 
 # Run on specific dataset with specific model
 python scripts/run_experiment.py --dataset bace --model dko
@@ -79,8 +79,24 @@ python scripts/run_experiment.py --dataset bace --model dko --hyperopt
 
 ```bash
 # Generate analysis and visualizations
-python scripts/analyze_results.py --experiment main_benchmark
+python scripts/analyze_results.py --experiment benchmark
 ```
+
+### Reproducing the paper
+
+Results in the paper map to the following commands (precomputed conformers
+are regenerated from `scripts/prepare_datasets.py --all` on first run):
+
+| Paper artifact | Command |
+| --- | --- |
+| Main benchmark (Tables 1, 2) | `python scripts/run_experiment.py --experiment benchmark` |
+| 80/20 first/second-order decomposition (Section 5) | `python scripts/run_experiment.py --experiment decomposition --dataset freesolv` |
+| Representation vs. architecture ablation | `python scripts/run_experiment.py --experiment rep_vs_arch` |
+| 10-seed statistical validation | `python scripts/run_10seed_validation.py` |
+| Feature attribution / mutual information | `python scripts/run_feature_attribution.py` and `python scripts/run_mi_analysis.py` |
+| Scaffold-split robustness | `python scripts/run_scaffold_splits.py` |
+| Fingerprint + XGBoost baseline | `python scripts/run_fingerprint_baseline.py` |
+| SchNet / PaiNN 3D GNN baselines | `python scripts/run_schnet_baseline.py`, `python scripts/run_painn_baseline.py` |
 
 ## Project Structure
 
@@ -125,7 +141,8 @@ dko-research/
 │   └── models/              # Per-model configs
 ├── scripts/                 # Entry point scripts
 ├── tests/                   # Unit tests
-└── notebooks/               # Analysis notebooks
+├── paper/                   # ACM-BCB 2026 LaTeX source
+└── docs/                    # Supplementary documentation
 ```
 
 ## Models
@@ -213,21 +230,25 @@ pytest tests/ --cov=dko --cov-report=html
 
 ## Documentation
 
-- [Full Experiment Guide](docs/FULL_EXPERIMENT_GUIDE.md) - Complete workflow from setup to results
-- [Technical Documentation](docs/TECHNICAL_DOCUMENTATION.md) - Full API reference
-- [Cluster Deployment Guide](docs/CLUSTER_GUIDE.md) - HPC/SLURM reference
-- [Deployment Checklist](docs/DEPLOYMENT_CHECKLIST.md) - Pre-deployment verification
+- [Results summary](docs/RESULTS.md) - Headline numbers from the paper
+- The published paper (LaTeX source in `paper/`) is the primary reference for
+  methodology, ablations, and statistical validation.
 
 ## Citation
 
-If you use this code in your research, please cite:
+If you use this code in your research, please cite the ACM-BCB 2026 paper:
 
 ```bibtex
-@software{dko2026,
-  title={Distribution Kernel Operators for Molecular Property Prediction from Conformer Ensembles},
-  author={JasperZG},
-  year={2026},
-  url={https://github.com/JasperZG/dko}
+@inproceedings{cheng2026dko,
+  title     = {When Does Conformer Geometry Help? Complementarity of 3D Ensemble Statistics
+               and 2D Fingerprints for Molecular Property Prediction},
+  author    = {Cheng, Bryan and Jin, Austin and Zhang, Jasper},
+  booktitle = {Proceedings of the 17th ACM Conference on Bioinformatics,
+               Computational Biology, and Health Informatics (ACM-BCB '26)},
+  year      = {2026},
+  publisher = {ACM},
+  address   = {Calabria, Italy},
+  url       = {https://github.com/JasperZG/dko}
 }
 ```
 

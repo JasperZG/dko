@@ -162,10 +162,31 @@ Thumbs.db
 # Local documentation (not for git)
 CODEBASE_SUMMARY.md
 RESEARCH_PLAN_VS_IMPLEMENTATION.md
+CLAUDE.md
+
+# LaTeX build artifacts (paper/)
+*.aux
+*.bbl
+*.blg
+*.fdb_latexmk
+*.fls
+*.log
+*.out
+*.synctex.gz
+*.toc
+
+# Compiled paper PDF (regenerable from source)
+paper/main.pdf
 
 # Data files (large) - only at root level
 /data/raw/
 /data/logs/
+/data/conformers/
+/data/bace/cache/
+/data/marcel/
+
+# Experiment outputs (regeneratable via scripts/run_experiment.py)
+/results/
 *.sdf
 *.mol2
 *.pdb
@@ -225,6 +246,7 @@ notebooks/*.ipynb
 *.tgz
 *.rar
 *.7z
+!dko_arxiv.tar.gz
 
 # RDKit cache
 *.mol
