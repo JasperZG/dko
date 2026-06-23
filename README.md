@@ -1,6 +1,6 @@
 # Distribution Kernel Operators (DKO) for Molecular Property Prediction
 
-**Bryan Cheng, Austin Jin, Jasper Zhang**
+**Bryan Cheng, Jasper Zhang**
 
 > Accepted at **ACM-BCB 2026** (17th ACM International Conference on Bioinformatics, Computational Biology, and Health Informatics).
 
@@ -239,7 +239,7 @@ If you use this code in your research, please cite the ACM-BCB 2026 paper:
 @inproceedings{cheng2026dko,
   title     = {When Does Conformer Geometry Help? Complementarity of 3D Ensemble Statistics
                and 2D Fingerprints for Molecular Property Prediction},
-  author    = {Cheng, Bryan and Jin, Austin and Zhang, Jasper},
+  author    = {Cheng, Bryan and Zhang, Jasper},
   booktitle = {Proceedings of the 17th ACM Conference on Bioinformatics,
                Computational Biology, and Health Informatics (ACM-BCB '26)},
   year      = {2026},
